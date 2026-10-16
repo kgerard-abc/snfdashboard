@@ -1,0 +1,855 @@
+<title>Rhode Island Nursing Homes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<style>
+/* Layout: a records-office lookup tool. Header with search, then either the statewide view
+   (summary, trends, sortable list of homes) or one home's record (ratings, trends, inspections, fines, owners). */
+:root{
+  --bg:#ffffff; --panel:#f4f6f9; --ink:#131b27; --ink-2:#465264; --muted:#6b7686; --line:#dfe4ea; --line-2:#c9d1db;
+  --accent:#1c4c8c; --accent-wash:#e8eff8;
+  --s1:#2a78d6; --s2:#eb6834; --ref:#8b95a3;
+  --bad:#b8322b; --bad-wash:#fbeceb; --warn:#9a5d00; --warn-wash:#fdf3e1; --good:#1e7438; --good-wash:#e6f4ea;
+  --f-ui:"Public Sans",Helvetica,Arial,sans-serif; --f-head:"Source Serif 4",Georgia,serif;
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --panel:#171e28; --ink:#e7ecf2; --ink-2:#b3bdca; --muted:#8a95a4; --line:#283240; --line-2:#36414f;
+  --accent:#8fb7ee; --accent-wash:#1a2a40;
+  --s1:#3987e5; --s2:#d95926; --ref:#7c8796;
+  --bad:#f07a71; --bad-wash:#3a1d1c; --warn:#e7a948; --warn-wash:#33260f; --good:#5cc77d; --good-wash:#15301e;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --panel:#171e28; --ink:#e7ecf2; --ink-2:#b3bdca; --muted:#8a95a4; --line:#283240; --line-2:#36414f;
+  --accent:#8fb7ee; --accent-wash:#1a2a40;
+  --s1:#3987e5; --s2:#d95926; --ref:#7c8796;
+  --bad:#f07a71; --bad-wash:#3a1d1c; --warn:#e7a948; --warn-wash:#33260f; --good:#5cc77d; --good-wash:#15301e;
+  color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--f-head);font-weight:600;font-size:clamp(26px,4vw,36px);line-height:1.15}
+h2{font-size:19px;font-weight:700;margin-bottom:4px}
+h3{font-size:15px;font-weight:700}
+.lede{color:var(--ink-2);max-width:68ch;margin:6px 0 0}
+.small{font-size:13px;color:var(--muted)}
+.eyebrow{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* header */
+header.top{border-bottom:1px solid var(--line);background:var(--bg)}
+header.top .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;padding-block:14px;padding-bottom:14px}
+.brand{display:flex;flex-direction:column;gap:0;cursor:pointer;text-decoration:none;color:inherit}
+.brand b{font-family:var(--f-head);font-size:20px;font-weight:600}
+.brand span{font-size:12px;color:var(--muted)}
+.search{flex:1 1 280px;position:relative;min-width:0}
+.search input{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--bg)}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r);z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.12);max-height:360px;overflow:auto}
+.sugg button{display:block;width:100%;text-align:left;padding:8px 12px;border:0;background:none;cursor:pointer}
+.sugg button:hover,.sugg button.on{background:var(--accent-wash)}
+.sugg small{color:var(--muted);display:block}
+nav.tabs{display:flex;gap:4px}
+nav.tabs a{padding:6px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-weight:600;font-size:14px}
+nav.tabs a.on{background:var(--accent-wash);color:var(--accent)}
+
+section{margin-top:32px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px;margin-bottom:12px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;background:var(--bg)}
+.tile .label{font-size:13px;color:var(--ink-2)}
+.tile .val{font-size:28px;font-weight:700;line-height:1.2;margin-top:2px}
+.tile .sub{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* stars as pips */
+.pips{display:inline-flex;gap:2px;vertical-align:middle}
+.pips i{width:9px;height:9px;border-radius:2px;background:var(--line-2);display:block}
+.pips i.f{background:var(--ink)}
+.pips.lg i{width:14px;height:14px;border-radius:3px}
+.rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;line-height:1.5}
+.chip.bad{color:var(--bad);background:var(--bad-wash);border-color:transparent}
+.chip.warn{color:var(--warn);background:var(--warn-wash);border-color:transparent}
+.chip.good{color:var(--good);background:var(--good-wash);border-color:transparent}
+.chip.plain{color:var(--ink-2);background:var(--panel);border-color:transparent}
+.delta{font-size:13px;font-weight:600}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.same{color:var(--muted)}
+
+/* table */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.filters select,.filters input[type=text]{padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--bg);max-width:100%}
+.filters label{font-size:13px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--panel);position:sticky;top:0;white-space:nowrap}
+th.sort{cursor:pointer;user-select:none}
+th.sort:hover{color:var(--ink)}
+th .arr{color:var(--accent)}
+td.r,th.r{text-align:right}
+tbody tr:hover{background:var(--panel)}
+tr.click{cursor:pointer}
+td .nm{font-weight:600;color:var(--ink)}
+td.desc{min-width:260px}
+td.home{min-width:150px}
+td .sub{font-size:12px;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+
+/* charts */
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .axis text{fill:var(--muted);font-size:11px;font-family:var(--f-ui)}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .base{stroke:var(--line-2);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r);padding:7px 9px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.14);z-index:5;min-width:120px;white-space:nowrap}
+.tip .t{color:var(--muted);margin-bottom:3px}
+.tip .row{display:flex;align-items:center;gap:6px}
+.tip .row b{font-variant-numeric:tabular-nums}
+.tip .key{width:12px;height:2px;border-radius:1px;display:inline-block}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:4px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .ln{width:14px;height:2px;border-radius:1px}
+.legend .bx{width:10px;height:10px;border-radius:2px}
+.legend .mk{width:1px;height:12px;background:var(--ink-2)}
+.chart-title{font-weight:600;font-size:14px}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* facility page */
+.back{display:inline-block;margin-top:18px;font-size:14px;text-decoration:none}
+.fac-head{margin-top:10px;display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between}
+.fac-head .meta{color:var(--ink-2);font-size:14px;margin-top:6px}
+.fac-head .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+dl.kv{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.survey{border-top:1px solid var(--line);padding:12px 0}
+.survey:first-child{border-top:0;padding-top:0}
+.survey-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.survey ul{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px}
+.survey li{display:grid;grid-template-columns:54px 1fr;gap:10px;font-size:14px}
+.sev{font-weight:700;text-align:center;border-radius:4px;padding:1px 0;font-size:13px;height:fit-content}
+.sev.s1{background:var(--panel);color:var(--ink-2)}
+.sev.s2{background:var(--warn-wash);color:var(--warn)}
+.sev.s3,.sev.s4{background:var(--bad-wash);color:var(--bad)}
+.sev.s4{outline:1.5px solid var(--bad);outline-offset:-1.5px}
+.timeline{display:grid;gap:8px}
+.tl-row{display:grid;grid-template-columns:150px 1fr;gap:12px;font-size:14px}
+.seg{display:flex;flex-direction:column}
+.morebtn{margin-top:10px;background:none;border:1px solid var(--line-2);border-radius:var(--r);padding:6px 12px;cursor:pointer}
+.morebtn:hover{background:var(--panel)}
+.seg-ctl{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden}
+.seg-ctl button{border:0;background:none;padding:5px 10px;cursor:pointer;font-size:13px}
+.seg-ctl button.on{background:var(--accent-wash);color:var(--accent);font-weight:600}
+.sev-key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2);margin:6px 0 12px}
+.sev-key span{display:inline-flex;gap:6px;align-items:center}
+.sev-key .sev{width:30px}
+footer{margin-top:48px;border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:var(--muted)}
+footer p{max-width:90ch}
+@media (max-width:560px){
+  .tl-row{grid-template-columns:1fr;gap:2px}
+  .tile .val{font-size:24px}
+  .survey li{grid-template-columns:44px 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" id="brand"><b>Rhode Island Nursing Homes</b><span id="asof">CMS data</span></a>
+    <nav class="tabs" aria-label="Views">
+      <a href="#home" id="tab-home">All homes</a>
+      <a href="#owners" id="tab-owners">Owner groups</a>
+      <a href="#about" id="tab-about">About the data</a>
+    </nav>
+    <div class="search">
+      <input id="q" type="search" placeholder="Find a home by name, former name, or town" autocomplete="off" aria-label="Find a nursing home">
+      <div class="sugg" id="sugg" hidden></div>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+
+<script src="data.js"></script>
+<script>
+(function(){
+"use strict";
+const D = window.RINH_DATA;
+const M = D.months;                       // 'YYYY-MM'
+const LATEST = D.meta.latest;
+const LI = M.indexOf(LATEST);
+const FAC = D.facilities;
+const byCCN = {}; FAC.forEach(f => { if (f.ccn) byCCN[f.ccn] = f; });
+const MET = {}; D.metrics.forEach(m => MET[m.key] = m);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// ---------- helpers
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs){
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)){ if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return el;
+}
+const svgNS = "http://www.w3.org/2000/svg";
+function s(tag, attrs){ const el = document.createElementNS(svgNS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); return el; }
+const num = v => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
+const mlabel = m => m ? MON[+m.slice(5,7)-1] + " " + m.slice(0,4) : "";
+const dlabel = d => { if (!d) return ""; const [y,mo,da] = d.split("-"); return MON[+mo-1] + " " + (+da) + ", " + y; };
+const fmt = (v, dp=2) => v == null ? "–" : (+v).toLocaleString("en-US", {minimumFractionDigits:dp, maximumFractionDigits:dp});
+const money = v => v == null ? "–" : "$" + Math.round(v).toLocaleString("en-US");
+const mi = m => +m.slice(0,4)*12 + (+m.slice(5,7)-1);
+const phone = p => { p = String(p||"").replace(/\D/g,""); return p.length===10 ? `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}` : p; };
+const ser = (ccn, key) => (D.series[ccn] && D.series[ccn][key]) || [];
+const at = (ccn, key, i) => { const a = ser(ccn,key); return i>=0 && i<a.length ? a[i] : null; };
+function lastVal(arr){ for (let i=arr.length-1;i>=0;i--) if (arr[i]!=null) return [arr[i], i]; return [null,-1]; }
+function idxMonthsAgo(n){ const t = mi(LATEST)-n; let best=-1; M.forEach((m,i)=>{ if (mi(m)<=t) best=i; }); return best; }
+const I12 = idxMonthsAgo(12), I36 = idxMonthsAgo(36);
+function riAvg(key){ const a = D.avg.RI && D.avg.RI[key]; const c = D.avg.RI_calc && D.avg.RI_calc[key];
+  if (!a) return c || []; return a.map((v,i)=> v!=null ? v : (c ? c[i] : null)); }
+function usAvg(key){ return (D.avg.NATION && D.avg.NATION[key]) || []; }
+function pips(r, lg){ const w = h("span",{class:"pips"+(lg?" lg":""), "aria-hidden":"true"}); for (let i=1;i<=5;i++) w.append(h("i",{class: r!=null && i<=r ? "f":""})); return w; }
+function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
+function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
+const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
+function delta(now, then, better, dp=0, unit=""){
+  if (now==null || then==null) return null;
+  const d = now - then; if (Math.abs(d) < (dp? 0.005 : 0.5)) return h("span",{class:"delta same",text:"no change"});
+  const good = better==="up" ? d>0 : better==="down" ? d<0 : null;
+  return h("span",{class:"delta " + (good==null ? "same" : good ? "up" : "down"), text:(d>0?"▲ +":"▼ ") + fmt(d,dp).replace("-","") + unit});
+}
+
+// 3-year counts
+const CUT3 = (+LATEST.slice(0,4)-3) + LATEST.slice(4) + "-01";
+const STATS = {};
+FAC.forEach(f => {
+  if (!f.ccn) return;
+  const c = (D.citations[f.ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7]);
+  const p = (D.penalties[f.ccn]||[]).filter(r => r[0] >= CUT3 && r[5]===1);
+  STATS[f.ccn] = {
+    cit3: c.length, harm3: c.filter(r => "GHIJKL".includes(r[2])).length, ij3: c.filter(r=>"JKL".includes(r[2])).length,
+    compl3: c.filter(r=>r[3]).length, fines3: p.filter(r=>r[1]==="Fine").reduce((a,r)=>a+(r[2]||0),0), nfines3: p.filter(r=>r[1]==="Fine").length
+  };
+});
+// operator-name changes (likely ownership changes)
+function operatorChanges(ccn){
+  const L = (D.names[ccn]||[]).filter(r=>r[0]==="L").sort((a,b)=>a[2]<b[2]?-1:1);
+  return L.slice(1).map(r => ({month:r[2], label:"New operator name: " + r[1]}));
+}
+
+// ---------- charts
+let tipEl = null;
+function lineChart(opts){
+  // opts: {series:[{name,color,values,width,dash}], dp, height, yMin, yMax, markers:[{month,label}], fromIdx, unit}
+  const box = h("div",{class:"chart"});
+  const legend = h("div",{class:"legend"});
+  if (opts.series.length > 1 || (opts.markers||[]).length){
+    opts.series.forEach(sr => legend.append(h("span",null, h("i",{class:"ln", style:`background:${sr.color}`}), sr.name)));
+    if ((opts.markers||[]).length) legend.append(h("span",null, h("i",{class:"mk"}), "New operator name"));
+  }
+  const wrap = h("div",null, legend, box);
+  const draw = () => {
+    box.textContent = "";
+    const W = Math.max(280, box.clientWidth || 600), H = opts.height || 220;
+    const pad = {l:40, r:12, t:10, b:24};
+    let i0 = opts.fromIdx != null ? opts.fromIdx : M.length, i1 = 0;
+    opts.series.forEach(sr => sr.values.forEach((v,i)=>{ if (v!=null){ if (opts.fromIdx==null) i0 = Math.min(i0,i); i1 = Math.max(i1,i);} }));
+    if (i1 <= i0){ box.append(h("div",{class:"small",text:"No data for this measure."})); return; }
+    i1 = Math.max(i1, LI);
+    const t0 = mi(M[i0]), t1 = mi(M[i1]);
+    let lo = Infinity, hi = -Infinity;
+    opts.series.forEach(sr => sr.values.forEach((v,i)=>{ if (v!=null && i>=i0){ lo=Math.min(lo,v); hi=Math.max(hi,v);} }));
+    if (opts.yMin!=null) lo = opts.yMin; else lo = Math.min(0, lo);
+    if (opts.yMax!=null) hi = Math.max(opts.yMax, hi);
+    // nice ticks
+    const span = hi - lo || 1, raw = span/4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1,2,2.5,5,10].map(x=>x*mag).find(x => span/x <= 5) || mag*10;
+    if (opts.yMax==null) hi = Math.ceil(hi/step)*step;
+    lo = Math.floor(lo/step)*step;
+    const X = t => pad.l + (W-pad.l-pad.r) * (t - t0) / Math.max(1, (t1 - t0));
+    const Y = v => pad.t + (H-pad.t-pad.b) * (1 - (v - lo)/((hi-lo)||1));
+    const svg = s("svg",{viewBox:`0 0 ${W} ${H}`, width:"100%", role:"img", "aria-label": opts.aria || "Line chart"});
+    const g = s("g",{class:"grid"}), ax = s("g",{class:"axis"});
+    for (let v=lo; v<=hi+1e-9; v+=step){
+      g.append(s("line",{x1:pad.l, x2:W-pad.r, y1:Y(v), y2:Y(v)}));
+      const t = s("text",{x:pad.l-6, y:Y(v)+3.5, "text-anchor":"end"}); t.textContent = (opts.tickFmt||(x=>+x.toFixed(2)))(v); ax.append(t);
+    }
+    const y0 = +M[i0].slice(0,4), y1_ = +M[i1].slice(0,4);
+    const every = (y1_-y0) > 6 ? 2 : 1;
+    for (let y=y0+ (mi(M[i0])%12===0?0:1); y<=y1_; y+=every){
+      const x = X(y*12); if (x < pad.l-1 || x > W-pad.r+1) continue;
+      g.append(s("line",{x1:x,x2:x,y1:pad.t,y2:H-pad.b}));
+      const t = s("text",{x:x, y:H-6, "text-anchor":"middle"}); t.textContent = y; ax.append(t);
+    }
+    svg.append(g, ax);
+    (opts.markers||[]).forEach(mk => { const k = mi(mk.month); if (k<t0||k>t1) return;
+      const x = X(k); svg.append(s("line",{x1:x,x2:x,y1:pad.t,y2:H-pad.b,stroke:"var(--ink-2)","stroke-width":1}));
+    });
+    opts.series.forEach(sr => {
+      let d = "", prev = null;
+      const singles = [];
+      sr.values.forEach((v,i) => {
+        if (i < i0 || v == null) return;
+        const t = mi(M[i]);
+        const gap = prev != null && (t - prev) > 3;
+        d += (d === "" || gap ? "M" : "L") + X(t).toFixed(1) + "," + Y(v).toFixed(1);
+        prev = t;
+      });
+      // isolated points (no neighbor within 3 months)
+      const pts = sr.values.map((v,i)=> (i>=i0 && v!=null) ? mi(M[i]) : null);
+      pts.forEach((t,i) => { if (t==null) return; const near = pts.some((u,j)=> j!==i && u!=null && Math.abs(u-t)<=3); if (!near) singles.push([t, sr.values[i]]); });
+      if (d) svg.append(s("path",{d, fill:"none", stroke:sr.color, "stroke-width":sr.width||2, "stroke-linejoin":"round","stroke-linecap":"round"}));
+      singles.forEach(([t,v]) => svg.append(s("circle",{cx:X(t), cy:Y(v), r:3.5, fill:sr.color, stroke:"var(--bg)", "stroke-width":2})));
+      const [lv, li] = lastVal(sr.values);
+      if (lv!=null && li>=i0 && sr.endDot!==false) svg.append(s("circle",{cx:X(mi(M[li])), cy:Y(lv), r:4, fill:sr.color, stroke:"var(--bg)","stroke-width":2}));
+    });
+    // hover layer
+    const cross = s("line",{y1:pad.t, y2:H-pad.b, stroke:"var(--ink-2)", "stroke-width":1, opacity:0});
+    const dots = opts.series.map(sr => { const c = s("circle",{r:4, fill:sr.color, stroke:"var(--bg)","stroke-width":2, opacity:0}); svg.append(c); return c; });
+    svg.append(cross);
+    const hit = s("rect",{x:pad.l, y:pad.t, width:W-pad.l-pad.r, height:H-pad.t-pad.b, fill:"transparent"});
+    svg.append(hit);
+    const tip = h("div",{class:"tip", hidden:true});
+    const avail = []; for (let i=i0;i<=i1;i++) if (opts.series.some(sr=>sr.values[i]!=null)) avail.push(i);
+    const move = ev => {
+      const r = svg.getBoundingClientRect(); const sx = (ev.clientX - r.left) * W / r.width;
+      const t = t0 + (sx - pad.l) / (W-pad.l-pad.r) * (t1-t0);
+      let best = avail[0]; avail.forEach(i => { if (Math.abs(mi(M[i])-t) < Math.abs(mi(M[best])-t)) best = i; });
+      const x = X(mi(M[best])); cross.setAttribute("x1",x); cross.setAttribute("x2",x); cross.setAttribute("opacity",1);
+      tip.textContent = ""; tip.append(h("div",{class:"t",text:mlabel(M[best])}));
+      opts.series.forEach((sr,k) => { const v = sr.values[best];
+        if (v==null){ dots[k].setAttribute("opacity",0); return; }
+        dots[k].setAttribute("cx",x); dots[k].setAttribute("cy",Y(v)); dots[k].setAttribute("opacity",1);
+        tip.append(h("div",{class:"row"}, h("i",{class:"key",style:`background:${sr.color}`}), h("b",{text:fmt(v, opts.dp==null?2:opts.dp) + (opts.unit||"")}), h("span",{class:"small",text:sr.name})));
+      });
+      (opts.markers||[]).forEach(mk => { if (Math.abs(mi(mk.month)-mi(M[best]))<=1) tip.append(h("div",{class:"small",text:mk.label})); });
+      tip.hidden = false;
+      const bw = box.clientWidth, px = x * r.width / W;
+      tip.style.left = Math.min(Math.max(0, px + 12), bw - tip.offsetWidth) + "px";
+      tip.style.top = "8px";
+      if (px + 12 + tip.offsetWidth > bw) tip.style.left = Math.max(0, px - tip.offsetWidth - 12) + "px";
+    };
+    const leave = () => { tip.hidden = true; cross.setAttribute("opacity",0); dots.forEach(d=>d.setAttribute("opacity",0)); };
+    hit.addEventListener("pointermove", move); hit.addEventListener("pointerleave", leave);
+    box.append(svg, tip);
+  };
+  requestAnimationFrame(draw);
+  new ResizeObserver(() => draw()).observe(box);
+  return wrap;
+}
+
+function barChart(opts){
+  // opts: {cats:[], series:[{name,color,values}], stacked:true, height, fmtV}
+  const box = h("div",{class:"chart"});
+  const legend = h("div",{class:"legend"});
+  if (opts.series.length>1) opts.series.forEach(sr => legend.append(h("span",null,h("i",{class:"bx",style:`background:${sr.color}`}), sr.name)));
+  const wrap = h("div",null,legend,box);
+  const fv = opts.fmtV || (v => Math.round(v).toLocaleString("en-US"));
+  const draw = () => {
+    box.textContent = "";
+    const W = Math.max(260, box.clientWidth||500), H = opts.height||200, pad={l:44,r:8,t:12,b:24};
+    const n = opts.cats.length; if (!n){ box.append(h("div",{class:"small",text:"None on record."})); return; }
+    const tot = opts.cats.map((_,i)=> opts.series.reduce((a,sr)=>a+(sr.values[i]||0),0));
+    let hi = Math.max(1, ...tot);
+    const raw = hi/4, mag = Math.pow(10,Math.floor(Math.log10(raw))); const step = [1,2,2.5,5,10].map(x=>x*mag).find(x=>hi/x<=5);
+    hi = Math.ceil(hi/step)*step;
+    const bw = (W-pad.l-pad.r)/n, barW = Math.min(24, bw*0.6);
+    const Y = v => pad.t + (H-pad.t-pad.b)*(1-v/hi);
+    const svg = s("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img","aria-label":opts.aria||"Bar chart"});
+    const g = s("g",{class:"grid"}), ax = s("g",{class:"axis"});
+    for (let v=0; v<=hi+1e-9; v+=step){ g.append(s("line",{x1:pad.l,x2:W-pad.r,y1:Y(v),y2:Y(v)}));
+      const t=s("text",{x:pad.l-6,y:Y(v)+3.5,"text-anchor":"end"}); t.textContent = (opts.tickFmt||(x=>x>=1000? (x/1000)+"K": x))(v); ax.append(t); }
+    svg.append(g, ax);
+    const tip = h("div",{class:"tip",hidden:true});
+    opts.cats.forEach((c,i) => {
+      const cx = pad.l + bw*i + bw/2;
+      const t=s("text",{x:cx,y:H-6,"text-anchor":"middle"}); t.textContent = c; ax.append(t);
+      let base = 0; const segs = [];
+      opts.series.forEach((sr,k) => {
+        const v = sr.values[i]||0; if (!v) return;
+        const y0 = Y(base), y1 = Y(base+v); base += v;
+        const top = k === opts.series.length-1 || opts.series.slice(k+1).every(o=>!(o.values[i]));
+        const hgt = Math.max(0, y0-y1 - (base>v?2:0));
+        const x = cx-barW/2, y = y1;
+        const r = top ? Math.min(4, hgt/2) : 0;
+        const p = top
+          ? `M${x},${y+hgt}V${y+r}Q${x},${y} ${x+r},${y}H${x+barW-r}Q${x+barW},${y} ${x+barW},${y+r}V${y+hgt}Z`
+          : `M${x},${y}H${x+barW}V${y+hgt}H${x}Z`;
+        segs.push(s("path",{d:p, fill:sr.color}));
+      });
+      segs.forEach(p=>svg.append(p));
+      const hit = s("rect",{x:pad.l+bw*i, y:pad.t, width:bw, height:H-pad.t-pad.b, fill:"transparent", tabindex:0});
+      const show = () => { tip.textContent=""; tip.append(h("div",{class:"t",text:String(c)}));
+        opts.series.forEach(sr => tip.append(h("div",{class:"row"},h("i",{class:"key",style:`background:${sr.color}`}),h("b",{text:fv(sr.values[i]||0)}),h("span",{class:"small",text:sr.name}))));
+        if (opts.extra) tip.append(h("div",{class:"small",text:opts.extra(i)}));
+        tip.hidden=false; const r = svg.getBoundingClientRect(); const px = cx*r.width/W;
+        tip.style.left = Math.min(Math.max(0,px+10), box.clientWidth - tip.offsetWidth)+"px"; tip.style.top="4px";
+        if (px+10+tip.offsetWidth > box.clientWidth) tip.style.left = Math.max(0, px - tip.offsetWidth - 10)+"px"; };
+      hit.addEventListener("pointerenter", show); hit.addEventListener("focus", show);
+      hit.addEventListener("pointerleave", ()=>tip.hidden=true); hit.addEventListener("blur", ()=>tip.hidden=true);
+      svg.append(hit);
+    });
+    svg.append(s("line",{class:"base",x1:pad.l,x2:W-pad.r,y1:Y(0),y2:Y(0)}));
+    box.append(svg, tip);
+  };
+  requestAnimationFrame(draw);
+  new ResizeObserver(()=>draw()).observe(box);
+  return wrap;
+}
+
+// ---------- search
+const qEl = document.getElementById("q"), sugg = document.getElementById("sugg");
+const searchIndex = FAC.map(f => ({f, text:(f.name+" "+(f.former_names||"")+" "+(f.city||"")+" "+((f.x||{}).owner_group||"")+" "+(f.cms_chain||"")+" "+(f.legal_business_name||"")).toLowerCase()}));
+let suggIdx = -1, suggList = [];
+function renderSugg(){
+  const q = qEl.value.trim().toLowerCase();
+  sugg.textContent = ""; suggIdx = -1;
+  if (q.length < 2){ sugg.hidden = true; return; }
+  const words = q.split(/\s+/);
+  suggList = searchIndex.filter(x => words.every(w => x.text.includes(w))).slice(0,12).map(x=>x.f);
+  if (!suggList.length){ sugg.append(h("div",{class:"small",style:"padding:8px 12px",text:"No homes match."})); sugg.hidden=false; return; }
+  suggList.forEach((f,i) => sugg.append(h("button",{type:"button", onclick:()=>go(f)}, f.name, h("small",{text:[f.city, f.status!=="Open"?f.status:"", f.former_names? "Formerly: "+f.former_names.split("; ")[0]:""].filter(Boolean).join(" · ")}))));
+  sugg.hidden = false;
+}
+function go(f){ sugg.hidden = true; qEl.value = ""; if (f.ccn) location.hash = "f-" + f.ccn; else { location.hash = "home"; } }
+qEl.addEventListener("input", renderSugg);
+qEl.addEventListener("keydown", e => {
+  const btns = [...sugg.querySelectorAll("button")];
+  if (e.key==="ArrowDown"){ suggIdx = Math.min(btns.length-1, suggIdx+1); e.preventDefault(); }
+  else if (e.key==="ArrowUp"){ suggIdx = Math.max(0, suggIdx-1); e.preventDefault(); }
+  else if (e.key==="Enter"){ if (suggList.length) go(suggList[Math.max(0,suggIdx)]); return; }
+  else if (e.key==="Escape"){ sugg.hidden = true; return; } else return;
+  btns.forEach((b,i)=>b.classList.toggle("on", i===suggIdx));
+});
+document.addEventListener("click", e => { if (!e.target.closest(".search")) sugg.hidden = true; });
+
+// ---------- views
+const app = document.getElementById("app");
+document.getElementById("asof").textContent = "CMS data through the " + D.meta.latest_label + " release";
+const state = {sort:"name", dir:1, city:"", group:"", minStars:"", showClosed:false, text:""};
+try { const sv = JSON.parse(localStorage.getItem("rinh-state")||"null"); if (sv) Object.assign(state, sv); } catch(e){}
+function saveState(){ try { localStorage.setItem("rinh-state", JSON.stringify(state)); } catch(e){} }
+
+function tile(label, value, sub){ return h("div",{class:"card tile"}, h("div",{class:"label",text:label}), h("div",{class:"val num"}, value), sub ? h("div",{class:"sub"}, sub) : null); }
+
+function viewHome(){
+  const open = FAC.filter(f=>f.status==="Open");
+  const beds = open.reduce((a,f)=>a+(num(f.beds)||0),0), res = open.reduce((a,f)=>a+(num(f.residents)||0),0);
+  const riH = riAvg("hprd"), usH = usAvg("hprd");
+  const [riHv, riHi] = lastVal(riH), [usHv] = lastVal(usH);
+  const ovr = open.map(f=>at(f.ccn,"overall",LI)).filter(v=>v!=null);
+  const low = ovr.filter(v=>v<=2).length;
+  const turn = riAvg("turnover"), [riT] = lastVal(turn), [usT] = lastVal(usAvg("turnover"));
+  const cy = D.statewide.cit_by_year;
+  const yrs = Object.keys(cy).filter(y=>+y>=2019).sort();
+  const harmRecent = yrs.length ? cy[yrs[yrs.length-1]] : null;
+
+  app.append(
+    h("section",null,
+      h("h1",{text:"Rhode Island nursing homes"}),
+      h("p",{class:"lede",text:`Ratings, staffing, inspections, fines, and owners for every Medicare- and Medicaid-certified nursing home in Rhode Island, from federal CMS data going back to 2019. Search for a home above, or sort the full list below.`})
+    ),
+    h("section",null, h("div",{class:"grid g4"},
+      tile("Homes open now", String(open.length), `${Math.round(beds).toLocaleString()} certified beds, about ${Math.round(res).toLocaleString()} residents a day`),
+      tile("Rated 1 or 2 stars overall", `${low} of ${ovr.length}`, `${Math.round(low/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
+      tile("Nurse staff hours per resident per day", fmt(riHv), h("span",null, `RI average vs ${fmt(usHv)} nationally`)),
+      tile("Nursing staff turnover", fmt(riT,1)+"%", `RI average vs ${fmt(usT,1)}% nationally`)
+    )),
+    h("section",null,
+      h("div",{class:"sec-head"}, h("div",null,h("h2",{text:"How Rhode Island has changed"}),h("p",{class:"small",style:"margin:0",text:"Statewide averages, each CMS monthly release."}))),
+      h("div",{class:"grid g2"},
+        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Nurse staff hours per resident per day"}),
+          lineChart({series:[{name:"Rhode Island",color:"var(--s1)",values:riH},{name:"United States",color:"var(--ref)",values:usH}], dp:2, fromIdx:M.indexOf("2019-01"), aria:"Nurse staffing, RI vs US"})),
+        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Nursing staff turnover (%)"}),
+          lineChart({series:[{name:"Rhode Island",color:"var(--s1)",values:turn},{name:"United States",color:"var(--ref)",values:usAvg("turnover")}], dp:1, unit:"%", aria:"Turnover RI vs US"})),
+        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Average overall star rating, RI homes"}),
+          lineChart({series:[{name:"RI average",color:"var(--s1)",values:D.avg.RI_calc.overall}], dp:2, yMin:1, yMax:5, fromIdx:M.indexOf("2019-01"), aria:"Average star rating"})),
+        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health inspection citations by year, all RI homes"}),
+          barChart({cats:yrs.map(y=> y===LATEST.slice(0,4) ? y+"*" : y),
+            series:[{name:"No actual harm",color:"var(--s1)",values:yrs.map(y=>cy[y][0]-cy[y][2])},{name:"Actual harm or immediate jeopardy",color:"var(--s2)",values:yrs.map(y=>cy[y][2])}],
+            extra:i=>`${cy[yrs[i]][1]} from complaints · ${cy[yrs[i]][3]} immediate jeopardy`, aria:"Citations by year"}),
+          h("div",{class:"note",text:`* ${LATEST.slice(0,4)} is a partial year. Counts are what CMS published; inspections slowed sharply in 2020 during COVID.`}))
+      )
+    )
+  );
+
+  // recent serious citations
+  const serious = [];
+  FAC.forEach(f => (D.citations[f.ccn]||[]).forEach(r => { if ("GHIJKL".includes(r[2]) && r[5]==="H" && r[7]) serious.push([f, r]); }));
+  serious.sort((a,b)=> a[1][0] < b[1][0] ? 1 : -1);
+  const top = serious.slice(0, 8);
+  app.append(h("section",null,
+    h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Most recent harm citations"}), h("p",{class:"small",style:"margin:0",text:"Citations where inspectors found residents were actually harmed or in immediate jeopardy."}))),
+    h("div",{class:"tbl-wrap"}, h("table",null,
+      h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}))),
+      h("tbody",null, top.map(([f,r]) => { const sc = sevClass(r[2]);
+        return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
+          h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
+          h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
+          h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
+          h("td",{class:"desc",text:(D.tags[r[1]]||[""])[0]})); }))
+    ))
+  ));
+
+  // table of homes
+  app.append(homesTable());
+}
+
+function homesTable(){
+  const sec = h("section",{id:"list"});
+  const cities = [...new Set(FAC.filter(f=>f.city).map(f=>f.city))].sort();
+  const groups = [...new Set(FAC.map(f=>(f.x||{}).owner_group).filter(Boolean))].sort();
+  const cols = [
+    {k:"name", t:"Home", get:f=>f.name},
+    {k:"group", t:"Owner group", get:f=>(f.x||{}).owner_group||""},
+    {k:"overall", t:"Overall", r:1, get:f=>at(f.ccn,"overall",LI)},
+    {k:"health", t:"Inspections", r:1, get:f=>at(f.ccn,"health",LI)},
+    {k:"staffing", t:"Staffing", r:1, get:f=>at(f.ccn,"staffing",LI)},
+    {k:"qm", t:"Quality", r:1, get:f=>at(f.ccn,"qm",LI)},
+    {k:"hprd", t:"Nurse hrs/res/day", r:1, get:f=>lastVal(ser(f.ccn,"hprd"))[0]},
+    {k:"rn", t:"RN hrs", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
+    {k:"turn", t:"Turnover", r:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
+    {k:"harm", t:"Harm citations (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].harm3 : null},
+    {k:"fines", t:"Fines (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].fines3 : null},
+    {k:"beds", t:"Beds", r:1, get:f=>num(f.beds)},
+  ];
+  const tbody = h("tbody"), thead = h("thead"), count = h("span",{class:"small"});
+  const city = h("select",{id:"f-city","aria-label":"Town"}, h("option",{value:"",text:"All towns"}), cities.map(c=>h("option",{value:c,text:c})));
+  const group = h("select",{id:"f-group","aria-label":"Owner group"}, h("option",{value:"",text:"All owner groups"}), groups.map(c=>h("option",{value:c,text:c})));
+  const stars = h("select",{id:"f-stars","aria-label":"Overall rating"}, h("option",{value:"",text:"Any rating"}), [5,4,3,2,1].map(n=>h("option",{value:n,text:n===5?"5 stars":n+"+ stars"})), h("option",{value:"low",text:"1 or 2 stars"}));
+  const closed = h("input",{type:"checkbox",id:"f-closed"});
+  city.value = state.city; group.value = state.group; stars.value = state.minStars; closed.checked = state.showClosed;
+  [city,group,stars].forEach(el=>el.addEventListener("change",()=>{ state.city=city.value; state.group=group.value; state.minStars=stars.value; saveState(); render(); }));
+  closed.addEventListener("change",()=>{ state.showClosed = closed.checked; saveState(); render(); });
+  function render(){
+    thead.textContent = "";
+    thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), tabindex:0, "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none",
+      onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); },
+      onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, c.t, state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
+    let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open"));
+    if (state.city) rows = rows.filter(f=>f.city===state.city);
+    if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
+    if (state.minStars){ rows = rows.filter(f=>{ const v = at(f.ccn,"overall",LI); return state.minStars==="low" ? (v!=null && v<=2) : (v!=null && v>=+state.minStars); }); }
+    const col = cols.find(c=>c.k===state.sort) || cols[0];
+    rows.sort((a,b)=>{ const x = col.get(a), y = col.get(b);
+      if (x==null && y==null) return a.name.localeCompare(b.name); if (x==null) return 1; if (y==null) return -1;
+      return (typeof x === "string" ? x.localeCompare(y) : x - y) * state.dir || a.name.localeCompare(b.name); });
+    tbody.textContent = "";
+    rows.forEach(f => {
+      const st = STATS[f.ccn] || {};
+      const flags = [];
+      const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",text:sff==="SFF"?"Special Focus":"SFF candidate"}));
+      if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
+      if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
+      tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
+        h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})), h("div",{class:"sub",text:f.city}), flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
+        h("td",{class:"small",text:(f.x||{}).owner_group||""}),
+        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI)))),
+        h("td",{class:"r num",text:fmt(cols[6].get(f))}),
+        h("td",{class:"r num",text:fmt(cols[7].get(f))}),
+        h("td",{class:"r num",text:cols[8].get(f)==null?"–":fmt(cols[8].get(f),1)+"%"}),
+        h("td",{class:"r num",text:st.harm3==null?"–":String(st.harm3)}),
+        h("td",{class:"r num",text:st.fines3==null?"–":money(st.fines3)}),
+        h("td",{class:"r num",text:f.beds==null?"–":String(Math.round(f.beds))})
+      ));
+    });
+    count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
+  }
+  sec.append(
+    h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
+    h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
+    h("div",{class:"tbl-wrap"}, h("table",null, thead, tbody))
+  );
+  render();
+  return sec;
+}
+
+function viewOwners(){
+  const open = FAC.filter(f=>f.status==="Open");
+  const groups = {};
+  open.forEach(f => { const g = (f.x||{}).owner_group || "(not set)"; (groups[g] = groups[g] || []).push(f); });
+  const rows = Object.entries(groups).map(([g, fs]) => {
+    const avg = k => { const v = fs.map(f=> k==="overall" ? at(f.ccn,"overall",LI) : lastVal(ser(f.ccn,k))[0]).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+    return {g, fs, n:fs.length, beds:fs.reduce((a,f)=>a+(num(f.beds)||0),0), overall:avg("overall"), hprd:avg("hprd"), rn:avg("rn_hprd"), turn:avg("turnover"),
+      harm: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).harm3||0),0), ij: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).ij3||0),0), fines: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).fines3||0),0)};
+  }).sort((a,b)=> b.n - a.n || a.g.localeCompare(b.g));
+  const tb = h("tbody");
+  rows.forEach(r => {
+    const tr = h("tr",null,
+      h("td",null, h("div",{class:"nm",text:r.g}), h("div",{class:"sub"}, r.fs.map((f,i)=>[i?", ":"", h("a",{href:"#f-"+f.ccn,text:f.name})]))),
+      h("td",{class:"r num",text:r.n}), h("td",{class:"r num",text:Math.round(r.beds)}),
+      h("td",{class:"r num",text:fmt(r.overall,1)}), h("td",{class:"r num",text:fmt(r.hprd)}), h("td",{class:"r num",text:fmt(r.rn)}),
+      h("td",{class:"r num",text:r.turn==null?"–":fmt(r.turn,1)+"%"}),
+      h("td",{class:"r num",text:fmt(r.harm/r.n,1)}), h("td",{class:"r num",text:r.ij}), h("td",{class:"r num",text:money(r.fines)}));
+    tb.append(tr);
+  });
+  app.append(
+    h("section",null, h("h1",{text:"Owner groups"}),
+      h("p",{class:"lede",text:"Open homes grouped by who runs them. Groups are ABC-RI's reading of CMS ownership records and state filings; CMS's own chain names can differ. Averages are simple averages across the group's homes; citation and fine totals cover the last three years, including any time before the current owner took over."})),
+    h("section",null, h("div",{class:"tbl-wrap"}, h("table",null,
+      h("thead",null,h("tr",null, h("th",{text:"Owner group and homes"}), h("th",{class:"r",text:"Homes"}), h("th",{class:"r",text:"Beds"}), h("th",{class:"r",text:"Avg overall stars"}),
+        h("th",{class:"r",text:"Avg nurse hrs"}), h("th",{class:"r",text:"Avg RN hrs"}), h("th",{class:"r",text:"Avg turnover"}), h("th",{class:"r",text:"Harm citations per home (3 yrs)"}),
+        h("th",{class:"r",text:"Immediate jeopardy (3 yrs)"}), h("th",{class:"r",text:"Fines (3 yrs)"}))), tb)))
+  );
+}
+
+function viewAbout(){
+  const gaps = []; for (let t = mi("2019-01"); t <= mi(LATEST); t++){ const m = Math.floor(t/12)+"-"+String(t%12+1).padStart(2,"0"); if (!M.includes(m)) gaps.push(mlabel(m)); }
+  const P = (t)=>h("p",{text:t});
+  app.append(h("section",{style:"max-width:75ch"},
+    h("h1",{text:"About the data"}),
+    P(`Everything here comes from the Centers for Medicare & Medicaid Services (CMS) Care Compare nursing home files, which CMS publishes every month. This site keeps every monthly release since January 2019, so you can see how a home has changed over time, not just where it stands today. The newest data is from the ${D.meta.latest_label} release.`),
+    h("h2",{text:"What the ratings mean",style:"margin-top:20px"}),
+    P("CMS rates each home from 1 to 5 stars. The overall rating starts from the health inspection rating, then moves up or down based on staffing and quality measures. Inspection ratings are based on the last few years of inspections, so a home's rating can lag behind recent changes."),
+    h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
+    h("div",{class:"sev-key"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
+    P("Within each group, a later letter means the problem affected more residents. Harm citations (G and above) are the most serious; immediate jeopardy (J and above) means residents faced serious injury or death."),
+    h("h2",{text:"Staffing",style:"margin-top:20px"}),
+    P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
+    h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
+    h("ul",null,
+      h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
+      h("li",{text:"Citations and fines from before about 2016 are incomplete, because the oldest releases here only reached back about three years."}),
+      h("li",{text:"\"New operator name\" marks on the charts show when the legal business name on file with CMS changed. That usually means a change of ownership or a new operating company, but sometimes it is only a rename. New owners often start managing a home before the sale is approved."}),
+      h("li",{text:"Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from other sources noted on each home's page."}),
+      h("li",{text:"A few Rhode Island nursing homes are not in CMS data at all (they are not certified for Medicare or Medicaid), so they aren't rated here."})
+    ),
+    h("h2",{text:"Sources",style:"margin-top:20px"}),
+    h("p",null, "CMS nursing home data archive: ", h("a",{href:"https://data.cms.gov/provider-data/archived-data/nursing-homes",target:"_blank",rel:"noopener",text:"data.cms.gov/provider-data/archived-data/nursing-homes"})),
+    h("p",null, "CMS Care Compare: ", h("a",{href:"https://www.medicare.gov/care-compare/",target:"_blank",rel:"noopener",text:"medicare.gov/care-compare"}))
+  ));
+}
+
+function viewFacility(ccn){
+  const f = byCCN[ccn]; if (!f){ app.append(h("p",{text:"Home not found."})); return; }
+  const x = f.x || {};
+  const st = STATS[ccn] || {};
+  const changes = operatorChanges(ccn);
+  const sffNow = ser(ccn,"sff")[LI], abuseNow = ser(ccn,"abuse")[LI];
+  const li = f.status === "Open" ? LI : M.indexOf(f.last_month);
+  const flags = [];
+  if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:f.status}));
+  if (sffNow) flags.push(h("span",{class:"chip bad",text: sffNow==="SFF" ? "Special Focus Facility (one of the worst-performing homes in the country)" : "Special Focus Facility candidate"}));
+  if (abuseNow) flags.push(h("span",{class:"chip bad",text:"CMS abuse icon: cited for abuse"}));
+  if (f.changed_ownership_flag_months && f.status==="Open" && (D.series[ccn] && true)){
+    const recent = changes.filter(c => mi(c.month) >= mi(LATEST)-12);
+    if (recent.length) flags.push(h("span",{class:"chip warn",text:"New operator in the past year"}));
+  }
+
+  app.append(
+    h("a",{class:"back",href:"#home",text:"← All homes"}),
+    h("div",{class:"fac-head"},
+      h("div",{style:"min-width:0;flex:1 1 420px"},
+        h("h1",{text:f.name}),
+        f.former_names ? h("div",{class:"meta",text:"Formerly: " + f.former_names}) : null,
+        h("div",{class:"meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ") + (f.phone ? " · " + phone(f.phone) : "")}),
+        h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+" certified beds" : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
+        flags.length ? h("div",{class:"flags"}, flags) : null
+      ),
+      h("div",{class:"card",style:"flex:0 1 360px;min-width:0"},
+        h("dl",{class:"kv"},
+          x.owner_group ? [h("dt",{text:"Owner group"}), h("dd",{text:x.owner_group})] : null,
+          f.cms_chain ? [h("dt",{text:"CMS chain"}), h("dd",{text:f.cms_chain + (f.chain_facilities ? ` (${f.chain_facilities} homes)` : "")})] : null,
+          f.legal_business_name ? [h("dt",{text:"Operator (legal name)"}), h("dd",{text:f.legal_business_name})] : null,
+          x.year_sold ? [h("dt",{text:"Sold / pending sale"}), h("dd",{text:x.year_sold})] : null,
+          x.property_owner ? [h("dt",{text:"Property owner"}), h("dd",{text:x.property_owner})] : null,
+          h("dt",{text:"CMS number"}), h("dd",{class:"num",text:ccn}),
+          x.ridoh_license_no ? [h("dt",{text:"RIDOH license"}), h("dd",{text:x.ridoh_license_no})] : null
+        ))
+    )
+  );
+
+  // rating tiles
+  const rt = (k, label) => {
+    const now = at(ccn,k,li), y1 = at(ccn,k,I12), y3 = at(ccn,k,I36);
+    return h("div",{class:"card tile"}, h("div",{class:"label",text:label}), h("div",{class:"val",style:"margin-top:6px"}, ratingEl(now,true)),
+      h("div",{class:"sub"}, y1!=null ? ["1 yr ago: ", String(y1), " "] : null, delta(now,y1,"up")),
+      h("div",{class:"sub"}, y3!=null ? "3 yrs ago: " + y3 : ""));
+  };
+  app.append(h("section",null,
+    h("div",{class:"sec-head"},h("h2",{text:"Star ratings"}), h("span",{class:"small",text: f.status==="Open" ? D.meta.latest_label + " release" : "As of " + mlabel(f.last_month)})),
+    h("div",{class:"grid g4"}, rt("overall","Overall"), rt("health","Health inspections"), rt("staffing","Staffing"), rt("qm","Quality measures"))));
+
+  // key numbers
+  const kn = (key, label, dp, unit, better) => {
+    const [v, i] = lastVal(ser(ccn,key)); const ri = riAvg(key)[i];
+    let sub = null;
+    if (v!=null && ri!=null){ const d = v - ri; const good = better==="up" ? d>0 : d<0;
+      sub = h("span",null, `RI average ${fmt(ri,dp)}${unit} · `, h("span",{class:"delta " + (Math.abs(d)<(dp?0.01:0.5)?"same": good?"up":"down"), text: Math.abs(d)<(dp?0.01:0.5) ? "about average" : (good ? "better than average" : "worse than average")})); }
+    return tile(label, v==null ? "–" : fmt(v,dp)+unit, h("span",null, sub, i>=0 && i!==li ? h("div",{text:"as of " + mlabel(M[i])}) : null));
+  };
+  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}),
+    h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
+      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"))));
+
+  // trend chart with selector
+  const trendKeys = [["overall","Overall rating"],["health","Inspection rating"],["staffing","Staffing rating"],["qm","Quality rating"],["hprd","Nurse hours"],["rn_hprd","RN hours"],["aide_hprd","Aide hours"],["wkend_hprd","Weekend nurse hours"],["turnover","Turnover"],["rn_turnover","RN turnover"],["residents","Residents per day"],["cmi","Case-mix index"]];
+  let tk = "overall";
+  const holder = h("div");
+  const ctl = h("select",{id:"trend-metric","aria-label":"Measure to chart"}, trendKeys.filter(([k])=>ser(ccn,k).some(v=>v!=null)).map(([k,l])=>h("option",{value:k,text:l})));
+  const drawTrend = () => {
+    holder.textContent = "";
+    const m = MET[tk]; const isStar = ["overall","health","staffing","qm"].includes(tk);
+    const series = [{name:f.name, color:"var(--s1)", values:ser(ccn,tk)}];
+    const ra = riAvg(tk); if (ra.some(v=>v!=null)) series.push({name:"RI average", color:"var(--s2)", values:ra, endDot:false});
+    const ua = usAvg(tk); if (!isStar && ua.some(v=>v!=null)) series.push({name:"US average", color:"var(--ref)", values:ua, endDot:false});
+    holder.append(h("div",{class:"small",text:m.label}),
+      lineChart({series, markers:changes, dp: isStar||tk==="residents" ? (isStar?0:1) : (tk.includes("turnover")?1:2), unit: tk.includes("turnover")?"%":"", yMin: isStar?1:undefined, yMax: isStar?5:undefined, height:240, aria:m.label+" over time"}));
+  };
+  ctl.addEventListener("change", ()=>{ tk = ctl.value; drawTrend(); });
+  app.append(h("section",null, h("div",{class:"sec-head"}, h("h2",{text:"Over time"}), ctl), h("div",{class:"card"}, holder)));
+  drawTrend();
+
+  // inspections
+  const cits = (D.citations[ccn]||[]).slice().sort((a,b)=>a[0]<b[0]?1:-1);
+  const hc = cits.filter(r=>r[5]==="H");
+  const years = [...new Set(hc.map(r=>r[0].slice(0,4)))].sort();
+  const yrsShown = []; if (years.length) for (let y = Math.max(2017, +years[0]); y <= +LATEST.slice(0,4); y++) yrsShown.push(String(y));
+  const insSec = h("section",null,
+    h("div",{class:"sec-head"}, h("div",null,h("h2",{text:"Inspections"}), h("p",{class:"small",style:"margin:0",text:`${st.cit3||0} health citations in the last three years, ${st.harm3||0} involving actual harm or immediate jeopardy, ${st.compl3||0} from complaint investigations.`}))),
+    h("div",{class:"grid g2"},
+      h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health citations by year"}),
+        barChart({cats:yrsShown.map(y=> y===LATEST.slice(0,4)? y+"*":y), height:180,
+          series:[{name:"No actual harm",color:"var(--s1)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && !"GHIJKL".includes(r[2])).length)},
+                  {name:"Actual harm or immediate jeopardy",color:"var(--s2)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && "GHIJKL".includes(r[2])).length)}],
+          extra:i=>`${hc.filter(r=>r[0].startsWith(yrsShown[i]) && r[3]).length} from complaints`, aria:"Citations by year"}),
+        h("div",{class:"note",text:"* Partial year. Years before 2019 may be incomplete."})),
+      h("div",{class:"card"}, h("div",{class:"chart-title",text:"Severity key"}),
+        h("div",{class:"sev-key",style:"flex-direction:column;align-items:flex-start"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
+        h("p",{class:"small",text:"A later letter within each group means more residents were affected. Fire safety citations are listed with each inspection but not counted in the chart."}))
+    )
+  );
+  // group into inspections
+  const surveys = {}; cits.forEach(r => { const k = r[0]; (surveys[k] = surveys[k] || []).push(r); });
+  const dates = Object.keys(surveys).sort().reverse();
+  const list = h("div",{class:"card"});
+  let shown = 0; const PAGE = 6;
+  const more = h("button",{class:"morebtn",type:"button"});
+  const addSurveys = () => {
+    dates.slice(shown, shown+PAGE).forEach(d => {
+      const rs = surveys[d].slice().sort((a,b)=> b[2].localeCompare(a[2]));
+      const anyC = rs.some(r=>r[3]), allC = rs.filter(r=>r[5]==="H").every(r=>r[3]);
+      const fire = rs.every(r=>r[5]==="F");
+      const kind = fire ? "Fire safety inspection" : allC ? "Complaint investigation" : anyC ? "Standard inspection and complaint investigation" : "Standard inspection";
+      const worst = rs.reduce((a,r)=> r[2] > a ? r[2] : a, "A");
+      list.append(h("div",{class:"survey"},
+        h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length} citation${rs.length===1?"":"s"}`}),
+          "GHIJKL".includes(worst) ? h("span",{class:"chip bad",text: "JKL".includes(worst) ? "Immediate jeopardy" : "Actual harm"}) : null),
+        h("ul",null, rs.map(r => h("li",null, h("span",{class:"sev "+sevClass(r[2]), title:SEVTXT[sevClass(r[2])], text:r[2]||"–"}),
+          h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small",text:[r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · ")})))))
+      ));
+    });
+    shown += PAGE;
+    more.hidden = shown >= dates.length;
+    more.textContent = `Show more inspections (${dates.length - shown} more)`;
+  };
+  more.addEventListener("click", addSurveys);
+  if (!dates.length) list.append(h("p",{class:"small",text:"No citations on record."}));
+  addSurveys();
+  insSec.append(h("div",{style:"margin-top:16px"}, list, more));
+  app.append(insSec);
+
+  // fines
+  const pens = (D.penalties[ccn]||[]).slice().sort((a,b)=>a[0]<b[0]?1:-1);
+  const fineTotal = pens.filter(p=>p[1]==="Fine" && p[5]!==0).reduce((a,p)=>a+(p[2]||0),0);
+  const nRemoved = pens.filter(p=>p[5]===0).length;
+  app.append(h("section",null, h("h2",{text:"Fines and payment denials"}),
+    h("p",{class:"small",style:"margin:0 0 10px",text: pens.length ? `${pens.filter(p=>p[1]==="Fine" && p[5]!==0).length} fines totaling ${money(fineTotal)} on record since 2016; ${money(st.fines3||0)} in the last three years.` + (nRemoved ? ` Rows marked "revised" were later replaced by CMS with a new date or amount and are not counted.` : "") : "No fines or payment denials on record."}),
+    pens.length ? h("div",{class:"tbl-wrap"}, h("table",null, h("thead",null,h("tr",null,h("th",{text:"Date"}),h("th",{text:"Type"}),h("th",{class:"r",text:"Amount"}))),
+      h("tbody",null, pens.map(p => h("tr",null, h("td",{class:"num",text:dlabel(p[0])}), h("td",null, p[1]==="Payment Denial" ? `Medicare/Medicaid payment denial${p[3]? " ("+p[3]+" days)":""}` : "Fine", p[5]===0 ? h("span",{class:"small",text:" · revised or withdrawn by CMS, not counted"}) : null), h("td",{class:"r num",style:p[5]===0?"text-decoration:line-through;color:var(--muted)":null,text:p[1]==="Fine"?money(p[2]):"–"})))))) : null));
+
+  // ownership
+  const own = D.owners[ccn] || [];
+  const cur = own.filter(o=>o[7]), past = own.filter(o=>!o[7]);
+  const roleGroup = r => /OWNERSHIP|PARTNERSHIP/i.test(r) ? "Owners (5% or more)" : /MANAGERIAL|MANAGING CONTROL|GOVERNING/i.test(r) ? "Operational or managerial control" : /SECURITY|MORTGAGE/i.test(r) ? "Lenders (mortgage or security interest)" : /ADP|TRUSTEE OF ANY/i.test(r) ? "Administrative/clinical service providers" : "Officers, directors, and managers";
+  const ownBlock = (rows) => { const gs = {}; rows.forEach(o => { const g = roleGroup(o[0]); (gs[g] = gs[g] || []).push(o); });
+    return ["Owners (5% or more)","Operational or managerial control","Officers, directors, and managers","Lenders (mortgage or security interest)","Administrative/clinical service providers"].filter(g=>gs[g]).map(g =>
+      (() => {
+        const people = [...new Map(gs[g].map(o=>[o[1],o])).values()];
+        const li = o => h("li",null, o[1], h("span",{class:"small",text:[" ", o[2]==="Individual"?"":"(organization)", o[3] && !/NOT APPLICABLE|NO PERCENTAGE/.test(o[3]) ? o[3] : "", o[4] ? "since " + dlabel(o[4]) : "", !o[7] ? "last listed " + mlabel(o[6]) : ""].filter(Boolean).join(" ")}));
+        const ul = h("ul",{style:"margin:4px 0 0;padding-left:18px"}, people.slice(0,8).map(li));
+        const rest = people.slice(8);
+        const btn = rest.length ? h("button",{class:"morebtn",type:"button",style:"margin-top:6px;padding:3px 10px;font-size:13px",text:`Show ${rest.length} more`,
+          onclick:()=>{ rest.forEach(o=>ul.append(li(o))); btn.remove(); }}) : null;
+        return h("div",{style:"margin-top:10px"}, h("div",{class:"eyebrow",text:g + " (" + people.length + ")"}), ul, btn);
+      })());
+  };
+  const pastWrap = h("div",{hidden:true}, ownBlock(past));
+  const tgl = h("button",{class:"morebtn",type:"button",text:`Show ${new Set(past.map(o=>o[1])).size} people and companies no longer listed`, onclick:()=>{ pastWrap.hidden = !pastWrap.hidden; tgl.textContent = pastWrap.hidden ? `Show ${new Set(past.map(o=>o[1])).size} people and companies no longer listed` : "Hide former owners and managers"; }});
+  // name history
+  const nm = (D.names[ccn]||[]).slice().sort((a,b)=> a[0]===b[0] ? (a[2]<b[2]?-1:1) : (a[0]<b[0]?-1:1));
+  app.append(h("section",null, h("h2",{text:"Owners and operators"}),
+    h("p",{class:"small",style:"margin:0 0 10px",text:"As reported to CMS. Ownership records since 2019; dates are when CMS says each party's role began."}),
+    h("div",{class:"grid g2"},
+      h("div",{class:"card"}, h("h3",{text:"Listed now"}), cur.length ? ownBlock(cur) : h("p",{class:"small",text:"No ownership records in the latest release."}), past.length ? [tgl, pastWrap] : null),
+      h("div",{class:"card"}, h("h3",{text:"Name and operator history"}),
+        h("div",{class:"timeline",style:"margin-top:10px"}, nm.map(r => h("div",{class:"tl-row"}, h("div",{class:"small num",text: mlabel(r[2]) + " – " + (r[3]===LATEST ? "now" : mlabel(r[3]))}),
+          h("div",null, r[1], h("div",{class:"small",text: r[0]==="F" ? "Facility name" : "Legal business (operator) name"}))))),
+        h("p",{class:"note",text:"A new operator name usually signals a change of ownership. Monthly records start in January 2019."})))));
+
+  // quality measures
+  const qms = D.qms[ccn] || {};
+  const codes = Object.keys(D.qm_labels).filter(c=>qms[c] && qms[c].length);
+  if (codes.length){
+    const qa = (arr) => { const out = M.map(()=>null); return out; };
+    const qchart = code => {
+      // quarters -> plot at quarter end month
+      const toM = q => { const y = q.slice(0,4), k = +q.slice(-1); return y + "-" + String(k*3).padStart(2,"0"); };
+      const mk = (pairs) => { const v = M.map(()=>null); const extra = {}; pairs.forEach(([q,s])=>{ const m = toM(q); const i = M.indexOf(m); if (i>=0) v[i]=s; else extra[m]=s; }); return v; };
+      return h("div",{class:"card"}, h("div",{class:"chart-title",style:"font-size:13px",text:D.qm_labels[code]}),
+        lineChart({series:[{name:f.name,color:"var(--s1)",values:mk(qms[code])},{name:"RI average",color:"var(--s2)",values:mk(D.qm_ri[code]||[]),endDot:false}], dp: code.startsWith("55")?2:1, height:160, aria:D.qm_labels[code]}));
+    };
+    app.append(h("section",null, h("h2",{text:"Resident outcomes"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these."}),
+      h("div",{class:"grid g3"}, codes.map(qchart))));
+  }
+
+  // ABC-RI extras
+  const ex = [
+    ["% of residents with dementia (2021, Brown LTCFocus)", x.pct_dementia_2021_ltcfocus, "%"],
+    ["% of residents on Medicaid (2021, Brown LTCFocus)", x.pct_medicaid_2021_ltcfocus, "%"],
+    ["% with schizophrenia or bipolar disorder (2021, Brown LTCFocus)", x.pct_smi_2021_ltcfocus, "%"],
+    ["Special care unit beds (RIDOH, 2025)", x.scu_beds_ridoh_2025 || x.ridoh_alz_scu_beds, ""],
+    ["Dementia care unit (RIHCA, 2025)", x.dementia_unit_rihca_2025 ? (x.dementia_unit_rihca_2025.toLowerCase().startsWith("y") ? "Yes" : x.dementia_unit_rihca_2025) : null, ""],
+    ["Direct care spending per resident day (2022, EOHHS)", x.direct_care_per_diem_2022_eohhs ? "$"+(+x.direct_care_per_diem_2022_eohhs).toFixed(2) : null, ""],
+    ["Union", x.union, ""],
+    ["RIDOH licensed beds", x.ridoh_licensed_beds, ""],
+    ["Notes", x.notes, ""],
+  ].filter(r => r[1] != null && r[1] !== "" && r[1] !== "0");
+  if (ex.length) app.append(h("section",null, h("h2",{text:"More about this home"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Collected by ABC-RI from the sources named."}),
+    h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})])))));
+}
+
+function footer(){
+  app.append(h("footer",null,
+    h("p",{text:`Data: CMS Care Compare nursing home files, monthly releases January 2019 to ${D.meta.latest_label}, plus information gathered by Advocates for Better Care in Rhode Island (ABC-RI). Updated ${D.meta.built}.`}),
+    h("p",{text:"This site is not affiliated with CMS or the Rhode Island Department of Health. To report an error, contact ABC-RI."})));
+}
+
+function route(){
+  const hsh = (location.hash||"#home").slice(1);
+  app.textContent = "";
+  ["home","owners","about"].forEach(t => document.getElementById("tab-"+t).classList.toggle("on", hsh===t || (t==="home" && (hsh===""||hsh==="list"))));
+  if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
+  else if (hsh==="owners") viewOwners();
+  else if (hsh==="about") viewAbout();
+  else viewHome();
+  footer();
+  if (hsh !== "list") window.scrollTo(0,0);
+  const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+}
+window.addEventListener("hashchange", route);
+route();
+})();
+</script>
