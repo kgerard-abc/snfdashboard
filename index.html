@@ -1,113 +1,140 @@
 <title>Rhode Island Nursing Homes</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap">
 <style>
-/* Layout: a records-office lookup tool. Header with search, then either the statewide view
-   (summary, trends, sortable list of homes) or one home's record (ratings, trends, inspections, fines, owners). */
+/* Matches the ABC-RI assisted living inspection site: paper background, Public Sans, ink text,
+   thin rule lines, small square corners, sage / amber / orange / brick for severity. */
 :root{
-  --bg:#ffffff; --panel:#f4f6f9; --ink:#131b27; --ink-2:#465264; --muted:#6b7686; --line:#dfe4ea; --line-2:#c9d1db;
-  --accent:#1c4c8c; --accent-wash:#e8eff8;
-  --s1:#2a78d6; --s2:#eb6834; --ref:#8b95a3;
-  --bad:#b8322b; --bad-wash:#fbeceb; --warn:#9a5d00; --warn-wash:#fdf3e1; --good:#1e7438; --good-wash:#e6f4ea;
-  --f-ui:"Public Sans",Helvetica,Arial,sans-serif; --f-head:"Source Serif 4",Georgia,serif;
-  --r:6px;
+  --bg:#F0ECE1; --panel:#E6E1D2; --ink:#1E2A32; --ink-2:#4E5860; --muted:#4E5860; --line:#8F8570; --grid:#D6CFBD; --line-2:#8F8570;
+  --accent:#93701F; --accent-wash:#E6E1D2;
+  --s1:#1E2A32; --s2:#93701F; --ref:#8F8570; --bar1:#4E5860; --bar2:#7A1F26;
+  --sage:#3D6B52; --sage-bg:#DFE6D9; --amber:#6E5A1E; --amber-bg:#E9E1CC;
+  --orange:#92471F; --orange-bg:#E7DBCB; --orange-deep:#723313;
+  --brick:#7A1F26; --brick-bg:#E8D6D6; --brick-deep:#5E141B;
+  --bad:#5E141B; --bad-wash:#E8D6D6; --warn:#723313; --warn-wash:#E7DBCB; --good:#3D6B52; --good-wash:#DFE6D9;
+  --f-ui:"Public Sans",system-ui,-apple-system,sans-serif; --f-head:"Public Sans",system-ui,sans-serif;
+  --r:3px;
+  font-size:17px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f141b; --panel:#171e28; --ink:#e7ecf2; --ink-2:#b3bdca; --muted:#8a95a4; --line:#283240; --line-2:#36414f;
-  --accent:#8fb7ee; --accent-wash:#1a2a40;
-  --s1:#3987e5; --s2:#d95926; --ref:#7c8796;
-  --bad:#f07a71; --bad-wash:#3a1d1c; --warn:#e7a948; --warn-wash:#33260f; --good:#5cc77d; --good-wash:#15301e;
+  --bg:#191E1A; --panel:#20251F; --ink:#E8E4D8; --ink-2:#A2A99C; --muted:#A2A99C; --line:#6E6F5A; --grid:#2E342D; --line-2:#6E6F5A;
+  --accent:#C9A44C; --accent-wash:#20251F;
+  --s1:#E8E4D8; --s2:#C9A44C; --ref:#6E6F5A; --bar1:#A2A99C; --bar2:#D98891;
+  --sage:#82AC94; --sage-bg:#223129; --amber:#C7A85E; --amber-bg:#322C1C;
+  --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
+  --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
+  --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f141b; --panel:#171e28; --ink:#e7ecf2; --ink-2:#b3bdca; --muted:#8a95a4; --line:#283240; --line-2:#36414f;
-  --accent:#8fb7ee; --accent-wash:#1a2a40;
-  --s1:#3987e5; --s2:#d95926; --ref:#7c8796;
-  --bad:#f07a71; --bad-wash:#3a1d1c; --warn:#e7a948; --warn-wash:#33260f; --good:#5cc77d; --good-wash:#15301e;
+  --bg:#191E1A; --panel:#20251F; --ink:#E8E4D8; --ink-2:#A2A99C; --muted:#A2A99C; --line:#6E6F5A; --grid:#2E342D; --line-2:#6E6F5A;
+  --accent:#C9A44C; --accent-wash:#20251F;
+  --s1:#E8E4D8; --s2:#C9A44C; --ref:#6E6F5A; --bar1:#A2A99C; --bar2:#D98891;
+  --sage:#82AC94; --sage-bg:#223129; --amber:#C7A85E; --amber-bg:#322C1C;
+  --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
+  --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
+  --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
   color-scheme:dark}
+*{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
-a{color:var(--accent)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0 96px}
+@media (max-width:560px){.wrap{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}}
+a{color:inherit;text-decoration:underline}
+a:hover{color:var(--ink)}
 button,select,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
-h1,h2,h3{text-wrap:balance;margin:0}
-h1{font-family:var(--f-head);font-weight:600;font-size:clamp(26px,4vw,36px);line-height:1.15}
-h2{font-size:19px;font-weight:700;margin-bottom:4px}
-h3{font-size:15px;font-weight:700}
-.lede{color:var(--ink-2);max-width:68ch;margin:6px 0 0}
+h1,h2,h3{text-wrap:balance;margin:0;font-family:var(--f-head)}
+h1{font-weight:800;font-size:clamp(28px,5.2vw,40px);line-height:1.12;letter-spacing:-0.015em}
+h2{font-size:21px;font-weight:700;margin-bottom:4px;letter-spacing:-0.005em}
+h3{font-size:16px;font-weight:600}
+.lede{color:var(--ink-2);max-width:640px;margin:14px 0 0;font-size:17px;line-height:1.55}
+.updated-line{font-size:13px;color:var(--ink-2);margin:14px 0 0;max-width:640px}
+.updated-line strong{color:var(--ink)}
 .small{font-size:13px;color:var(--muted)}
 .eyebrow{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
 
-/* header */
-header.top{border-bottom:1px solid var(--line);background:var(--bg)}
-header.top .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;padding-block:14px;padding-bottom:14px}
-.brand{display:flex;flex-direction:column;gap:0;cursor:pointer;text-decoration:none;color:inherit}
-.brand b{font-family:var(--f-head);font-size:20px;font-weight:600}
-.brand span{font-size:12px;color:var(--muted)}
-.search{flex:1 1 280px;position:relative;min-width:0}
-.search input{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--bg)}
-.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r);z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.12);max-height:360px;overflow:auto}
-.sugg button{display:block;width:100%;text-align:left;padding:8px 12px;border:0;background:none;cursor:pointer}
-.sugg button:hover,.sugg button.on{background:var(--accent-wash)}
+/* masthead */
+header.masthead .wrap{padding-block:48px 0}
+@media (max-width:560px){header.masthead .wrap{padding-block:32px 0}}
+.site-logo-link{display:inline-block;text-decoration:none}
+.site-logo{height:76px;width:auto;display:block;margin:0 0 22px;background:#fff}
+@media (max-width:560px){.site-logo{height:60px}}
+.mast-row{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{padding:7px 12px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500}
+nav.tabs a:hover{background:var(--panel)}
+nav.tabs a.on{background:var(--ink);color:var(--bg)}
+.search{flex:1 1 300px;max-width:460px;position:relative;min-width:0}
+.search-row{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.search-row:focus-within{border-bottom-color:var(--accent)}
+.search-row svg{flex:none;opacity:.55}
+.search input{flex:1;width:100%;min-width:0;border:0;background:transparent;outline:none;font-weight:500;font-size:18px;color:var(--ink);padding:4px 0}
+.search input::placeholder{color:var(--ink-2);opacity:.65}
+.search input:focus-visible{outline:none}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--bg);border:1px solid var(--line);border-radius:var(--r);z-index:20;box-shadow:0 3px 10px rgba(0,0,0,.18);max-height:360px;overflow:auto}
+.sugg button{display:block;width:100%;text-align:left;padding:9px 12px;border:0;background:none;cursor:pointer;border-bottom:1px solid var(--grid)}
+.sugg button:last-child{border-bottom:0}
+.sugg button:hover,.sugg button.on{background:var(--panel)}
 .sugg small{color:var(--muted);display:block}
-nav.tabs{display:flex;gap:4px}
-nav.tabs a{padding:6px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-weight:600;font-size:14px}
-nav.tabs a.on{background:var(--accent-wash);color:var(--accent)}
 
-section{margin-top:32px}
+section{margin-top:40px}
 .sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px;margin-bottom:12px}
 .grid{display:grid;gap:16px}
 .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))}
 .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
-.card{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;background:var(--bg)}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0;background:transparent}
+.tile{background:var(--panel)}
 .tile .label{font-size:13px;color:var(--ink-2)}
-.tile .val{font-size:28px;font-weight:700;line-height:1.2;margin-top:2px}
+.tile .val{font-size:30px;font-weight:700;line-height:1.2;margin-top:2px;letter-spacing:-0.01em}
 .tile .sub{font-size:13px;color:var(--muted);margin-top:2px}
 
 /* stars as pips */
 .pips{display:inline-flex;gap:2px;vertical-align:middle}
-.pips i{width:9px;height:9px;border-radius:2px;background:var(--line-2);display:block}
+.pips i{width:9px;height:9px;border-radius:1px;background:var(--grid);display:block}
 .pips i.f{background:var(--ink)}
-.pips.lg i{width:14px;height:14px;border-radius:3px}
+.pips.lg i{width:14px;height:14px;border-radius:2px}
 .rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 
-.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;line-height:1.5}
-.chip.bad{color:var(--bad);background:var(--bad-wash);border-color:transparent}
-.chip.warn{color:var(--warn);background:var(--warn-wash);border-color:transparent}
-.chip.good{color:var(--good);background:var(--good-wash);border-color:transparent}
-.chip.plain{color:var(--ink-2);background:var(--panel);border-color:transparent}
+.chip{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:2px;white-space:nowrap;line-height:1.5;border-left:3px solid transparent}
+.chip.bad{color:var(--brick-deep);background:var(--brick-bg);border-left-color:var(--brick)}
+.chip.warn{color:var(--orange-deep);background:var(--orange-bg);border-left-color:var(--orange)}
+.chip.good{color:var(--sage);background:var(--sage-bg);border-left-color:var(--sage)}
+.chip.plain{color:var(--bg);background:var(--ink);border-left-color:var(--accent)}
 .delta{font-size:13px;font-weight:600}
 .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.same{color:var(--muted)}
 
 /* table */
-.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.filters select,.filters input[type=text]{padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--bg);max-width:100%}
-.filters label{font-size:13px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+#trend-metric{font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;max-width:100%}
+.filters select{font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;max-width:100%}
+.filters label{font-size:13.5px;color:var(--ink-2);display:flex;gap:6px;align-items:center;cursor:pointer}
+.filters input[type=checkbox]{accent-color:var(--ink)}
+.tbl-wrap{overflow-x:auto;border-top:1px solid var(--line)}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--panel);position:sticky;top:0;white-space:nowrap}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--bg);position:sticky;top:0;white-space:nowrap}
 th.sort{cursor:pointer;user-select:none}
 th.sort:hover{color:var(--ink)}
 th .arr{color:var(--accent)}
 td.r,th.r{text-align:right}
 tbody tr:hover{background:var(--panel)}
 tr.click{cursor:pointer}
-td .nm{font-weight:600;color:var(--ink)}
+td .nm{font-weight:500;font-size:15.5px;color:var(--ink)}
+td .nm a{text-decoration:none}
+td .nm a:hover{text-decoration:underline}
+td .sub{font-size:12.5px;color:var(--muted)}
 td.desc{min-width:260px}
 td.home{min-width:150px}
-td .sub{font-size:12px;color:var(--muted)}
-tr:last-child td{border-bottom:0}
 
 /* charts */
 .chart{position:relative;width:100%}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
 .chart .axis text{fill:var(--muted);font-size:11px;font-family:var(--f-ui)}
-.chart .grid line{stroke:var(--line);stroke-width:1}
-.chart .base{stroke:var(--line-2);stroke-width:1}
-.tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r);padding:7px 9px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.14);z-index:5;min-width:120px;white-space:nowrap}
+.chart .grid line{stroke:var(--grid);stroke-width:1}
+.chart .base{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:7px 9px;font-size:12px;box-shadow:0 3px 10px rgba(0,0,0,.18);z-index:5;min-width:120px;white-space:nowrap}
 .tip .t{color:var(--muted);margin-bottom:3px}
 .tip .row{display:flex;align-items:center;gap:6px}
 .tip .row b{font-variant-numeric:tabular-nums}
@@ -115,62 +142,68 @@ tr:last-child td{border-bottom:0}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:4px 0 6px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend .ln{width:14px;height:2px;border-radius:1px}
-.legend .bx{width:10px;height:10px;border-radius:2px}
+.legend .bx{width:10px;height:10px;border-radius:1px}
 .legend .mk{width:1px;height:12px;background:var(--ink-2)}
-.chart-title{font-weight:600;font-size:14px}
-.note{font-size:12px;color:var(--muted);margin-top:6px}
+.chart-title{font-weight:600;font-size:14.5px}
+.note{font-size:12.5px;color:var(--muted);margin-top:6px;font-style:italic}
 
 /* facility page */
-.back{display:inline-block;margin-top:18px;font-size:14px;text-decoration:none}
-.fac-head{margin-top:10px;display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between}
+.back{display:inline-block;margin-top:28px;font-size:14px;color:var(--ink-2)}
+.fac-head{margin-top:12px;display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between}
 .fac-head .meta{color:var(--ink-2);font-size:14px;margin-top:6px}
-.fac-head .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-dl.kv{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:4px 14px;margin:0;font-size:14px}
-dl.kv dt{color:var(--muted)}
-dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
-.survey{border-top:1px solid var(--line);padding:12px 0}
+.fac-head .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fac-head .card{background:var(--panel)}
+dl.kv{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:0 14px;margin:0;font-size:13.5px}
+dl.kv dt{color:var(--muted);padding:6px 0;border-bottom:1px solid var(--grid)}
+dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom:1px solid var(--grid)}
+.survey{border-top:1px solid var(--line);padding:14px 0}
 .survey:first-child{border-top:0;padding-top:0}
 .survey-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
-.survey ul{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px}
-.survey li{display:grid;grid-template-columns:54px 1fr;gap:10px;font-size:14px}
-.sev{font-weight:700;text-align:center;border-radius:4px;padding:1px 0;font-size:13px;height:fit-content}
-.sev.s1{background:var(--panel);color:var(--ink-2)}
-.sev.s2{background:var(--warn-wash);color:var(--warn)}
-.sev.s3,.sev.s4{background:var(--bad-wash);color:var(--bad)}
-.sev.s4{outline:1.5px solid var(--bad);outline-offset:-1.5px}
-.timeline{display:grid;gap:8px}
-.tl-row{display:grid;grid-template-columns:150px 1fr;gap:12px;font-size:14px}
-.seg{display:flex;flex-direction:column}
-.morebtn{margin-top:10px;background:none;border:1px solid var(--line-2);border-radius:var(--r);padding:6px 12px;cursor:pointer}
-.morebtn:hover{background:var(--panel)}
-.seg-ctl{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden}
-.seg-ctl button{border:0;background:none;padding:5px 10px;cursor:pointer;font-size:13px}
-.seg-ctl button.on{background:var(--accent-wash);color:var(--accent);font-weight:600}
-.sev-key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2);margin:6px 0 12px}
-.sev-key span{display:inline-flex;gap:6px;align-items:center}
-.sev-key .sev{width:30px}
-footer{margin-top:48px;border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:var(--muted)}
-footer p{max-width:90ch}
+.survey-h a{color:var(--ink-2)}
+.survey ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.survey li{display:grid;grid-template-columns:54px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
+.sev{font-weight:700;text-align:center;border-radius:2px;padding:1px 0;font-size:13px;height:fit-content;border-left:3px solid transparent}
+.sev.s1{background:var(--sage-bg);color:var(--sage);border-left-color:var(--sage)}
+.sev.s2{background:var(--amber-bg);color:var(--amber);border-left-color:var(--amber)}
+.sev.s3{background:var(--orange-bg);color:var(--orange-deep);border-left-color:var(--orange)}
+.sev.s4{background:var(--brick-bg);color:var(--brick-deep);border-left-color:var(--brick)}
+.timeline{display:grid;gap:0}
+.tl-row{display:grid;grid-template-columns:150px 1fr;gap:12px;font-size:14px;padding:7px 0;border-bottom:1px solid var(--grid)}
+.tl-row:last-child{border-bottom:0}
+.morebtn{margin-top:10px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink-2);text-decoration:underline;font-size:13.5px}
+.morebtn:hover{color:var(--ink)}
+.sev-key{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--ink-2);margin:8px 0 12px}
+.sev-key span{display:inline-flex;gap:8px;align-items:center}
+.sev-key .sev{width:34px}
+footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
+footer p{max-width:90ch;margin:0 0 10px}
 @media (max-width:560px){
   .tl-row{grid-template-columns:1fr;gap:2px}
   .tile .val{font-size:24px}
   .survey li{grid-template-columns:44px 1fr}
+  .search{max-width:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<header class="top">
+<header class="masthead">
   <div class="wrap">
-    <a class="brand" href="#home" id="brand"><b>Rhode Island Nursing Homes</b><span id="asof">CMS data</span></a>
-    <nav class="tabs" aria-label="Views">
-      <a href="#home" id="tab-home">All homes</a>
-      <a href="#owners" id="tab-owners">Owner groups</a>
-      <a href="#about" id="tab-about">About the data</a>
-    </nav>
-    <div class="search">
-      <input id="q" type="search" placeholder="Find a home by name, former name, or town" autocomplete="off" aria-label="Find a nursing home">
-      <div class="sugg" id="sugg" hidden></div>
+    <a class="site-logo-link" href="#home"><img class="site-logo" src="abcri-logo.png" alt="ABC-RI: Advocates for Better Care in Rhode Island" width="200" height="76"></a>
+    <div class="mast-row">
+      <nav class="tabs" aria-label="Views">
+        <a href="#home" id="tab-home">All homes</a>
+        <a href="#owners" id="tab-owners">Owner groups</a>
+        <a href="#about" id="tab-about">About the data</a>
+      </nav>
+      <div class="search">
+        <div class="search-row">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+          <input id="q" type="search" placeholder="Find a home by name or town" autocomplete="off" aria-label="Find a nursing home">
+        </div>
+        <div class="sugg" id="sugg" hidden></div>
+      </div>
     </div>
+    <span id="asof" hidden></span>
   </div>
 </header>
 <main class="wrap" id="app"></main>
@@ -223,6 +256,29 @@ function pips(r, lg){ const w = h("span",{class:"pips"+(lg?" lg":""), "aria-hidd
 function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
+function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
+const L = D.links || {};
+const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
+function citationLink(ccn, r){
+  // the official report that contains this citation (health citations Care Compare still lists)
+  if (r[5]!=="H" || !r[7]) return null;
+  const sv = (D.surveys[ccn]||[]).filter(x=>x[0]===r[0] && x[2]).map(x=>x[1]);
+  let kind = null;
+  if (r[3] && (sv.includes("C") || !sv.includes("S"))) kind = "complaint-inspection";
+  else if (sv.includes("S") || !sv.length) kind = "health-inspection";
+  else if (sv.includes("C")) kind = "complaint-inspection";
+  if (!kind) return null;
+  return [" · ", h("a",{href:pdfUrl(ccn,kind,r[0]),target:"_blank",rel:"noopener",text:"See it in the report"})];
+}
+function reportLinks(ccn, d, rows){
+  const sv = (D.surveys[ccn]||[]).filter(x=>x[0]===d && x[2]);
+  let std = sv.some(x=>x[1]==="S"), cmp = sv.some(x=>x[1]==="C");
+  if (!sv.length && rows){ const listed = rows.filter(r=>r[5]==="H" && r[7]); std = listed.some(r=>!r[3]); cmp = !std && listed.some(r=>r[3]); }
+  const out = [];
+  if (std) out.push(h("a",{href:pdfUrl(ccn,"health-inspection",d),target:"_blank",rel:"noopener",text:"Read the inspection report"}));
+  if (cmp) out.push(h("a",{href:pdfUrl(ccn,"complaint-inspection",d),target:"_blank",rel:"noopener",text: std ? "Complaint report" : "Read the complaint report"}));
+  return out;
+}
 function delta(now, then, better, dp=0, unit=""){
   if (now==null || then==null) return null;
   const d = now - then; if (Math.abs(d) < (dp? 0.005 : 0.5)) return h("span",{class:"delta same",text:"no change"});
@@ -457,8 +513,9 @@ function viewHome(){
 
   app.append(
     h("section",null,
-      h("h1",{text:"Rhode Island nursing homes"}),
-      h("p",{class:"lede",text:`Ratings, staffing, inspections, fines, and owners for every Medicare- and Medicaid-certified nursing home in Rhode Island, from federal CMS data going back to 2019. Search for a home above, or sort the full list below.`})
+      h("h1",{text:"Rhode Island Nursing Home Records"}),
+      h("p",{class:"lede",text:`Nursing homes in Rhode Island are inspected by the state for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars. This site brings together every home's ratings, staffing, inspections, fines, and owners, with monthly history back to 2019, so you can see how a home has changed over time and what happened after it was sold. Each inspection links to the official report.`}),
+      h("p",{class:"updated-line"}, "CMS data through the ", h("strong",{text:D.meta.latest_label}), " release. Updated each month when CMS posts new data.")
     ),
     h("section",null, h("div",{class:"grid g4"},
       tile("Homes open now", String(open.length), `${Math.round(beds).toLocaleString()} certified beds, about ${Math.round(res).toLocaleString()} residents a day`),
@@ -477,7 +534,7 @@ function viewHome(){
           lineChart({series:[{name:"RI average",color:"var(--s1)",values:D.avg.RI_calc.overall}], dp:2, yMin:1, yMax:5, fromIdx:M.indexOf("2019-01"), aria:"Average star rating"})),
         h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health inspection citations by year, all RI homes"}),
           barChart({cats:yrs.map(y=> y===LATEST.slice(0,4) ? y+"*" : y),
-            series:[{name:"No actual harm",color:"var(--s1)",values:yrs.map(y=>cy[y][0]-cy[y][2])},{name:"Actual harm or immediate jeopardy",color:"var(--s2)",values:yrs.map(y=>cy[y][2])}],
+            series:[{name:"No actual harm",color:"var(--bar1)",values:yrs.map(y=>cy[y][0]-cy[y][2])},{name:"Actual harm or immediate jeopardy",color:"var(--bar2)",values:yrs.map(y=>cy[y][2])}],
             extra:i=>`${cy[yrs[i]][1]} from complaints · ${cy[yrs[i]][3]} immediate jeopardy`, aria:"Citations by year"}),
           h("div",{class:"note",text:`* ${LATEST.slice(0,4)} is a partial year. Counts are what CMS published; inspections slowed sharply in 2020 during COVID.`}))
       )
@@ -492,13 +549,14 @@ function viewHome(){
   app.append(h("section",null,
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Most recent harm citations"}), h("p",{class:"small",style:"margin:0",text:"Citations where inspectors found residents were actually harmed or in immediate jeopardy."}))),
     h("div",{class:"tbl-wrap"}, h("table",null,
-      h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}))),
+      h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}),h("th",{text:"Report"}))),
       h("tbody",null, top.map(([f,r]) => { const sc = sevClass(r[2]);
         return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
           h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
           h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
           h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
-          h("td",{class:"desc",text:(D.tags[r[1]]||[""])[0]})); }))
+          h("td",{class:"desc",text:(D.tags[r[1]]||[""])[0]}),
+          h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); }))
     ))
   ));
 
@@ -655,7 +713,10 @@ function viewFacility(ccn){
         f.former_names ? h("div",{class:"meta",text:"Formerly: " + f.former_names}) : null,
         h("div",{class:"meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ") + (f.phone ? " · " + phone(f.phone) : "")}),
         h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+" certified beds" : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
-        flags.length ? h("div",{class:"flags"}, flags) : null
+        flags.length ? h("div",{class:"flags"}, flags) : null,
+        f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
+          h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
+          h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"})) : null
       ),
       h("div",{class:"card",style:"flex:0 1 360px;min-width:0"},
         h("dl",{class:"kv"},
@@ -721,17 +782,18 @@ function viewFacility(ccn){
     h("div",{class:"grid g2"},
       h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health citations by year"}),
         barChart({cats:yrsShown.map(y=> y===LATEST.slice(0,4)? y+"*":y), height:180,
-          series:[{name:"No actual harm",color:"var(--s1)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && !"GHIJKL".includes(r[2])).length)},
-                  {name:"Actual harm or immediate jeopardy",color:"var(--s2)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && "GHIJKL".includes(r[2])).length)}],
+          series:[{name:"No actual harm",color:"var(--bar1)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && !"GHIJKL".includes(r[2])).length)},
+                  {name:"Actual harm or immediate jeopardy",color:"var(--bar2)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && "GHIJKL".includes(r[2])).length)}],
           extra:i=>`${hc.filter(r=>r[0].startsWith(yrsShown[i]) && r[3]).length} from complaints`, aria:"Citations by year"}),
         h("div",{class:"note",text:"* Partial year. Years before 2019 may be incomplete."})),
       h("div",{class:"card"}, h("div",{class:"chart-title",text:"Severity key"}),
         h("div",{class:"sev-key",style:"flex-direction:column;align-items:flex-start"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
-        h("p",{class:"small",text:"A later letter within each group means more residents were affected. Fire safety citations are listed with each inspection but not counted in the chart."}))
+        h("p",{class:"small",text:"Each letter also says how widespread the problem was: isolated (one or a few residents), a pattern, or widespread. The full inspection reports, linked with each inspection below, describe what happened to residents. Care Compare keeps reports for about the last three years."}))
     )
   );
   // group into inspections
   const surveys = {}; cits.forEach(r => { const k = r[0]; (surveys[k] = surveys[k] || []).push(r); });
+  (D.surveys[ccn]||[]).forEach(x => { if (!surveys[x[0]] && ["S","C","I"].includes(x[1])) surveys[x[0]] = []; });
   const dates = Object.keys(surveys).sort().reverse();
   const list = h("div",{class:"card"});
   let shown = 0; const PAGE = 6;
@@ -739,15 +801,18 @@ function viewFacility(ccn){
   const addSurveys = () => {
     dates.slice(shown, shown+PAGE).forEach(d => {
       const rs = surveys[d].slice().sort((a,b)=> b[2].localeCompare(a[2]));
-      const anyC = rs.some(r=>r[3]), allC = rs.filter(r=>r[5]==="H").every(r=>r[3]);
-      const fire = rs.every(r=>r[5]==="F");
-      const kind = fire ? "Fire safety inspection" : allC ? "Complaint investigation" : anyC ? "Standard inspection and complaint investigation" : "Standard inspection";
+      const sv = (D.surveys[ccn]||[]).filter(x=>x[0]===d).map(x=>x[1]);
+      const anyC = rs.some(r=>r[3]) || sv.includes("C"), allC = rs.length ? rs.filter(r=>r[5]==="H").every(r=>r[3]) : (sv.includes("C") && !sv.includes("S"));
+      const fire = rs.length ? rs.every(r=>r[5]==="F") : (sv.length && sv.every(x=>x==="F"||x==="FC"));
+      const kind = fire ? "Fire safety inspection" : (sv.includes("I") && !sv.includes("S") && !anyC) ? "Infection control inspection" : allC ? "Complaint investigation" : anyC ? "Standard inspection and complaint investigation" : "Standard inspection";
+      const rl = fire ? [] : reportLinks(ccn, d, rs);
       const worst = rs.reduce((a,r)=> r[2] > a ? r[2] : a, "A");
       list.append(h("div",{class:"survey"},
-        h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length} citation${rs.length===1?"":"s"}`}),
-          "GHIJKL".includes(worst) ? h("span",{class:"chip bad",text: "JKL".includes(worst) ? "Immediate jeopardy" : "Actual harm"}) : null),
+        h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length ? rs.length + " citation" + (rs.length===1?"":"s") : "no citations"}`}),
+          "GHIJKL".includes(worst) ? h("span",{class:"chip bad",text: "JKL".includes(worst) ? "Immediate jeopardy" : "Actual harm"}) : null,
+          rl.length ? h("span",{class:"small",style:"display:inline-flex;gap:12px"}, rl) : null),
         h("ul",null, rs.map(r => h("li",null, h("span",{class:"sev "+sevClass(r[2]), title:SEVTXT[sevClass(r[2])], text:r[2]||"–"}),
-          h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small",text:[r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · ")})))))
+          h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small"}, [SEVTXT[sevClass(r[2])] + ", " + scopeTxt(r[2]), r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · "), citationLink(ccn, r))))))
       ));
     });
     shown += PAGE;
@@ -832,8 +897,9 @@ function viewFacility(ccn){
 
 function footer(){
   app.append(h("footer",null,
-    h("p",{text:`Data: CMS Care Compare nursing home files, monthly releases January 2019 to ${D.meta.latest_label}, plus information gathered by Advocates for Better Care in Rhode Island (ABC-RI). Updated ${D.meta.built}.`}),
-    h("p",{text:"This site is not affiliated with CMS or the Rhode Island Department of Health. To report an error, contact ABC-RI."})));
+    h("p",null, h("strong",{text:"About this page."}), " This page is published by Advocates for Better Care in Rhode Island (ABC-RI), an independent nonprofit advocacy organization. It is not produced, reviewed, or endorsed by CMS, the Rhode Island Department of Health (RIDOH), or any state agency, and it is not a substitute for their records."),
+    h("p",{text:`Ratings, staffing, inspections, fines, and ownership come from the CMS Care Compare nursing home files, monthly releases January 2019 to ${D.meta.latest_label}. Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from the sources named on each home's page. The linked CMS inspection report is the official record; if anything here conflicts with it, the report governs. Updated ${D.meta.built}.`}),
+    h("p",null, "Spotted an error? Email ", h("strong",{text:"corrections@abc-ri.org"}), ".")));
 }
 
 function route(){
