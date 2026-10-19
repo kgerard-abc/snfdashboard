@@ -6,8 +6,8 @@
 /* Matches the ABC-RI assisted living inspection site: paper background, Public Sans, ink text,
    thin rule lines, small square corners, sage / amber / orange / brick for severity. */
 :root{
-  --bg:#F0ECE1; --panel:#E6E1D2; --ink:#1E2A32; --ink-2:#4E5860; --muted:#4E5860; --line:#8F8570; --grid:#D6CFBD; --line-2:#8F8570;
-  --accent:#93701F; --accent-wash:#E6E1D2;
+  --bg:#F6F3EA; --panel:#EAE5D7; --ink:#1E2A32; --ink-2:#4E5860; --muted:#4E5860; --line:#8F8570; --grid:#D6CFBD; --line-2:#8F8570;
+  --accent:#93701F; --accent-wash:#EAE5D7;
   --s1:#1E2A32; --s2:#93701F; --ref:#8F8570; --bar1:#4E5860; --bar2:#7A1F26;
   --sage:#3D6B52; --sage-bg:#DFE6D9; --amber:#6E5A1E; --amber-bg:#E9E1CC;
   --orange:#92471F; --orange-bg:#E7DBCB; --orange-deep:#723313;
@@ -527,23 +527,7 @@ function viewHome(){
       tile("Rated 1 or 2 stars overall", `${low} of ${ovr.length}`, `${Math.round(low/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
       tile("Nurse staff hours per resident per day", fmt(riHv), h("span",null, `RI average vs ${fmt(usHv)} nationally`)),
       tile("Nursing staff turnover", fmt(riT,1)+"%", `RI average vs ${fmt(usT,1)}% nationally`)
-    )),
-    h("section",null,
-      h("div",{class:"sec-head"}, h("div",null,h("h2",{text:"How Rhode Island has changed"}),h("p",{class:"small",style:"margin:0",text:"Statewide averages, each CMS monthly release."}))),
-      h("div",{class:"grid g2"},
-        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Nurse staff hours per resident per day"}),
-          lineChart({series:[{name:"Rhode Island",color:"var(--s1)",values:riH},{name:"United States",color:"var(--ref)",values:usH}], dp:2, fromIdx:M.indexOf("2019-01"), aria:"Nurse staffing, RI vs US"})),
-        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Nursing staff turnover (%)"}),
-          lineChart({series:[{name:"Rhode Island",color:"var(--s1)",values:turn},{name:"United States",color:"var(--ref)",values:usAvg("turnover")}], dp:1, unit:"%", aria:"Turnover RI vs US"})),
-        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Average overall star rating, RI homes"}),
-          lineChart({series:[{name:"RI average",color:"var(--s1)",values:D.avg.RI_calc.overall}], dp:2, yMin:1, yMax:5, fromIdx:M.indexOf("2019-01"), aria:"Average star rating"})),
-        h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health inspection citations by year, all RI homes"}),
-          barChart({cats:yrs.map(y=> y===LATEST.slice(0,4) ? y+"*" : y),
-            series:[{name:"No actual harm",color:"var(--bar1)",values:yrs.map(y=>cy[y][0]-cy[y][2])},{name:"Actual harm or immediate jeopardy",color:"var(--bar2)",values:yrs.map(y=>cy[y][2])}],
-            extra:i=>`${cy[yrs[i]][1]} from complaints · ${cy[yrs[i]][3]} immediate jeopardy`, aria:"Citations by year"}),
-          h("div",{class:"note",text:`* ${LATEST.slice(0,4)} is a partial year. Counts are what CMS published; inspections slowed sharply in 2020 during COVID.`}))
-      )
-    )
+    ))
   );
 
   // recent serious citations
