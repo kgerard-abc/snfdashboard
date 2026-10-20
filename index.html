@@ -146,6 +146,7 @@ td.home{min-width:150px}
 .legend .mk{width:1px;height:12px;background:var(--ink-2)}
 .chart-title{font-weight:600;font-size:14.5px}
 .note{font-size:12.5px;color:var(--muted);margin-top:6px;font-style:italic}
+.harm-note{font-size:13.5px;color:var(--ink);margin-top:6px;line-height:1.45}
 
 /* facility page */
 .back{display:inline-block;margin-top:28px;font-size:14px;color:var(--ink-2)}
@@ -264,6 +265,7 @@ const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
+function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
 function citationLink(ccn, r){
   // the official report that contains this citation (health citations Care Compare still lists)
   if (r[5]!=="H" || !r[7]) return null;
@@ -539,12 +541,12 @@ function viewHome(){
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Most recent harm citations"}), h("p",{class:"small",style:"margin:0",text:"Citations where inspectors found residents were actually harmed or in immediate jeopardy."}))),
     h("div",{class:"tbl-wrap"}, h("table",null,
       h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}),h("th",{text:"Report"}))),
-      h("tbody",null, top.map(([f,r]) => { const sc = sevClass(r[2]);
+      h("tbody",null, top.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
         return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
           h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
           h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
           h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
-          h("td",{class:"desc",text:(D.tags[r[1]]||[""])[0]}),
+          h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
           h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); }))
     ))
   ));
@@ -800,8 +802,8 @@ function viewFacility(ccn){
         h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length ? rs.length + " citation" + (rs.length===1?"":"s") : "no citations"}`}),
           "GHIJKL".includes(worst) ? h("span",{class:"chip bad",text: "JKL".includes(worst) ? "Immediate jeopardy" : "Actual harm"}) : null,
           rl.length ? h("span",{class:"small",style:"display:inline-flex;gap:12px"}, rl) : null),
-        h("ul",null, rs.map(r => h("li",null, h("span",{class:"sev "+sevClass(r[2]), title:SEVTXT[sevClass(r[2])], text:r[2]||"–"}),
-          h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small"}, [SEVTXT[sevClass(r[2])] + ", " + scopeTxt(r[2]), r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · "), citationLink(ccn, r))))))
+        h("ul",null, rs.map(r => { const hs = harmSummary(ccn, r); return h("li",null, h("span",{class:"sev "+sevClass(r[2]), title:SEVTXT[sevClass(r[2])], text:r[2]||"–"}),
+          h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small"}, [SEVTXT[sevClass(r[2])] + ", " + scopeTxt(r[2]), r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · "), citationLink(ccn, r)), hs ? h("p",{class:"harm-note",text:hs}) : null)); }))
       ));
     });
     shown += PAGE;
