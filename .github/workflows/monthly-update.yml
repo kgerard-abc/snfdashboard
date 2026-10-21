@@ -38,7 +38,10 @@ jobs:
         id: fetch
         run: |
           if [ "${{ inputs.force }}" = "true" ]; then F="--force"; else F=""; fi
-          python3 pipeline/fetch_cms.py $F | tee fetch.log
+          set -o pipefail
+          if python3 pipeline/fetch_cms.py $F 2>&1 | tee fetch.log; then ok=1; else ok=0; fi
+          while IFS= read -r line; do echo "::notice::CMS: $line"; done < fetch.log
+          if [ "$ok" = "0" ]; then echo "::error::The CMS download step failed (see the notices above)."; exit 1; fi
           if grep -q "NOTHING NEW" fetch.log; then echo "new=no" >> "$GITHUB_OUTPUT"; else echo "new=yes" >> "$GITHUB_OUTPUT"; fi
 
       - name: Rebuild the dashboard data

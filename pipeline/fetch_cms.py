@@ -38,12 +38,13 @@ def die(msg):
 
 def main(force=False):
     items = json.loads(get(CATALOG))
-    nh = [i for i in items if "nursing home" in json.dumps([i.get("theme"), i.get("title")]).lower()]
-    if not nh:
-        die("could not find any nursing home datasets in the CMS catalog (the catalog may have changed)")
     picked, newest = {}, ""
-    for i in nh:
+    for i in items:
         for d in i.get("distribution", []) or []:
+            if isinstance(d, dict) and isinstance(d.get("data"), dict):
+                d = d["data"]            # the catalog nests the real entry under "data"
+            if not isinstance(d, dict):
+                continue
             url = d.get("downloadURL") or ""
             base = os.path.basename(url.split("?")[0])
             if not base.lower().endswith(".csv"):
