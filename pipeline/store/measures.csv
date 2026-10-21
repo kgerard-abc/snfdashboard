@@ -1,0 +1,35 @@
+measure_code,measure_description,resident_type,used_in_quality_measure_five_star_rating
+402,Percentage of long-stay residents who self-report moderate to severe pain,Long Stay,Y
+403,Percentage of high risk long-stay residents with pressure ulcers,Long Stay,Y
+405,Percentage of low risk long-stay residents who lose control of their bowels or bladder,Long Stay,N
+411,Percentage of long-stay residents assessed and appropriately given the seasonal influenza vaccine,Long Stay,N
+419,Percentage of long-stay residents who received an antipsychotic medication,Long Stay,Y
+424,Percentage of short-stay residents who self-report moderate to severe pain,Short Stay,Y
+425,Percentage of short-stay residents with pressure ulcers that are new or worsened,Short Stay,Y
+426,Percentage of short-stay residents who were assessed and appropriately given the seasonal influenza vaccine,Short Stay,N
+471,Percentage of short-stay residents who made improvements in function,Short Stay,Y
+453,Percentage of high risk long-stay residents with pressure ulcers,Long Stay,Y
+002,Percentage of SNF residents with pressure ulcers that are new or worsened,Short Stay,Y
+476,Percentage of SNF residents with pressure ulcers that are new or worsened,Short Stay,Y
+523,Percentage of short-stay residents who were successfully discharged to the community,Short Stay,Y
+401,Percentage of long-stay residents whose need for help with daily activities has increased,Long Stay,Y
+404,Percentage of long-stay residents who lose too much weight,Long Stay,N
+406,Percentage of long-stay residents with a catheter inserted and left in their bladder,Long Stay,Y
+407,Percentage of long-stay residents with a urinary tract infection,Long Stay,Y
+408,Percentage of long-stay residents who have depressive symptoms,Long Stay,N
+409,Percentage of long-stay residents who were physically restrained,Long Stay,N
+410,Percentage of long-stay residents experiencing one or more falls with major injury,Long Stay,Y
+415,Percentage of long-stay residents assessed and appropriately given the pneumococcal vaccine,Long Stay,N
+430,Percentage of short-stay residents assessed and appropriately given the pneumococcal vaccine,Short Stay,N
+434,Percentage of short-stay residents who newly received an antipsychotic medication,Short Stay,Y
+451,Percentage of long-stay residents whose ability to walk independently worsened,Long Stay,Y
+452,Percentage of long-stay residents who received an antianxiety or hypnotic medication,Long Stay,N
+454,Percentage of long-stay residents assessed and appropriately given the seasonal influenza vaccine,Long Stay,N
+472,Percentage of short-stay residents who were assessed and appropriately given the seasonal influenza vaccine,Short Stay,N
+479,Percentage of long-stay residents with pressure ulcers,Long Stay,Y
+480,Percentage of long-stay residents with new or worsened bowel or bladder incontinence,Long Stay,N
+481,Percentage of long-stay residents who received an antipsychotic medication,Long Stay,Y
+521,Percentage of short-stay residents who were rehospitalized after a nursing home admission,Short Stay,Y
+522,Percentage of short-stay residents who had an outpatient emergency department visit,Short Stay,Y
+551,Number of hospitalizations per 1000 long-stay resident days,Long Stay,Y
+552,Number of outpatient emergency department visits per 1000 long-stay resident days,Long Stay,Y
