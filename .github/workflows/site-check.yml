@@ -1,0 +1,22 @@
+name: Site health check
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 12 * * 2'   # every Tuesday, 8 AM Eastern (daylight time)
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check the data in this repo
+        run: python3 .github/scripts/check_site.py
+      - name: Check the published site is up
+        if: github.event_name != 'push'
+        run: python3 .github/scripts/check_site.py --live
