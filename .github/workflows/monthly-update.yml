@@ -32,10 +32,12 @@ jobs:
       - run: pip install -r pipeline/requirements.txt
 
       - name: Pull harm summaries typed in the Google Sheet
-        run: python3 pipeline/merge_sheet.py "https://docs.google.com/spreadsheets/d/1VQzxLK3Osq9yv3Clt-uQYlLFZoXoj5Grl_WZj2Wo1dc/export?format=xlsx" pipeline/harm_summaries.xlsx
+        run: |
+          python3 pipeline/merge_sheet.py "https://docs.google.com/spreadsheets/d/1VQzxLK3Osq9yv3Clt-uQYlLFZoXoj5Grl_WZj2Wo1dc/export?format=xlsx" pipeline/harm_summaries.xlsx 2>&1 | while IFS= read -r l; do echo "::notice::Harm summaries sheet: $l"; done
 
       - name: Pull facility details typed in the Google Sheet
-        run: python3 pipeline/merge_extras.py "https://docs.google.com/spreadsheets/d/1PXFDq_55whZPcW0ODuJYsD3NGcJnsvgzYkgV0y8maGQ/export?format=xlsx" pipeline/facility_extras.xlsx
+        run: |
+          python3 pipeline/merge_extras.py "https://docs.google.com/spreadsheets/d/1PXFDq_55whZPcW0ODuJYsD3NGcJnsvgzYkgV0y8maGQ/export?format=xlsx" pipeline/facility_extras.xlsx 2>&1 | while IFS= read -r l; do echo "::notice::Facility details sheet: $l"; done
 
       - name: Download the newest CMS month
         id: fetch
