@@ -242,13 +242,17 @@ def derive(d):
             L = last.loc[ccn]
             status = "Open" if L["cms_month"] == latest else f"No longer in CMS data (last listed {month_label(L['cms_month'])})"
             closed_month = closed_from_note(e.get("notes"))   # "Closed January 2025 ..." in the facility details notes
+            closed_last = None
             if closed_month:
                 status = f"Closed {month_label(closed_month)}"
+                # show the home as of the last CMS file on or before it closed (CMS skips some months)
+                before = sorted(m for m in pm.loc[pm["ccn"] == ccn, "cms_month"].unique() if m <= closed_month)
+                closed_last = before[-1] if before else L["cms_month"]
             rec = {"ccn": ccn, "name": e.get("display_name") or L["provider_name"], "cms_name": L["provider_name"],
                    "legal_business_name": L["legal_business_name"], "address": L["provider_address"],
                    "city": str(L["city_town"]).title(), "zip": L["zip_code"], "county": str(L["county_parish"]).title(),
                    "phone": L["telephone_number"], "status": status,
-                   "first_month": first.loc[ccn, "cms_month"], "last_month": min(L["cms_month"], closed_month) if closed_month else L["cms_month"],
+                   "first_month": first.loc[ccn, "cms_month"], "last_month": closed_last or L["cms_month"],
                    "beds": L["number_of_certified_beds"], "residents": L["average_number_of_residents_per_day"],
                    "ownership_type": L["ownership_type"], "cms_chain": L["chain_name"],
                    "chain_facilities": L["number_of_facilities_in_chain"],
