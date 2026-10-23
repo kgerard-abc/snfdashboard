@@ -177,6 +177,7 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .sev-key{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--ink-2);margin:8px 0 12px}
 .sev-key span{display:inline-flex;gap:8px;align-items:center}
 .sev-key .sev{width:34px}
+.list-key{max-width:100ch;margin:0 0 10px;color:var(--ink-2)}
 footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
 footer p{max-width:90ch;margin:0 0 10px}
 @media (max-width:560px){
@@ -263,6 +264,8 @@ function pips(r, lg){ const w = h("span",{class:"pips"+(lg?" lg":""), "aria-hidd
 function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
+const SFFTXT = {SFF:"Special Focus Facility: one of the few homes CMS has singled out for a long record of serious problems. It is inspected at least every six months and faces tougher penalties until it improves.",
+  cand:"Special Focus candidate: on CMS's monthly list of the homes with the worst inspection records in the state. New Special Focus Facilities are chosen from this list."};
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
@@ -599,7 +602,7 @@ function homesTable(){
     rows.forEach(f => {
       const st = STATS[f.ccn] || {};
       const flags = [];
-      const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",text:sff==="SFF"?"Special Focus":"SFF candidate"}));
+      const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",title:sff==="SFF"?SFFTXT.SFF:SFFTXT.cand,text:sff==="SFF"?"Special Focus":"Special Focus candidate"}));
       if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
       if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
@@ -618,6 +621,11 @@ function homesTable(){
   }
   sec.append(
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
+    h("div",{class:"list-key small"},
+      h("p",{style:"margin:0 0 4px"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
+        h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. ", h("a",{href:"#about",text:"More about these terms"})),
+      h("div",{class:"sev-key",style:"margin:4px 0 0"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c])))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     h("div",{class:"tbl-wrap"}, h("table",null, thead, tbody))
   );
@@ -665,6 +673,9 @@ function viewAbout(){
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
     h("div",{class:"sev-key"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
     P("Within each group, a later letter means the problem affected more residents. Harm citations (G and above) are the most serious; immediate jeopardy (J and above) means residents faced serious injury or death."),
+    h("h2",{text:"Special Focus Facilities",style:"margin-top:20px"}),
+    P("CMS names a small number of homes in each state Special Focus Facilities because they have a long record of serious problems. In CMS's words, they have \u201ca persistent record of noncompliance leading to poor quality of care.\u201d A Special Focus Facility is inspected at least every six months and faces tougher penalties. To leave the program, it must pass two standard inspections in a row with 12 or fewer citations, none more serious than E. A home that does not improve can lose its Medicare and Medicaid funding."),
+    P("A Special Focus candidate is on CMS's monthly list of the homes with the worst inspection records in the state. The state picks new Special Focus Facilities from that list, so being a candidate does not mean a home has been chosen."),
     h("h2",{text:"Staffing",style:"margin-top:20px"}),
     P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
     h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
@@ -677,7 +688,8 @@ function viewAbout(){
     ),
     h("h2",{text:"Sources",style:"margin-top:20px"}),
     h("p",null, "CMS nursing home data archive: ", h("a",{href:"https://data.cms.gov/provider-data/archived-data/nursing-homes",target:"_blank",rel:"noopener",text:"data.cms.gov/provider-data/archived-data/nursing-homes"})),
-    h("p",null, "CMS Care Compare: ", h("a",{href:"https://www.medicare.gov/care-compare/",target:"_blank",rel:"noopener",text:"medicare.gov/care-compare"}))
+    h("p",null, "CMS Care Compare: ", h("a",{href:"https://www.medicare.gov/care-compare/",target:"_blank",rel:"noopener",text:"medicare.gov/care-compare"})),
+    h("p",null, "CMS Special Focus Facility program rules (QSO-23-01-NH, revised January 2026): ", h("a",{href:"https://www.cms.gov/files/document/qso-23-01-nh-revised-2026-01-28.pdf",target:"_blank",rel:"noopener",text:"cms.gov"}))
   ));
 }
 
@@ -706,6 +718,7 @@ function viewFacility(ccn){
         h("div",{class:"meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ") + (f.phone ? " · " + phone(f.phone) : "")}),
         h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+" certified beds" : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
         flags.length ? h("div",{class:"flags"}, flags) : null,
+        sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
           h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
           h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"})) : null
