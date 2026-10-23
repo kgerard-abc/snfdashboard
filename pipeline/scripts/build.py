@@ -77,6 +77,18 @@ KEY_QMS = {  # MDS and claims measures shown on the dashboard
 }
 
 
+
+MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+
+
+def closed_from_note(note):
+    """A facility details note that starts "Closed <Month> <Year>" marks a home closed even if CMS still lists it.
+    Returns the month as YYYY-MM, or None."""
+    m = re.match(r"\s*closed\s+([a-z]+)\s+(\d{4})", str(note or ""), re.I)
+    if m and m.group(1).lower() in MONTHS:
+        return f"{m.group(2)}-{MONTHS.index(m.group(1).lower()) + 1:02d}"
+    return None
+
 def month_label(m):
     return datetime.strptime(m, "%Y-%m").strftime("%b %Y")
 
@@ -229,11 +241,14 @@ def derive(d):
         if ccn in last.index:
             L = last.loc[ccn]
             status = "Open" if L["cms_month"] == latest else f"No longer in CMS data (last listed {month_label(L['cms_month'])})"
+            closed_month = closed_from_note(e.get("notes"))   # "Closed January 2025 ..." in the facility details notes
+            if closed_month:
+                status = f"Closed {month_label(closed_month)}"
             rec = {"ccn": ccn, "name": e.get("display_name") or L["provider_name"], "cms_name": L["provider_name"],
                    "legal_business_name": L["legal_business_name"], "address": L["provider_address"],
                    "city": str(L["city_town"]).title(), "zip": L["zip_code"], "county": str(L["county_parish"]).title(),
                    "phone": L["telephone_number"], "status": status,
-                   "first_month": first.loc[ccn, "cms_month"], "last_month": L["cms_month"],
+                   "first_month": first.loc[ccn, "cms_month"], "last_month": min(L["cms_month"], closed_month) if closed_month else L["cms_month"],
                    "beds": L["number_of_certified_beds"], "residents": L["average_number_of_residents_per_day"],
                    "ownership_type": L["ownership_type"], "cms_chain": L["chain_name"],
                    "chain_facilities": L["number_of_facilities_in_chain"],
@@ -267,7 +282,7 @@ def derive(d):
                 seen.add(r["k"]); lst.append(r["name"])
         fn[ccn] = "; ".join(lst)
     fac["former_names"] = fac["ccn"].map(fn).fillna("")
-    fac["sort"] = fac["status"].map(lambda s: 0 if s == "Open" else (1 if s.startswith("No longer") else 2))
+    fac["sort"] = fac["status"].map(lambda s: 0 if s == "Open" else (1 if s.startswith(("No longer", "Closed")) else 2))
     fac = fac.sort_values(["sort", "name"]).drop(columns="sort").reset_index(drop=True)
     name_of = dict(zip(fac["ccn"], fac["name"]))
 
