@@ -158,6 +158,7 @@ td.home{min-width:150px}
 
 /* facility page */
 .back{display:inline-block;margin-top:28px;font-size:14px;color:var(--ink-2)}
+.tag-self{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:1px 7px;margin-left:6px;vertical-align:middle;cursor:help}
 .ttk{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--r);padding:14px 18px;margin:16px 0 6px;background:var(--panel)}
 .ttk h2{font-size:15px;margin:0 0 8px}
 .ttk ul{margin:0;padding-left:20px}
@@ -629,6 +630,9 @@ function pips(r, lg){ const cc = r==null ? "" : r<=2 ? " r-bad" : r===3 ? " r-wa
 function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
+// CMS's own claims-based measure set (from Medicare claims, not facility-submitted assessments); every other
+// quality measure here comes from the MDS, the resident assessment each home's own staff completes.
+const QM_CLAIMS_BASED = new Set(["521","551","552"]);
 const SFFTXT = {SFF:"Special Focus Facility: one of the few homes CMS has singled out for a long record of serious problems. It is inspected at least every six months and faces tougher penalties until it improves.",
   cand:"Special Focus candidate: on CMS's monthly list of the homes with the worst inspection records in the state. New Special Focus Facilities are chosen from this list."};
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
@@ -1282,9 +1286,16 @@ function viewFacility(ccn){
       sub = h("span",null, `RI average ${fmt(ri,dp)}${unit} · `, h("span",{class:"delta " + (Math.abs(d)<(dp?0.01:0.5)?"same": good?"up":"down"), text: Math.abs(d)<(dp?0.01:0.5) ? "about average" : (good ? "better than average" : "worse than average")})); }
     return tile(label, v==null ? "–" : fmt(v,dp)+unit, h("span",null, sub, i>=0 && i!==li ? h("div",{text:"as of " + mlabel(M[i])}) : null));
   };
+  const cmiLV = lastVal(ser(ccn,"cmi"));
+  const cmiTile = cmiLV[0]==null ? null : (() => {
+    const ri = riAvg("cmi")[cmiLV[1]];
+    return tile("Nursing case-mix index", fmt(cmiLV[0],2),
+      h("span",null, ri!=null ? `RI average ${fmt(ri,2)}` : null, cmiLV[1]>=0 && cmiLV[1]!==li ? h("div",{text:"as of " + mlabel(M[cmiLV[1]])}) : null));
+  })();
   app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}),
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
-      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"))));
+      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), cmiTile),
+    cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects how much nursing care residents need, based on their health conditions. A higher number means a more medically complex population to care for — not necessarily worse care.") : null));
 
   // trend chart with selector
   const trendKeys = [["overall","Overall rating"],["health","Inspection rating"],["staffing","Staffing rating"],["qm","Quality rating"],["hprd","Nurse hours"],["rn_hprd","RN hours"],["aide_hprd","Aide hours"],["wkend_hprd","Weekend nurse hours"],["turnover","Turnover"],["rn_turnover","RN turnover"],["residents","Residents per day"],["cmi","Case-mix index"]];
@@ -1423,10 +1434,14 @@ function viewFacility(ccn){
       // quarters -> plot at quarter end month
       const toM = q => { const y = q.slice(0,4), k = +q.slice(-1); return y + "-" + String(k*3).padStart(2,"0"); };
       const mk = (pairs) => { const v = M.map(()=>null); const extra = {}; pairs.forEach(([q,s])=>{ const m = toM(q); const i = M.indexOf(m); if (i>=0) v[i]=s; else extra[m]=s; }); return v; };
-      return h("div",{class:"card"}, h("div",{class:"chart-title",style:"font-size:13px",text:D.qm_labels[code]}),
+      const selfReported = !QM_CLAIMS_BASED.has(code);
+      return h("div",{class:"card"}, h("div",{class:"chart-title",style:"font-size:13px"}, D.qm_labels[code],
+          selfReported ? h("span",{class:"tag-self",title:"From the facility's own resident assessments (MDS), completed by the home's own staff — not independently verified the way Medicare claims data is."},"Self-reported") : null),
         lineChart({series:[{name:f.name,color:"var(--s1)",values:mk(qms[code])},{name:"RI average",color:"var(--s2)",values:mk(D.qm_ri[code]||[]),endDot:false}], dp: code.startsWith("55")?2:1, height:160, aria:D.qm_labels[code]}));
     };
-    app.append(h("section",null, h("h2",{text:"Resident outcomes"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these."}),
+    app.append(h("section",null, h("h2",{text:"Resident outcomes"}),
+      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter — usually because too few residents at the home qualified for that measure."),
+      h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{class:"tag-self",style:"margin-left:0"},"Self-reported"), " measures come from the facility's own resident assessments (MDS), filled out by the home's own staff, rather than from Medicare claims — treat them as somewhat less independently verified than the rest."),
       h("div",{class:"grid g3"}, codes.map(qchart))));
   }
 
