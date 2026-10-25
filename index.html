@@ -96,6 +96,9 @@ section{margin-top:40px}
 .pips i{width:9px;height:9px;border-radius:1px;background:var(--grid);display:block}
 .pips i.f{background:var(--ink)}
 .pips.lg i{width:14px;height:14px;border-radius:2px}
+.pips.r-bad i.f{background:var(--bad)}
+.pips.r-warn i.f{background:var(--warn)}
+.pips.r-good i.f{background:var(--good)}
 .rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 
 .chip{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:2px;white-space:nowrap;line-height:1.5;border-left:3px solid transparent}
@@ -151,6 +154,11 @@ td.home{min-width:150px}
 
 /* facility page */
 .back{display:inline-block;margin-top:28px;font-size:14px;color:var(--ink-2)}
+.ttk{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--r);padding:14px 18px;margin:16px 0 6px;background:var(--panel)}
+.ttk h2{font-size:15px;margin:0 0 8px}
+.ttk ul{margin:0;padding-left:20px}
+.ttk li{margin:0 0 6px;line-height:1.45;font-size:14.5px}
+.ttk li:last-child{margin-bottom:0}
 .fac-head{margin-top:12px;display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between}
 .fac-head .meta{color:var(--ink-2);font-size:14px;margin-top:6px}
 .fac-head .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -245,6 +253,7 @@ footer p{max-width:90ch;margin:0 0 10px}
     <div class="mast-row">
       <nav class="tabs" aria-label="Views">
         <a href="#home" id="tab-home">All homes</a>
+        <a href="#harms" id="tab-harms">Recent harm citations</a>
         <a href="#owners" id="tab-owners">Owner groups</a>
         <a href="#about" id="tab-about">About the data</a>
       </nav>
@@ -602,6 +611,7 @@ const dlabel = d => { if (!d) return ""; const [y,mo,da] = d.split("-"); return 
 const fmt = (v, dp=2) => v == null ? "–" : (+v).toLocaleString("en-US", {minimumFractionDigits:dp, maximumFractionDigits:dp});
 const money = v => v == null ? "–" : "$" + Math.round(v).toLocaleString("en-US");
 const mi = m => +m.slice(0,4)*12 + (+m.slice(5,7)-1);
+const monthsAgo = (ym, n) => { let y = +ym.slice(0,4), mo = +ym.slice(5,7)-1-n; y += Math.floor(mo/12); mo = ((mo%12)+12)%12; return y + "-" + String(mo+1).padStart(2,"0") + "-01"; };
 const phone = p => { p = String(p||"").replace(/\D/g,""); return p.length===10 ? `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}` : p; };
 const ser = (ccn, key) => (D.series[ccn] && D.series[ccn][key]) || [];
 const at = (ccn, key, i) => { const a = ser(ccn,key); return i>=0 && i<a.length ? a[i] : null; };
@@ -611,7 +621,7 @@ const I12 = idxMonthsAgo(12), I36 = idxMonthsAgo(36);
 function riAvg(key){ const a = D.avg.RI && D.avg.RI[key]; const c = D.avg.RI_calc && D.avg.RI_calc[key];
   if (!a) return c || []; return a.map((v,i)=> v!=null ? v : (c ? c[i] : null)); }
 function usAvg(key){ return (D.avg.NATION && D.avg.NATION[key]) || []; }
-function pips(r, lg){ const w = h("span",{class:"pips"+(lg?" lg":""), "aria-hidden":"true"}); for (let i=1;i<=5;i++) w.append(h("i",{class: r!=null && i<=r ? "f":""})); return w; }
+function pips(r, lg){ const cc = r==null ? "" : r<=2 ? " r-bad" : r===3 ? " r-warn" : " r-good"; const w = h("span",{class:"pips"+(lg?" lg":"")+cc, "aria-hidden":"true"}); for (let i=1;i<=5;i++) w.append(h("i",{class: r!=null && i<=r ? "f":""})); return w; }
 function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
@@ -621,6 +631,24 @@ function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolate
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
 function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
+function pbjInfo(ccn){ return (D.pbj_q1_2026||{})[ccn] || null; }
+
+function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
+  const bullets = [];
+  if (sffNow==="SFF") bullets.push("This is a Special Focus Facility — CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
+  else if (sffNow) bullets.push("CMS has flagged this home as a Special Focus Facility candidate, meaning it's on a watch list for poor performance.");
+  if (abuseNow) bullets.push("This home carries CMS's abuse icon, meaning it was cited for abuse, neglect, or a related form of harm to a resident.");
+  if (overall!=null && overall<=2) bullets.push(`Its overall CMS rating is ${overall} of 5 stars, below average.`);
+  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) bullets.push(`${fmt(pbj.contract_pct,0)}% of nurse staff hours this quarter came from contract or agency staff rather than the home's own employees, a higher share than most RI homes.`);
+  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) bullets.push(`Staffing drops sharply on weekends here — about ${fmt(pbj.weekend_drop_pct,0)}% lower than weekdays this quarter.`);
+  if (newOperator) bullets.push("This home changed operators within the past year, so its history under current management may be short.");
+  if (st.harm3) bullets.push(`Inspectors found ${st.harm3} citation${st.harm3===1?"":"s"} of actual harm or immediate jeopardy to residents here in the past 3 years.`);
+  if (st.fines3) bullets.push(`CMS fined this home ${money(st.fines3)} in the past 3 years.`);
+  if (!bullets.length){
+    bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page — see the sections below for the full picture.");
+  }
+  return bullets.slice(0,4);
+}
 function citationLink(ccn, r){
   // the official report that contains this citation (health citations Care Compare still lists)
   if (r[5]!=="H" || !r[7]) return null;
@@ -887,27 +915,36 @@ function viewHome(){
     ))
   );
 
-  // recent serious citations
-  const serious = [];
-  FAC.forEach(f => (D.citations[f.ccn]||[]).forEach(r => { if ("GHIJKL".includes(r[2]) && r[5]==="H" && r[7]) serious.push([f, r]); }));
-  serious.sort((a,b)=> a[1][0] < b[1][0] ? 1 : -1);
-  const top = serious.slice(0, 8);
-  app.append(h("section",null,
-    h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Most recent harm citations"}), h("p",{class:"small",style:"margin:0",text:"Citations where inspectors found residents were actually harmed or in immediate jeopardy."}))),
-    h("div",{class:"tbl-wrap"}, h("table",null,
-      h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}),h("th",{text:"Report"}))),
-      h("tbody",null, top.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
-        return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
-          h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
-          h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
-          h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
-          h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
-          h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); }))
-    ))
-  ));
-
   // table of homes
   app.append(homesTable());
+}
+
+function viewHarms(){
+  const cutoff = monthsAgo(LATEST, 12);
+  const serious = [];
+  FAC.forEach(f => (D.citations[f.ccn]||[]).forEach(r => { if ("GHIJKL".includes(r[2]) && r[5]==="H" && r[7] && r[0] >= cutoff) serious.push([f, r]); }));
+  serious.sort((a,b)=> a[1][0] < b[1][0] ? 1 : -1);
+  app.append(
+    h("a",{class:"back",href:"#home",text:"← All homes"}),
+    h("section",null,
+      h("h1",{text:"Recent harm citations"}),
+      h("p",{class:"lede",text:"Every citation across all Rhode Island nursing homes, in the past 12 months, where inspectors found a resident was actually harmed or in immediate jeopardy (severity G or higher)."}),
+      h("p",{class:"updated-line",text:`${serious.length} citation${serious.length===1?"":"s"} since ${mlabel(cutoff.slice(0,7))}.`})
+    ),
+    h("section",null,
+      h("div",{class:"tbl-wrap"}, h("table",null,
+        h("thead",null,h("tr",null,h("th",{text:"Inspection date"}),h("th",{text:"Home"}),h("th",{text:"Severity"}),h("th",{text:"What was cited"}),h("th",{text:"Report"}))),
+        h("tbody",null, serious.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
+          return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
+            h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
+            h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
+            h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
+            h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
+            h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); })),
+      )),
+      serious.length ? null : h("p",{class:"small",text:"No citations of this kind in the past 12 months."})
+    )
+  );
 }
 
 function homesTable(){
@@ -962,6 +999,9 @@ function homesTable(){
       const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",title:sff==="SFF"?SFFTXT.SFF:SFFTXT.cand,text:sff==="SFF"?"Special Focus":"Special Focus candidate"}));
       if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
       if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
+      const pbj0 = pbjInfo(f.ccn);
+      if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
+      if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
         h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
           h("div",{class:"sub"}, f.city, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
@@ -1096,7 +1136,7 @@ function homesTable(){
     h("div",{class:"list-key small"},
       h("p",{style:"margin:0 0 4px"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. ", h("a",{href:"#about",text:"More about these terms"})),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("a",{href:"#about",text:"More about these terms"})),
       h("div",{class:"sev-key",style:"margin:4px 0 0"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c])))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, viewBar, mapPanel, tblWrap
@@ -1150,6 +1190,7 @@ function viewAbout(){
     P("A Special Focus candidate is on CMS's monthly list of the homes with the worst inspection records in the state. The state picks new Special Focus Facilities from that list, so being a candidate does not mean a home has been chosen."),
     h("h2",{text:"Staffing",style:"margin-top:20px"}),
     P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
+    P("Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently Q1 2026) rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard."),
     h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
     h("ul",null,
       h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
@@ -1180,6 +1221,9 @@ function viewFacility(ccn){
     const recent = changes.filter(c => mi(c.month) >= mi(LATEST)-12);
     if (recent.length) flags.push(h("span",{class:"chip warn",text:"New operator in the past year"}));
   }
+  const pbj = pbjInfo(ccn);
+  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
+  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
 
   app.append(
     h("a",{class:"back",href:"#home",text:"← All homes"}),
@@ -1208,6 +1252,12 @@ function viewFacility(ccn){
         ))
     )
   );
+
+  {
+    const newOperator = f.changed_ownership_flag_months && f.status==="Open" && changes.filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
+    const ttk = thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOperator);
+    app.append(h("div",{class:"ttk"}, h("h2",{text:"Things to know"}), h("ul",null, ttk.map(t=>h("li",{text:t})))));
+  }
 
   // rating tiles
   const rt = (k, label) => {
@@ -1249,6 +1299,25 @@ function viewFacility(ccn){
   ctl.addEventListener("change", ()=>{ tk = ctl.value; drawTrend(); });
   app.append(h("section",null, h("div",{class:"sec-head"}, h("h2",{text:"Over time"}), ctl), h("div",{class:"card"}, holder)));
   drawTrend();
+
+  // PBJ staffing detail (Q1 2026, one quarter — not a running series like the metrics above)
+  if (pbj){
+    app.append(h("section",null,
+      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:"From CMS's daily payroll-based staffing records (PBJ), Q1 2026 (Jan–Mar). A single quarter, not a running average like the figures above."}))),
+      h("div",{class:"grid g2"},
+        h("div",{class:"card"},
+          h("div",{class:"chart-title",text:"Contract (agency) staff"}),
+          h("p",{style:"margin:6px 0 0;font-size:28px;font-weight:700",text:(pbj.contract_pct==null?"–":fmt(pbj.contract_pct,1)+"%")}),
+          h("p",{class:"small",style:"margin:4px 0 0",text:"of all nurse staff hours this quarter came from contract or agency staff rather than the home's own employees."})),
+        h("div",{class:"card"},
+          h("div",{class:"chart-title",text:"Weekday vs. weekend staffing"}),
+          h("p",{style:"margin:6px 0 0;font-size:15px"}, fmt(pbj.weekday_hprd), " hrs/resident/day on weekdays, vs ", fmt(pbj.weekend_hprd), " on weekends",
+            pbj.weekend_drop_pct!=null ? h("strong",{text:" ("+fmt(pbj.weekend_drop_pct,0)+"% lower)"}) : null, "."),
+          pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text:"Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null)
+      ),
+      h("p",{class:"note",style:"max-width:70ch"},"Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS — not CMS's star-rating averages. Statewide, Rhode Island homes averaged 5.4% contract staff and a 13.7% weekend staffing drop this quarter, for comparison.")
+    ));
+  }
 
   // inspections
   const cits = (D.citations[ccn]||[]).slice().sort((a,b)=>a[0]<b[0]?1:-1);
@@ -1383,8 +1452,9 @@ function footer(){
 function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
-  ["home","owners","about"].forEach(t => document.getElementById("tab-"+t).classList.toggle("on", hsh===t || (t==="home" && (hsh===""||hsh==="list"))));
+  ["home","harms","owners","about"].forEach(t => document.getElementById("tab-"+t).classList.toggle("on", hsh===t || (t==="home" && (hsh===""||hsh==="list"))));
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
+  else if (hsh==="harms") viewHarms();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
   else viewHome();
