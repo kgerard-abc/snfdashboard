@@ -187,6 +187,56 @@ footer p{max-width:90ch;margin:0 0 10px}
   .search{max-width:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== Map view, "near me" and ZIP search ===== */
+[hidden]{display:none!important}
+.near-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.near-row .near-or{font-size:13px;color:var(--muted)}
+.near-lead{font-weight:600;color:var(--ink)}
+.btn-quiet{font-family:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:6px 12px;cursor:pointer}
+.btn-quiet:hover{background:var(--grid);border-color:var(--ink)}
+.btn-quiet:disabled{opacity:.6;cursor:default}
+#zipInput{width:9ch;font-family:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:6px 10px}
+.btn-quiet:focus-visible,.view-btn:focus-visible,#zipInput:focus-visible,
+.tm-zbtn:focus-visible,.pop-btn:focus-visible,.tm-popup-close:focus-visible,
+.pop-list button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.near-status{flex-basis:100%;margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.view-bar{display:inline-flex;border:1px solid var(--ink);border-radius:3px;overflow:hidden;margin:0 0 14px}
+.view-btn{font-family:inherit;font-size:14px;font-weight:600;padding:7px 20px;border:none;background:transparent;color:var(--ink);cursor:pointer}
+.view-btn+.view-btn{border-left:1px solid var(--ink)}
+.view-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.row-dist{color:var(--muted)}
+#mapPanel{margin:0 0 20px}
+.map-status{font-size:13px;color:var(--muted);margin:0 0 8px}
+.map-note{font-size:12.5px;line-height:1.55;color:var(--muted);margin:10px 0 0;max-width:620px}
+.map-note a{color:inherit}
+#map{position:relative;height:clamp(340px,62vh,620px);overflow:hidden;overflow:clip;border:1px solid var(--line);border-radius:3px;background:var(--grid);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#map.dragging{cursor:grabbing}
+#map:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tm-tiles,.tm-markers{position:absolute;left:0;top:0;right:0;bottom:0}
+.tm-markers{pointer-events:none}
+.tm-tile{position:absolute;left:0;top:0;width:256px;height:256px;max-width:none;opacity:0;transition:opacity .2s;-webkit-user-drag:none;user-select:none}
+.tm-tile.loaded{opacity:1}
+.tm-pin,.tm-cluster,.tm-me{position:absolute;left:0;top:0;box-sizing:border-box;border-radius:50%;pointer-events:auto;font-family:inherit;padding:0}
+.tm-pin{width:24px;height:24px;margin:-12px 0 0 -12px;background:var(--ink);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--ink),0 1px 4px rgba(0,0,0,.4);cursor:pointer}
+.tm-pin::after{content:"";position:absolute;left:-10px;right:-10px;top:-10px;bottom:-10px}
+.tm-pin.active{background:var(--accent)}
+.tm-cluster{width:38px;height:38px;margin:-19px 0 0 -19px;background:var(--ink);color:var(--bg);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--ink),0 1px 4px rgba(0,0,0,.4);font-size:14px;font-weight:700;cursor:pointer}
+.tm-pin:focus-visible,.tm-cluster:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.tm-me{width:18px;height:18px;margin:-9px 0 0 -9px;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 2px var(--accent);pointer-events:none}
+.tm-ctl{position:absolute;left:10px;top:10px;display:flex;flex-direction:column;z-index:6}
+.tm-zbtn{width:38px;height:38px;font-family:inherit;font-size:22px;line-height:1;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--ink);cursor:pointer;padding:0}
+.tm-zbtn:first-child{border-radius:3px 3px 0 0;border-bottom:none}
+.tm-zbtn:last-child{border-radius:0 0 3px 3px}
+.tm-zbtn:hover{background:var(--panel)}
+.tm-attr{position:absolute;right:0;bottom:0;z-index:6;font-size:11px;line-height:1.4;padding:2px 6px;background:var(--bg);color:var(--ink);opacity:.92;cursor:default}
+.tm-hint{position:absolute;left:50%;top:50%;z-index:7;transform:translate(-50%,-50%);background:var(--ink);color:var(--bg);font-size:14px;padding:8px 14px;border-radius:3px;opacity:0;transition:opacity .2s;pointer-events:none}
+.tm-hint.show{opacity:.95}
+.tm-popup{position:absolute;left:0;top:0;z-index:8;width:270px;max-width:calc(100% - 16px);background:var(--bg);color:var(--ink);border:1px solid var(--ink);border-radius:3px;box-shadow:0 2px 12px rgba(0,0,0,.3);padding:14px 16px;cursor:default;font-size:14px;line-height:1.45}
+.tm-popup-close{position:absolute;right:2px;top:2px;width:32px;height:32px;font-size:22px;line-height:1;color:var(--muted);background:none;border:none;cursor:pointer}
+.pop-name{font-weight:700;font-size:15px;margin:0 24px 4px 0}
+.pop-line{color:var(--muted);font-size:13px;margin:0 0 3px}
+.pop-btn{display:block;width:100%;margin-top:10px;font-family:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:none;border-radius:3px;padding:9px 12px;cursor:pointer}
 </style>
 
 <header class="masthead">
@@ -210,6 +260,7 @@ footer p{max-width:90ch;margin:0 0 10px}
   </div>
 </header>
 <main class="wrap" id="app"></main>
+<script id="zip-centers" type="application/json">{"02802":[41.95213,-71.45623],"02804":[41.43303,-71.77006],"02806":[41.73819,-71.32018],"02807":[41.17678,-71.57705],"02808":[41.40825,-71.74967],"02809":[41.67573,-71.27333],"02812":[41.47896,-71.65257],"02813":[41.39422,-71.66982],"02814":[41.89612,-71.6954],"02815":[41.77463,-71.64795],"02816":[41.6965,-71.62266],"02817":[41.63708,-71.67836],"02818":[41.64292,-71.48572],"02822":[41.56943,-71.62792],"02825":[41.78207,-71.72683],"02826":[41.98275,-71.65314],"02827":[41.69875,-71.73912],"02828":[41.87769,-71.56091],"02830":[41.97562,-71.65639],"02831":[41.76984,-71.60737],"02832":[41.51472,-71.72962],"02833":[41.48969,-71.77197],"02835":[41.51009,-71.37837],"02836":[41.45404,-71.62023],"02837":[41.51877,-71.16725],"02838":[41.96541,-71.47936],"02839":[41.94076,-71.64151],"02840":[41.47697,-71.31855],"02841":[41.51024,-71.32964],"02842":[41.51764,-71.27793],"02852":[41.58857,-71.45981],"02857":[41.82276,-71.63361],"02858":[41.96449,-71.65127],"02859":[41.95907,-71.75732],"02860":[41.87056,-71.38868],"02861":[41.8786,-71.35313],"02863":[41.89006,-71.39348],"02864":[41.96746,-71.42057],"02865":[41.91546,-71.44982],"02871":[41.58661,-71.25921],"02872":[41.59696,-71.32093],"02873":[41.53313,-71.78055],"02874":[41.50906,-71.47442],"02875":[41.45238,-71.64034],"02876":[41.99723,-71.58437],"02878":[41.60698,-71.18263],"02879":[41.42884,-71.53838],"02881":[41.47808,-71.52472],"02882":[41.41709,-71.47227],"02885":[41.72514,-71.2588],"02886":[41.70543,-71.45438],"02888":[41.74767,-71.40612],"02889":[41.70059,-71.37693],"02891":[41.35777,-71.78962],"02892":[41.49712,-71.5942],"02893":[41.6796,-71.52111],"02894":[41.44425,-71.6993],"02895":[42.00171,-71.49995],"02896":[41.97519,-71.54407],"02898":[41.51764,-71.66852],"02903":[41.81823,-71.40909],"02904":[41.85833,-71.43629],"02905":[41.78473,-71.3961],"02906":[41.84017,-71.39041],"02907":[41.79859,-71.42463],"02908":[41.83982,-71.43679],"02909":[41.8212,-71.45338],"02910":[41.775,-71.43559],"02911":[41.85489,-71.47281],"02912":[41.82559,-71.40224],"02914":[41.81512,-71.36577],"02915":[41.77285,-71.35484],"02916":[41.84266,-71.35244],"02917":[41.90629,-71.52381],"02919":[41.82744,-71.51988],"02920":[41.76734,-71.46551],"02921":[41.76075,-71.51465]}</script>
 
 <script src="data.js"></script>
 <script>
@@ -226,6 +277,306 @@ const LATEST = D.meta.latest;
 const LI = M.indexOf(LATEST);
 const FAC = D.facilities;
 const byCCN = {}; FAC.forEach(f => { if (f.ccn) byCCN[f.ccn] = f; });
+
+/* ---------- map: list/map toggle, "near me" and ZIP search ---------- */
+const RI_BOUNDS = [[41.12,-71.92],[42.03,-71.08]];
+let ZIPS = null;
+try { const zel = document.getElementById("zip-centers"); if (zel) ZIPS = JSON.parse(zel.textContent); } catch(e) { ZIPS = null; }
+function hasCoords(f){ return typeof f.lat === "number" && typeof f.lon === "number" && isFinite(f.lat) && isFinite(f.lon); }
+function milesBetween(lat1,lng1,lat2,lng2){
+  const R=3958.8, rad=Math.PI/180, dLat=(lat2-lat1)*rad, dLng=(lng2-lng1)*rad;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.min(1, Math.sqrt(a)));
+}
+function fmtMiles(d){ return (d<10 ? d.toFixed(1) : String(Math.round(d))) + " mi"; }
+function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function makeMap(root, cb){
+  const TILE=256, MIN_Z=8, MAX_Z=18, CLUSTER_PX=40;
+  const view = {lat:41.68, lng:-71.52, z:9};
+  let w=0, h=0, raf=0;
+  let items=[], shown=[], tiles={};
+  let me=null, meEl=null;
+  let popupAnchor=null, activeKey=null;
+  function mk(tag,cls){ const e=document.createElement(tag); if (cls) e.className=cls; return e; }
+  root.innerHTML="";
+  root.setAttribute("tabindex","0");
+  root.setAttribute("role","region");
+  root.setAttribute("aria-label","Map of Rhode Island nursing homes. Use the arrow keys to move the map and the plus and minus keys to zoom.");
+  const tilePane = mk("div","tm-tiles");
+  const markerPane = mk("div","tm-markers");
+  const ctl = mk("div","tm-ctl");
+  const zin = mk("button","tm-zbtn"); zin.type="button"; zin.textContent="+"; zin.setAttribute("aria-label","Zoom in");
+  const zout = mk("button","tm-zbtn"); zout.type="button"; zout.textContent="−"; zout.setAttribute("aria-label","Zoom out");
+  ctl.append(zin, zout);
+  const attr = mk("div","tm-attr");
+  attr.innerHTML = '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  const hint = mk("div","tm-hint"); hint.textContent="Use Ctrl + scroll to zoom the map"; hint.setAttribute("aria-hidden","true");
+  const popupEl = mk("div","tm-popup"); popupEl.hidden=true; popupEl.setAttribute("role","group");
+  [tilePane, markerPane, ctl, attr, hint, popupEl].forEach(e => root.appendChild(e));
+
+  function projX(lng,z){ return (lng+180)/360*TILE*Math.pow(2,z); }
+  function projY(lat,z){ const s=Math.sin(lat*Math.PI/180); return (0.5 - Math.log((1+s)/(1-s))/(4*Math.PI))*TILE*Math.pow(2,z); }
+  function unprojLng(x,z){ return x/(TILE*Math.pow(2,z))*360-180; }
+  function unprojLat(y,z){ const n=Math.PI-2*Math.PI*y/(TILE*Math.pow(2,z)); return 180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))); }
+  function origin(){ return {x:Math.round(projX(view.lng,view.z)-w/2), y:Math.round(projY(view.lat,view.z)-h/2)}; }
+  function clampZ(z){ return Math.max(MIN_Z, Math.min(MAX_Z, z)); }
+  function schedule(){ if (!raf) raf = requestAnimationFrame(render); }
+  function measure(){ const r=root.getBoundingClientRect(); w=Math.round(r.width); h=Math.round(r.height); schedule(); }
+
+  function render(){
+    raf=0; if (!w||!h) return;
+    const o=origin(), z=view.z, n=Math.pow(2,z);
+    const x0=Math.floor(o.x/TILE), x1=Math.floor((o.x+w-1)/TILE);
+    const y0=Math.floor(o.y/TILE), y1=Math.floor((o.y+h-1)/TILE);
+    const need={};
+    for (let ty=y0; ty<=y1; ty++){ if (ty<0||ty>=n) continue;
+      for (let tx=x0; tx<=x1; tx++){ if (tx<0||tx>=n) continue;
+        const key = z+"/"+tx+"/"+ty; need[key]=true;
+        let img = tiles[key];
+        if (!img){ img=document.createElement("img"); img.className="tm-tile"; img.alt=""; img.draggable=false; img.width=TILE; img.height=TILE;
+          img.addEventListener("load", function(){ this.classList.add("loaded"); });
+          img.src = "https://tile.openstreetmap.org/"+key+".png";
+          tilePane.appendChild(img); tiles[key]=img; }
+        img.style.transform = "translate("+(tx*TILE-o.x)+"px,"+(ty*TILE-o.y)+"px)";
+      }
+    }
+    for (const k in tiles){ if (!need[k]){ tilePane.removeChild(tiles[k]); delete tiles[k]; } }
+    for (let i=0;i<shown.length;i++){ shown[i].el.style.transform = "translate("+(shown[i].wx-o.x)+"px,"+(shown[i].wy-o.y)+"px)"; }
+    if (meEl && me){ meEl.style.transform = "translate("+(Math.round(projX(me.lng,z))-o.x)+"px,"+(Math.round(projY(me.lat,z))-o.y)+"px)"; }
+    positionPopup();
+  }
+
+  function addShown(g,z){
+    let s,b;
+    if (g.length===1){
+      const it=g[0].it;
+      b=mk("button","tm-pin"); b.type="button";
+      b.setAttribute("aria-label", it.label);
+      b.setAttribute("data-key", it.key);
+      if (it.key===activeKey) b.classList.add("active");
+      s = {el:b, wx:Math.round(g[0].x), wy:Math.round(g[0].y), item:it};
+    } else {
+      let sx=0, sy=0; g.forEach(p => { sx+=p.x; sy+=p.y; });
+      b=mk("button","tm-cluster"); b.type="button";
+      b.textContent = String(g.length);
+      b.setAttribute("aria-label", g.length+" homes close together. Activate to zoom in.");
+      s = {el:b, wx:Math.round(sx/g.length), wy:Math.round(sy/g.length), members:g.map(p=>p.it)};
+    }
+    b._s = s; markerPane.appendChild(b); shown.push(s);
+  }
+
+  function rebuildMarkers(){
+    markerPane.innerHTML=""; if (meEl) markerPane.appendChild(meEl);
+    shown=[]; const z=view.z;
+    const pts = items.map(it => ({it, x:projX(it.lng,z), y:projY(it.lat,z), used:false}));
+    for (let i=0;i<pts.length;i++){
+      if (pts[i].used) continue;
+      const g=[pts[i]]; pts[i].used=true;
+      for (let j=i+1;j<pts.length;j++){
+        if (pts[j].used) continue;
+        const dx=pts[j].x-pts[i].x, dy=pts[j].y-pts[i].y;
+        if (dx*dx+dy*dy <= CLUSTER_PX*CLUSTER_PX){ g.push(pts[j]); pts[j].used=true; }
+      }
+      addShown(g,z);
+    }
+    if (popupAnchor){
+      const still = shown.some(s => s.item && s.item.key===popupAnchor.key);
+      if (popupAnchor.key && !still && !popupAnchor.members) closePopup(false);
+    }
+  }
+
+  function setView(lat,lng,z){
+    const nz=clampZ(z); const changed = nz!==view.z;
+    view.lat = Math.max(-80, Math.min(80, lat)); view.lng=lng; view.z=nz;
+    if (changed) rebuildMarkers();
+    schedule();
+  }
+  function panBy(dx,dy){
+    const cx=projX(view.lng,view.z)+dx, cy=projY(view.lat,view.z)+dy;
+    view.lng = unprojLng(cx,view.z);
+    view.lat = Math.max(-80, Math.min(80, unprojLat(cy,view.z)));
+    schedule();
+  }
+  function zoomTo(nz,sx,sy){
+    nz=clampZ(nz); if (nz===view.z) return;
+    const cx=projX(view.lng,view.z)-w/2+sx, cy=projY(view.lat,view.z)-h/2+sy;
+    const lng=unprojLng(cx,view.z), lat=unprojLat(cy,view.z);
+    const ncx=projX(lng,nz)-(sx-w/2), ncy=projY(lat,nz)-(sy-h/2);
+    setView(unprojLat(ncy,nz), unprojLng(ncx,nz), nz);
+  }
+  function fitZoom(points,pad,maxZ){
+    let minLat=90,maxLat=-90,minLng=180,maxLng=-180;
+    points.forEach(p => { minLat=Math.min(minLat,p[0]); maxLat=Math.max(maxLat,p[0]); minLng=Math.min(minLng,p[1]); maxLng=Math.max(maxLng,p[1]); });
+    let z;
+    for (z=Math.min(maxZ,MAX_Z); z>MIN_Z; z--){
+      const sw=projX(maxLng,z)-projX(minLng,z), sh=projY(minLat,z)-projY(maxLat,z);
+      if (sw<=w-2*pad && sh<=h-2*pad) break;
+    }
+    return {z, lat:(minLat+maxLat)/2, lng:(minLng+maxLng)/2, minLat, maxLat, minLng, maxLng};
+  }
+  function fit(points,maxZ){
+    if (!w||!h) measure();
+    if (!points.length) points=[RI_BOUNDS[0], RI_BOUNDS[1]];
+    const f = fitZoom(points,48,maxZ||15);
+    const zz=f.z;
+    const cx=(projX(f.minLng,zz)+projX(f.maxLng,zz))/2, cy=(projY(f.minLat,zz)+projY(f.maxLat,zz))/2;
+    setView(unprojLat(cy,zz), unprojLng(cx,zz), zz);
+  }
+
+  function positionPopup(){
+    if (!popupAnchor || popupEl.hidden) return;
+    const o=origin();
+    const sx=Math.round(projX(popupAnchor.lng,view.z))-o.x, sy=Math.round(projY(popupAnchor.lat,view.z))-o.y;
+    const pw=popupEl.offsetWidth, ph=popupEl.offsetHeight;
+    const left=Math.max(8, Math.min(w-pw-8, sx-pw/2));
+    let top=sy-ph-22; if (top<8) top=sy+22; if (top+ph>h-8) top=Math.max(8,h-ph-8);
+    popupEl.style.transform = "translate("+Math.round(left)+"px,"+Math.round(top)+"px)";
+  }
+  function closePopup(returnFocus){
+    const key = popupAnchor && popupAnchor.key;
+    popupEl.hidden=true; popupEl.innerHTML=""; popupAnchor=null;
+    if (activeKey){ activeKey=null; const a=markerPane.querySelector(".tm-pin.active"); if (a) a.classList.remove("active"); }
+    if (returnFocus && key){
+      const pin = markerPane.querySelector('.tm-pin[data-key="'+(window.CSS && CSS.escape ? CSS.escape(key) : String(key).replace(/"/g,'\\"'))+'"]');
+      if (pin) pin.focus(); else root.focus();
+    }
+  }
+  function showPopup(html,lat,lng,key,label){
+    const prev = markerPane.querySelector(".tm-pin.active"); if (prev) prev.classList.remove("active");
+    activeKey = key||null; popupAnchor = {lat,lng,key:key||null};
+    popupEl.innerHTML = '<button type="button" class="tm-popup-close" aria-label="Close">×</button>' + html;
+    popupEl.setAttribute("aria-label", label||"Details");
+    popupEl.hidden=false;
+    if (key){ const s=shown.filter(x => x.item && x.item.key===key)[0]; if (s) s.el.classList.add("active"); }
+    positionPopup();
+    const first = popupEl.querySelector(".pop-btn, .pop-list button") || popupEl.querySelector(".tm-popup-close");
+    if (first) first.focus({preventScroll:true});
+  }
+  function openPopupFor(item){ showPopup(cb.popupHtml(item.key), item.lat, item.lng, item.key, item.label); }
+
+  function clusterClick(s){
+    const pts = s.members.map(m => [m.lat, m.lng]);
+    if (view.z >= MAX_Z){
+      const html = '<div class="pop-name">'+s.members.length+' homes at this spot</div><ul class="pop-list">' +
+        s.members.map(m => '<li><button type="button" data-pop-facility="'+escapeHtml(m.key)+'">'+escapeHtml(m.label)+'</button></li>').join('') + '</ul>';
+      let lat=0,lng=0; s.members.forEach(m => { lat+=m.lat; lng+=m.lng; });
+      showPopup(html, lat/s.members.length, lng/s.members.length, null, "Homes at this spot");
+      popupAnchor.members = true;
+      return;
+    }
+    const f = fitZoom(pts,70,MAX_Z);
+    const nz = Math.max(view.z+1, f.z);
+    const cx=(projX(f.minLng,nz)+projX(f.maxLng,nz))/2, cy=(projY(f.minLat,nz)+projY(f.maxLat,nz))/2;
+    closePopup(false);
+    setView(unprojLat(cy,nz), unprojLng(cx,nz), nz);
+    root.focus({preventScroll:true});
+  }
+
+  markerPane.addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("button") : null;
+    if (!b || !b._s) return;
+    if (b._s.members) clusterClick(b._s); else openPopupFor(b._s.item);
+  });
+  popupEl.addEventListener("click", e => {
+    const t = e.target;
+    if (t.closest(".tm-popup-close")){ closePopup(true); return; }
+    const open = t.closest("[data-open-facility]");
+    if (open){ cb.open(open.getAttribute("data-open-facility")); return; }
+    const one = t.closest("[data-pop-facility]");
+    if (one){
+      const key = one.getAttribute("data-pop-facility");
+      const item = items.filter(x => x.key===key)[0];
+      if (item){ closePopup(false); setView(item.lat, item.lng, view.z); openPopupFor(item); }
+    }
+  });
+  zin.addEventListener("click", () => zoomTo(view.z+1, w/2, h/2));
+  zout.addEventListener("click", () => zoomTo(view.z-1, w/2, h/2));
+
+  let pointers={}, drag=null, pinch=null;
+  function pointerCount(){ return Object.keys(pointers).length; }
+  function localXY(e){ const r=root.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+  function ignoreTarget(t){ return t.closest && t.closest(".tm-ctl, .tm-popup, .tm-pin, .tm-cluster, .tm-attr"); }
+  root.addEventListener("pointerdown", e => {
+    if (ignoreTarget(e.target)) return;
+    if (e.pointerType==="mouse" && e.button!==0) return;
+    try { root.setPointerCapture(e.pointerId); } catch(err){}
+    pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    const n = pointerCount();
+    if (n===1){ drag={x:e.clientX,y:e.clientY,moved:0}; pinch=null; }
+    else if (n===2){ const ids=Object.keys(pointers), a=pointers[ids[0]], b=pointers[ids[1]];
+      pinch = {d:Math.hypot(a.x-b.x,a.y-b.y)||1, scale:1}; drag=null; }
+  });
+  root.addEventListener("pointermove", e => {
+    if (!pointers[e.pointerId]) return;
+    pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    if (pinch && pointerCount()===2){
+      const ids=Object.keys(pointers), a=pointers[ids[0]], b=pointers[ids[1]];
+      const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
+      pinch.scale *= d/pinch.d; pinch.d=d;
+      const r=root.getBoundingClientRect(), mx=(a.x+b.x)/2-r.left, my=(a.y+b.y)/2-r.top;
+      if (pinch.scale>1.5){ zoomTo(view.z+1, mx, my); pinch.scale=1; }
+      else if (pinch.scale<0.67){ zoomTo(view.z-1, mx, my); pinch.scale=1; }
+    } else if (drag){
+      const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+      drag.x=e.clientX; drag.y=e.clientY; drag.moved += Math.abs(dx)+Math.abs(dy);
+      if (drag.moved>4) root.classList.add("dragging");
+      panBy(-dx,-dy);
+    }
+  });
+  function endPointer(e){
+    if (!pointers[e.pointerId]) return;
+    delete pointers[e.pointerId];
+    if (drag && pointerCount()===0){ if (drag.moved<=4 && e.type==="pointerup") closePopup(false); }
+    if (pointerCount()<2) pinch=null;
+    if (pointerCount()===0){ drag=null; root.classList.remove("dragging"); }
+  }
+  root.addEventListener("pointerup", endPointer);
+  root.addEventListener("pointercancel", endPointer);
+  root.addEventListener("dblclick", e => { if (ignoreTarget(e.target)) return; const p=localXY(e); zoomTo(view.z+1, p.x, p.y); });
+  let lastWheel=0, hintTimer=0;
+  root.addEventListener("wheel", e => {
+    if (!(e.ctrlKey || e.metaKey)){ hint.classList.add("show"); clearTimeout(hintTimer); hintTimer=setTimeout(()=>hint.classList.remove("show"),1400); return; }
+    e.preventDefault();
+    const now=Date.now(); if (now-lastWheel<220) return; lastWheel=now;
+    const p=localXY(e); zoomTo(view.z + (e.deltaY<0?1:-1), p.x, p.y);
+  }, {passive:false});
+  root.addEventListener("keydown", e => {
+    if (e.key==="Escape" && popupAnchor){ closePopup(true); e.stopPropagation(); return; }
+    if (e.target!==root) return;
+    const step=100;
+    switch(e.key){
+      case "ArrowLeft": panBy(-step,0); break;
+      case "ArrowRight": panBy(step,0); break;
+      case "ArrowUp": panBy(0,-step); break;
+      case "ArrowDown": panBy(0,step); break;
+      case "+": case "=": zoomTo(view.z+1, w/2, h/2); break;
+      case "-": case "_": zoomTo(view.z-1, w/2, h/2); break;
+      default: return;
+    }
+    e.preventDefault();
+  });
+  root.addEventListener("scroll", () => { root.scrollLeft=0; root.scrollTop=0; });
+  markerPane.addEventListener("focusin", e => {
+    const b=e.target; if (!b || !b._s) return;
+    const o=origin(), sx=b._s.wx-o.x, sy=b._s.wy-o.y, edge=30;
+    if (sx<edge || sx>w-edge || sy<edge || sy>h-edge) panBy(sx-w/2, sy-h/2);
+  });
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(root);
+  else window.addEventListener("resize", measure);
+  measure();
+
+  return {
+    setMarkers(arr){ items=arr; rebuildMarkers(); schedule(); },
+    fit, setView, resize: measure, closePopup,
+    setMe(loc){
+      me=loc;
+      if (loc && !meEl){ meEl=mk("div","tm-me"); meEl.setAttribute("aria-hidden","true"); markerPane.appendChild(meEl); }
+      if (!loc && meEl){ meEl.parentNode && meEl.parentNode.removeChild(meEl); meEl=null; }
+      schedule();
+    }
+  };
+}
 const MET = {}; D.metrics.forEach(m => MET[m.key] = m);
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -561,6 +912,7 @@ function viewHome(){
 
 function homesTable(){
   const sec = h("section",{id:"list"});
+  let viewMode = "list", nearLoc = null, tmap = null, lastFiltered = [], mapDirty = true;
   const cities = [...new Set(FAC.filter(f=>f.city).map(f=>f.city))].sort();
   const groups = [...new Set(FAC.map(f=>(f.x||{}).owner_group).filter(Boolean))].sort();
   const cols = [
@@ -594,10 +946,15 @@ function homesTable(){
     if (state.city) rows = rows.filter(f=>f.city===state.city);
     if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
     if (state.minStars){ rows = rows.filter(f=>{ const v = at(f.ccn,"overall",LI); return state.minStars==="low" ? (v!=null && v<=2) : (v!=null && v>=+state.minStars); }); }
-    const col = cols.find(c=>c.k===state.sort) || cols[0];
-    rows.sort((a,b)=>{ const x = col.get(a), y = col.get(b);
-      if (x==null && y==null) return a.name.localeCompare(b.name); if (x==null) return 1; if (y==null) return -1;
-      return (typeof x === "string" ? x.localeCompare(y) : x - y) * state.dir || a.name.localeCompare(b.name); });
+    if (nearLoc){
+      rows.forEach(f => { f._dist = hasCoords(f) ? milesBetween(nearLoc.lat,nearLoc.lng,f.lat,f.lon) : null; });
+      rows.sort((a,b)=>{ if (a._dist==null && b._dist==null) return a.name.localeCompare(b.name); if (a._dist==null) return 1; if (b._dist==null) return -1; return a._dist-b._dist; });
+    } else {
+      const col = cols.find(c=>c.k===state.sort) || cols[0];
+      rows.sort((a,b)=>{ const x = col.get(a), y = col.get(b);
+        if (x==null && y==null) return a.name.localeCompare(b.name); if (x==null) return 1; if (y==null) return -1;
+        return (typeof x === "string" ? x.localeCompare(y) : x - y) * state.dir || a.name.localeCompare(b.name); });
+    }
     tbody.textContent = "";
     rows.forEach(f => {
       const st = STATS[f.ccn] || {};
@@ -606,7 +963,9 @@ function homesTable(){
       if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
       if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
-        h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})), h("div",{class:"sub",text:f.city}), flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
+        h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
+          h("div",{class:"sub"}, f.city, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
+          flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
         ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI)))),
         h("td",{class:"r num",text:fmt(cols[6].get(f))}),
@@ -618,7 +977,120 @@ function homesTable(){
       ));
     });
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
+    lastFiltered = rows;
+    if (viewMode==="map") refreshMap(false); else mapDirty = true;
   }
+
+  /* ---- map view glue ---- */
+  function popupHtml(f){
+    let hm = '<div class="pop-name">'+escapeHtml(f.name)+'</div>';
+    hm += '<div class="pop-line">'+escapeHtml(f.address||"")+', '+escapeHtml(f.city||"")+', RI '+escapeHtml(f.zip||"")+'</div>';
+    if (nearLoc && f._dist!=null) hm += '<div class="pop-line">'+fmtMiles(f._dist)+' from '+escapeHtml(nearLoc.label)+' (straight line)</div>';
+    const ov = at(f.ccn,"overall",LI);
+    hm += '<div class="pop-line">'+(ov==null?"Not rated":ov+" of 5 stars overall")+(f.status!=="Open"?" · "+f.status:"")+'</div>';
+    hm += '<button type="button" class="pop-btn" data-open-facility="'+escapeHtml(f.ccn)+'">See full record</button>';
+    return hm;
+  }
+  function buildMap(){
+    if (tmap) return;
+    tmap = makeMap(document.getElementById("map"), {
+      popupHtml: key => { const f = byCCN[key]; return f ? popupHtml(f) : ""; },
+      open: key => { location.hash = "f-"+key; }
+    });
+  }
+  function refreshMap(fit){
+    if (viewMode!=="map") { mapDirty = true; return; }
+    buildMap(); if (!tmap) return;
+    tmap.resize();
+    const mappable = lastFiltered.filter(hasCoords);
+    tmap.setMarkers(mappable.map(f => ({key:f.ccn, lat:f.lat, lng:f.lon, label:f.name+", "+f.city})));
+    tmap.setMe(nearLoc ? {lat:nearLoc.lat, lng:nearLoc.lng} : null);
+    const missing = lastFiltered.length - mappable.length;
+    const st = document.getElementById("mapStatus");
+    if (st){
+      if (!lastFiltered.length) st.textContent = "No homes match your filters, so there is nothing to show on the map.";
+      else st.textContent = `Showing ${mappable.length} of ${lastFiltered.length} ${lastFiltered.length===1?"home":"homes"} on the map.` +
+        (missing ? ` ${missing} can't be placed on the map yet — find ${missing===1?"it":"them"} in List view.` : "");
+    }
+    if (fit){
+      const pts = [];
+      if (nearLoc){ pts.push([nearLoc.lat, nearLoc.lng]); mappable.slice(0,5).forEach(f=>pts.push([f.lat,f.lon])); }
+      else mappable.forEach(f=>pts.push([f.lat,f.lon]));
+      tmap.fit(pts, mappable.length===1 ? 15 : 13);
+    }
+    mapDirty = false;
+  }
+  function setViewMode(mode){
+    viewMode = mode;
+    mapPanel.hidden = (mode!=="map");
+    tblWrap.hidden = (mode==="map");
+    viewListBtn.setAttribute("aria-pressed", mode==="list" ? "true":"false");
+    viewMapBtn.setAttribute("aria-pressed", mode==="map" ? "true":"false");
+    if (mode==="map") refreshMap(true);
+  }
+  function nearStatus(msg){ nearStatusEl.textContent = msg; }
+  function setNear(lat,lng,label){
+    nearLoc = {lat,lng,label};
+    nearClearBtn.hidden = false;
+    let best = null;
+    FAC.forEach(f => { if (!hasCoords(f)) return; const d = milesBetween(lat,lng,f.lat,f.lon); if (best===null || d<best) best=d; });
+    let msg = "Closest homes to "+label+" are listed first (straight-line distance, not driving distance).";
+    if (label==="your location") msg += " Your location stays in your browser; we don't receive or store it.";
+    if (best!==null && best>40) msg += " Note: the nearest home is "+Math.round(best)+" miles away, so you may be outside Rhode Island.";
+    nearStatus(msg);
+    render();
+  }
+  function clearNear(){ nearLoc=null; nearClearBtn.hidden=true; nearStatus(""); render(); }
+  function useMyLocation(){
+    if (!navigator.geolocation){ nearStatus("Your browser can't share its location." + (ZIPS?" Try a ZIP code instead.":"")); return; }
+    nearBtn.disabled = true;
+    nearStatus("Finding your location…");
+    navigator.geolocation.getCurrentPosition(pos => {
+      nearBtn.disabled = false;
+      setNear(pos.coords.latitude, pos.coords.longitude, "your location");
+    }, err => {
+      nearBtn.disabled = false;
+      nearStatus((err && err.code===1 ? "Location access is blocked for this site. You can allow it in your browser's site settings." : "We couldn't work out your location.") + (ZIPS?" You can also enter a ZIP code.":""));
+    }, {enableHighAccuracy:false, timeout:12000, maximumAge:300000});
+  }
+  function useZip(){
+    const z = zipInput.value.trim().slice(0,5);
+    if (!/^\d{5}$/.test(z)){ nearStatus("Enter a 5-digit ZIP code."); return; }
+    const c = ZIPS && ZIPS[z];
+    if (!c){ nearStatus("We don't have "+z+" in our Rhode Island ZIP list. It may be outside the state."); return; }
+    setNear(c[0], c[1], "ZIP code "+z);
+  }
+  const anyCoords = FAC.some(hasCoords);
+  const nearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearBtn",text:"My location"});
+  const zipInput = h("input",{id:"zipInput",type:"text",inputmode:"numeric",maxlength:"5",autocomplete:"postal-code",placeholder:"02903"});
+  const zipGo = h("button",{type:"button",class:"btn-quiet",id:"zipGo",text:"Sort"});
+  const nearClearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearClear",hidden:true,text:"Stop sorting by distance"});
+  const nearStatusEl = h("p",{class:"near-status",role:"status","aria-live":"polite"});
+  const zipGroup = h("span",{id:"zipGroup"}, h("label",{class:"near-or",for:"zipInput",text:"a ZIP code"}), " ", zipInput, " ", zipGo);
+  const nearOr = h("span",{class:"near-or",id:"nearOr",text:"or"});
+  const nearRow = h("div",{class:"near-row",hidden:!anyCoords},
+    h("span",{class:"near-or near-lead",text:"Sort by distance from"}), nearBtn, nearOr, zipGroup, nearClearBtn, nearStatusEl);
+  nearBtn.addEventListener("click", useMyLocation);
+  nearClearBtn.addEventListener("click", clearNear);
+  zipGo.addEventListener("click", useZip);
+  zipInput.addEventListener("keydown", e => { if (e.key==="Enter"){ e.preventDefault(); useZip(); } });
+  if (!navigator.geolocation) nearBtn.hidden = true;
+  if (!ZIPS) { zipGroup.hidden = true; nearOr.hidden = true; }
+
+  const viewListBtn = h("button",{type:"button",class:"view-btn",id:"viewList","aria-pressed":"true",text:"List"});
+  const viewMapBtn = h("button",{type:"button",class:"view-btn",id:"viewMap","aria-pressed":"false",text:"Map"});
+  const viewBar = h("div",{class:"view-bar",role:"group","aria-label":"Show homes as",hidden:!anyCoords}, viewListBtn, viewMapBtn);
+  viewListBtn.addEventListener("click", () => setViewMode("list"));
+  viewMapBtn.addEventListener("click", () => setViewMode("map"));
+
+  const mapStatus = h("p",{class:"map-status",id:"mapStatus",role:"status","aria-live":"polite"});
+  const mapDiv = h("div",{id:"map"});
+  const mapToList = h("button",{type:"button",id:"mapToList",text:"Switch to list view"});
+  mapToList.addEventListener("click", () => { setViewMode("list"); viewListBtn.focus(); });
+  const mapPanel = h("div",{id:"mapPanel",hidden:true}, mapStatus, mapDiv,
+    h("p",{class:"map-note"}, "Pins show where each home is located. They don't indicate quality; use ", h("strong",{text:"See full record"}), " on a pin for that. Prefer a list? ", mapToList, ", which shows the same homes and distances. Map tiles come from OpenStreetMap, which can see your IP address and the area of the map you are viewing."));
+  const tblWrap = h("div",{class:"tbl-wrap"}, h("table",null, thead, tbody));
+
   sec.append(
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
     h("div",{class:"list-key small"},
@@ -627,7 +1099,7 @@ function homesTable(){
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. ", h("a",{href:"#about",text:"More about these terms"})),
       h("div",{class:"sev-key",style:"margin:4px 0 0"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c])))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
-    h("div",{class:"tbl-wrap"}, h("table",null, thead, tbody))
+    nearRow, viewBar, mapPanel, tblWrap
   );
   render();
   return sec;
@@ -721,7 +1193,8 @@ function viewFacility(ccn){
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
           h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
-          h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"})) : null
+          h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"}),
+          h("a",{href:(L.pbj320||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"PBJ320 staffing detail"})) : null
       ),
       h("div",{class:"card",style:"flex:0 1 360px;min-width:0"},
         h("dl",{class:"kv"},
