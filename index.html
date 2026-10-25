@@ -14,6 +14,7 @@
   --orange:#92471F; --orange-bg:#E7DBCB; --orange-deep:#723313;
   --brick:#7A1F26; --brick-bg:#E8D6D6; --brick-deep:#5E141B;
   --bad:#5E141B; --bad-wash:#E8D6D6; --warn:#723313; --warn-wash:#E7DBCB; --good:#3D6B52; --good-wash:#DFE6D9;
+  --rate-bad:#B5262E; --rate-good:#2E8B57;
   --f-ui:"Public Sans",system-ui,-apple-system,sans-serif; --f-head:"Public Sans",system-ui,sans-serif;
   --r:3px;
   font-size:17px;
@@ -26,6 +27,7 @@
   --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
   --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
   --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
+  --rate-bad:#FF9DA6; --rate-good:#5FD897;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#191E1A; --panel:#20251F; --ink:#E8E4D8; --ink-2:#A2A99C; --muted:#A2A99C; --line:#6E6F5A; --grid:#2E342D; --line-2:#6E6F5A;
@@ -35,6 +37,7 @@
   --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
   --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
   --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
+  --rate-bad:#FF9DA6; --rate-good:#5FD897;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
@@ -96,9 +99,9 @@ section{margin-top:40px}
 .pips i{width:9px;height:9px;border-radius:1px;background:var(--grid);display:block}
 .pips i.f{background:var(--ink)}
 .pips.lg i{width:14px;height:14px;border-radius:2px}
-.pips.r-bad i.f{background:var(--bad)}
+.pips.r-bad i.f{background:var(--rate-bad)}
 .pips.r-warn i.f{background:var(--warn)}
-.pips.r-good i.f{background:var(--good)}
+.pips.r-good i.f{background:var(--rate-good)}
 .rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 
 .chip{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:2px;white-space:nowrap;line-height:1.5;border-left:3px solid transparent}
@@ -929,7 +932,8 @@ function viewHarms(){
     h("section",null,
       h("h1",{text:"Recent harm citations"}),
       h("p",{class:"lede",text:"Every citation across all Rhode Island nursing homes, in the past 12 months, where inspectors found a resident was actually harmed or in immediate jeopardy (severity G or higher)."}),
-      h("p",{class:"updated-line",text:`${serious.length} citation${serious.length===1?"":"s"} since ${mlabel(cutoff.slice(0,7))}.`})
+      h("p",{class:"updated-line",text:`${serious.length} citation${serious.length===1?"":"s"} since ${mlabel(cutoff.slice(0,7))}.`}),
+      h("div",{class:"sev-key",style:"margin:10px 0 0"}, ["s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["G-I","J-L"][i]}), SEVTXT[c])), h("a",{href:"#about",text:"More about severity levels"}))
     ),
     h("section",null,
       h("div",{class:"tbl-wrap"}, h("table",null,
@@ -937,7 +941,7 @@ function viewHarms(){
         h("tbody",null, serious.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
           return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
             h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
-            h("td",{class:"home"},h("div",{class:"nm",text:f.name}),h("div",{class:"sub",text:f.city})),
+            h("td",{class:"home"},h("div",{class:"nm",text:f.name + ((f.x||{}).owner_group ? " (" + f.x.owner_group + ")" : "")}),h("div",{class:"sub",text:f.city})),
             h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
             h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
             h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); })),
@@ -1134,10 +1138,9 @@ function homesTable(){
   sec.append(
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
     h("div",{class:"list-key small"},
-      h("p",{style:"margin:0 0 4px"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
+      h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("a",{href:"#about",text:"More about these terms"})),
-      h("div",{class:"sev-key",style:"margin:4px 0 0"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c])))),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("a",{href:"#about",text:"More about these terms"}))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, viewBar, mapPanel, tblWrap
   );
