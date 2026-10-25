@@ -14,7 +14,7 @@
   --orange:#92471F; --orange-bg:#E7DBCB; --orange-deep:#723313;
   --brick:#7A1F26; --brick-bg:#E8D6D6; --brick-deep:#5E141B;
   --bad:#5E141B; --bad-wash:#E8D6D6; --warn:#723313; --warn-wash:#E7DBCB; --good:#3D6B52; --good-wash:#DFE6D9;
-  --rate-bad:#B5262E; --rate-good:#2E8B57;
+  --rate-bad:#B5262E; --rate-good:#2E8B57; --rate-warn:#C99A00;
   --f-ui:"Public Sans",system-ui,-apple-system,sans-serif; --f-head:"Public Sans",system-ui,sans-serif;
   --r:3px;
   font-size:17px;
@@ -27,7 +27,7 @@
   --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
   --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
   --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
-  --rate-bad:#FF9DA6; --rate-good:#5FD897;
+  --rate-bad:#FF9DA6; --rate-good:#5FD897; --rate-warn:#E8C64E;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#191E1A; --panel:#20251F; --ink:#E8E4D8; --ink-2:#A2A99C; --muted:#A2A99C; --line:#6E6F5A; --grid:#2E342D; --line-2:#6E6F5A;
@@ -37,7 +37,7 @@
   --orange:#C98757; --orange-bg:#302219; --orange-deep:#E0A87E;
   --brick:#D98891; --brick-bg:#341D1F; --brick-deep:#EBA9AF;
   --bad:#EBA9AF; --bad-wash:#341D1F; --warn:#E0A87E; --warn-wash:#302219; --good:#82AC94; --good-wash:#223129;
-  --rate-bad:#FF9DA6; --rate-good:#5FD897;
+  --rate-bad:#FF9DA6; --rate-good:#5FD897; --rate-warn:#E8C64E;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
@@ -100,7 +100,7 @@ section{margin-top:40px}
 .pips i.f{background:var(--ink)}
 .pips.lg i{width:14px;height:14px;border-radius:2px}
 .pips.r-bad i.f{background:var(--rate-bad)}
-.pips.r-warn i.f{background:var(--warn)}
+.pips.r-warn i.f{background:var(--rate-warn)}
 .pips.r-good i.f{background:var(--rate-good)}
 .rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 
@@ -129,6 +129,7 @@ td.r,th.r{text-align:right}
 tbody tr:hover{background:var(--panel)}
 tr.click{cursor:pointer}
 td .nm{font-weight:500;font-size:15.5px;color:var(--ink)}
+td .nm .nm-owner{font-weight:400;font-size:0.82em;color:var(--muted)}
 td .nm a{text-decoration:none}
 td .nm a:hover{text-decoration:underline}
 td .sub{font-size:12.5px;color:var(--muted)}
@@ -941,7 +942,7 @@ function viewHarms(){
         h("tbody",null, serious.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
           return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
             h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
-            h("td",{class:"home"},h("div",{class:"nm",text:f.name + ((f.x||{}).owner_group ? " (" + f.x.owner_group + ")" : "")}),h("div",{class:"sub",text:f.city})),
+            h("td",{class:"home"},h("div",{class:"nm"}, f.name+" ", (f.x||{}).owner_group ? h("span",{class:"nm-owner",text:"("+f.x.owner_group+")"}) : null),h("div",{class:"sub",text:f.city})),
             h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
             h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
             h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); })),
