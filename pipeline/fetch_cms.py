@@ -9,7 +9,7 @@ Writes pipeline/new_cms_zips/nursing-homes_<YYYY-MM-DD>.zip and prints the CMS m
 Exits 0 with "NOTHING NEW" when the month is already loaded. Exits 1 on any problem,
 so the GitHub run fails loudly and emails you instead of publishing something wrong.
 """
-import csv, io, json, os, re, sys, urllib.request, zipfile
+import csv, io, json, os, re, sys, time, urllib.error, urllib.request, zipfile
 from datetime import datetime
 
 CATALOG = "https://data.cms.gov/provider-data/api/1/metastore/schemas/dataset/items?show-reference-ids=false"
@@ -24,11 +24,28 @@ WANTED = ["ProviderInfo", "HealthCitations", "FireSafetyCitations", "Penalties",
 MUST_HAVE = ["ProviderInfo", "HealthCitations", "Penalties", "Ownership", "SurveyDates"]
 
 
-def get(url, binary=False):
-    req = urllib.request.Request(url, headers={"User-Agent": "abc-ri-update/1.0"})
-    with urllib.request.urlopen(req, timeout=180) as r:
-        data = r.read()
-    return data if binary else data.decode("utf-8-sig", errors="replace")
+def get(url, binary=False, tries=4):
+    """Fetch a URL, retrying a few times (CMS's site has short outages). On final failure,
+    stop with a one-line error that says what CMS answered."""
+    waits = [20, 60, 180]
+    last = None
+    for n in range(tries):
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; abc-ri-update/1.1; +https://snfdashboard.abc-ri.org)",
+            "Accept": "application/json, text/csv, */*"})
+        try:
+            with urllib.request.urlopen(req, timeout=180) as r:
+                data = r.read()
+            return data if binary else data.decode("utf-8-sig", errors="replace")
+        except urllib.error.HTTPError as e:
+            body = e.read()[:300].decode("utf-8", errors="replace").replace("\n", " ")
+            last = f"CMS answered HTTP {e.code} {e.reason} for {url[:90]} ({body.strip()[:200]})"
+        except Exception as e:
+            last = f"{type(e).__name__}: {e} for {url[:90]}"
+        print(f"try {n + 1} of {tries} failed: {last}", flush=True)
+        if n < tries - 1:
+            time.sleep(waits[min(n, len(waits) - 1)])
+    die(last)
 
 
 def die(msg):
