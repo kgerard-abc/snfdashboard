@@ -904,6 +904,7 @@ function viewHome(){
   const [riHv, riHi] = lastVal(riH), [usHv] = lastVal(usH);
   const ovr = open.map(f=>at(f.ccn,"overall",LI)).filter(v=>v!=null);
   const low = ovr.filter(v=>v<=2).length;
+  const high = ovr.filter(v=>v>=4).length;
   const turn = riAvg("turnover"), [riT] = lastVal(turn), [usT] = lastVal(usAvg("turnover"));
   const cy = D.statewide.cit_by_year;
   const yrs = Object.keys(cy).filter(y=>+y>=2019).sort();
@@ -918,6 +919,7 @@ function viewHome(){
     h("section",null, h("div",{class:"grid g4"},
       tile("Homes open now", String(open.length), `${Math.round(beds).toLocaleString()} certified beds, about ${Math.round(res).toLocaleString()} residents a day`),
       tile("Rated 1 or 2 stars overall", `${low} of ${ovr.length}`, `${Math.round(low/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
+      tile("Rated 4 or 5 stars overall", `${high} of ${ovr.length}`, `${Math.round(high/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
       tile("Nurse staff hours per resident per day", fmt(riHv), h("span",null, `RI average vs ${fmt(usHv)} nationally`)),
       tile("Nursing staff turnover", fmt(riT,1)+"%", `RI average vs ${fmt(usT,1)}% nationally`)
     ))
@@ -988,7 +990,7 @@ function homesTable(){
     thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), tabindex:0, "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none",
       onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); },
       onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, c.t, state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
-    let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open"));
+    let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open" || (f.x||{}).not_in_cms));
     if (state.city) rows = rows.filter(f=>f.city===state.city);
     if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
     if (state.minStars){ rows = rows.filter(f=>{ const v = at(f.ccn,"overall",LI); return state.minStars==="low" ? (v!=null && v<=2) : (v!=null && v>=+state.minStars); }); }
@@ -1007,7 +1009,8 @@ function homesTable(){
       const flags = [];
       const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",title:sff==="SFF"?SFFTXT.SFF:SFFTXT.cand,text:sff==="SFF"?"Special Focus":"Special Focus candidate"}));
       if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
-      if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
+      if ((f.x||{}).not_in_cms) flags.push(h("span",{class:"chip plain",title:"Licensed by RIDOH but not certified by Medicare/Medicaid, so CMS publishes none of the usual ratings, staffing, or inspection data for it.",text:"Not Medicare-certified"}));
+      else if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       const pbj0 = pbjInfo(f.ccn);
       if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
       if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
@@ -1145,7 +1148,7 @@ function homesTable(){
     h("div",{class:"list-key small"},
       h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("a",{href:"#about",text:"More about these terms"}))),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"}))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, viewBar, mapPanel, tblWrap
   );
@@ -1188,6 +1191,7 @@ function viewAbout(){
   app.append(h("section",{style:"max-width:75ch"},
     h("h1",{text:"About the data"}),
     P(`Everything here comes from the Centers for Medicare & Medicaid Services (CMS) Care Compare nursing home files, which CMS publishes every month. This site keeps every monthly release since January 2019, so you can see how a home has changed over time, not just where it stands today. The newest data is from the ${D.meta.latest_label} release.`),
+    P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all — no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them.`),
     h("h2",{text:"What the ratings mean",style:"margin-top:20px"}),
     P("CMS rates each home from 1 to 5 stars. The overall rating starts from the health inspection rating, then moves up or down based on staffing and quality measures. Inspection ratings are based on the last few years of inspections, so a home's rating can lag behind recent changes."),
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
@@ -1240,7 +1244,7 @@ function viewFacility(ccn){
         h("h1",{text:f.name}),
         f.former_names ? h("div",{class:"meta",text:"Formerly: " + f.former_names}) : null,
         h("div",{class:"meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ") + (f.phone ? " · " + phone(f.phone) : "")}),
-        h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+" certified beds" : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
+        h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+(x.not_in_cms?" licensed beds":" certified beds") : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
         flags.length ? h("div",{class:"flags"}, flags) : null,
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
@@ -1255,11 +1259,19 @@ function viewFacility(ccn){
           f.legal_business_name ? [h("dt",{text:"Operator (legal name)"}), h("dd",{text:f.legal_business_name})] : null,
           x.year_sold ? [h("dt",{text:"Sold / pending sale"}), h("dd",{text:x.year_sold})] : null,
           x.property_owner ? [h("dt",{text:"Property owner"}), h("dd",{text:x.property_owner})] : null,
-          h("dt",{text:"CMS number"}), h("dd",{class:"num",text:ccn}),
+          x.not_in_cms ? null : [h("dt",{text:"CMS number"}), h("dd",{class:"num",text:ccn})],
           x.ridoh_license_no ? [h("dt",{text:"RIDOH license"}), h("dd",{text:x.ridoh_license_no})] : null
         ))
     )
   );
+
+  if (x.not_in_cms){
+    app.append(h("div",{class:"ttk"}, h("h2",{text:"Not Medicare-certified"}),
+      h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data — the star ratings, staffing hours, health inspections, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
+      h("p",null,"What's shown above (address, beds, ownership) comes from RIDOH's own facility licensing records. For anything else about this home — inspection history, complaints, licensing status — contact RIDOH directly."),
+      h("p",{style:"margin:0"}, h("a",{href:"https://healthri.mylicense.com/verification/",target:"_blank",rel:"noopener",text:"Verify this home's RIDOH license"}))));
+    return;
+  }
 
   {
     const newOperator = f.changed_ownership_flag_months && f.status==="Open" && changes.filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
