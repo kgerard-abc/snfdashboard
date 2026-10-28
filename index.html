@@ -69,6 +69,8 @@ nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
 nav.tabs a{padding:7px 12px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500}
 nav.tabs a:hover{background:var(--panel)}
 nav.tabs a.on{background:var(--ink);color:var(--bg)}
+nav.tabs a.ext{border-left:1px solid var(--line);margin-left:6px;padding-left:16px;display:inline-flex;align-items:center;gap:4px}
+nav.tabs a.ext svg{width:12px;height:12px;flex:none}
 .search{flex:1 1 300px;max-width:460px;position:relative;min-width:0}
 .search-row{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
 .search-row:focus-within{border-bottom-color:var(--accent)}
@@ -261,6 +263,8 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a href="#harms" id="tab-harms">Recent harm citations</a>
         <a href="#owners" id="tab-owners">Owner groups</a>
         <a href="#about" id="tab-about">About the data</a>
+        <a class="ext" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener">Assisted living homes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
+        <a class="ext" href="visit-checklist.pdf" target="_blank" rel="noopener">Visit checklist <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
       </nav>
       <div class="search">
         <div class="search-row">
@@ -1211,6 +1215,9 @@ function viewAbout(){
       h("li",{text:"Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from other sources noted on each home's page."}),
       h("li",{text:"A few Rhode Island nursing homes are not in CMS data at all (they are not certified for Medicare or Medicaid), so they aren't rated here."})
     ),
+    h("h2",{text:"Related ABC-RI resources",style:"margin-top:20px"}),
+    h("p",null, "Looking at assisted living instead of a nursing home? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site, which covers RIDOH inspections for assisted living residences the same way this site covers CMS data for nursing homes."),
+    h("p",null, "Planning a visit? Download our ", h("a",{href:"visit-checklist.pdf",target:"_blank",rel:"noopener",text:"printable visit checklist"}), " (", h("a",{href:"visit-checklist-large-print.pdf",target:"_blank",rel:"noopener",text:"large print version"}), ") of questions to ask and things to look for."),
     h("h2",{text:"Sources",style:"margin-top:20px"}),
     h("p",null, "CMS nursing home data archive: ", h("a",{href:"https://data.cms.gov/provider-data/archived-data/nursing-homes",target:"_blank",rel:"noopener",text:"data.cms.gov/provider-data/archived-data/nursing-homes"})),
     h("p",null, "CMS Care Compare: ", h("a",{href:"https://www.medicare.gov/care-compare/",target:"_blank",rel:"noopener",text:"medicare.gov/care-compare"})),
