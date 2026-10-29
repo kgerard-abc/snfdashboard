@@ -60,6 +60,8 @@ SCOPE = {**{k: "Isolated (one or a few residents)" for k in "ADGJ"},
 CC_PDF = "https://www.medicare.gov/care-compare/inspections/pdf/nursing-home/{ccn}/health/{kind}?date={date}"
 CC_PAGE = "https://www.medicare.gov/care-compare/details/nursing-home/{ccn}/view-all/?state=RI"
 PROPUBLICA = "https://projects.propublica.org/nursing-homes/homes/h-{ccn}"
+PBJ320 = "https://pbj320.com/provider/{ccn}"
+STORE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "store")
 
 KEY_QMS = {  # MDS and claims measures shown on the dashboard
     "481": "Long-stay residents given antipsychotic medication (%)",
@@ -82,12 +84,18 @@ MONTHS = ["january", "february", "march", "april", "may", "june", "july", "augus
 
 
 def closed_from_note(note):
-    """A facility details note that starts "Closed <Month> <Year>" marks a home closed even if CMS still lists it.
-    Returns the month as YYYY-MM, or None."""
-    m = re.match(r"\s*closed\s+([a-z]+)\s+(\d{4})", str(note or ""), re.I)
+    """A facility details note that starts "Closed <Month> <Year>" (or just "Closed <Year>") marks a home
+    closed even if CMS still lists it. Returns (status label, last month to show data for, year_only) or None."""
+    s = str(note or "")
+    m = re.match(r"\s*closed\s+([a-z]+)\s+(\d{4})", s, re.I)
     if m and m.group(1).lower() in MONTHS:
-        return f"{m.group(2)}-{MONTHS.index(m.group(1).lower()) + 1:02d}"
+        ym = f"{m.group(2)}-{MONTHS.index(m.group(1).lower()) + 1:02d}"
+        return f"Closed {month_label(ym)}", ym, False
+    m = re.match(r"\s*closed\s+(?:in\s+)?(\d{4})\b", s, re.I)
+    if m:
+        return f"Closed {m.group(1)}", f"{m.group(1)}-12", True
     return None
+
 
 def month_label(m):
     return datetime.strptime(m, "%Y-%m").strftime("%b %Y")
@@ -241,12 +249,16 @@ def derive(d):
         if ccn in last.index:
             L = last.loc[ccn]
             status = "Open" if L["cms_month"] == latest else f"No longer in CMS data (last listed {month_label(L['cms_month'])})"
-            closed_month = closed_from_note(e.get("notes"))   # "Closed January 2025 ..." in the facility details notes
+            closed = closed_from_note(e.get("notes"))   # "Closed January 2025 ..." or "Closed 2025" in the facility details notes
             closed_last = None
-            if closed_month:
-                status = f"Closed {month_label(closed_month)}"
+            if closed:
+                status, closed_month, year_only = closed
                 # show the home as of the last CMS file on or before it closed (CMS skips some months)
-                before = sorted(m for m in pm.loc[pm["ccn"] == ccn, "cms_month"].unique() if m <= closed_month)
+                rows_c = pm[(pm["ccn"] == ccn) & (pm["cms_month"] <= closed_month)]
+                if year_only:   # no month known: the last file that year that still reported residents
+                    with_res = rows_c[pd.to_numeric(rows_c["average_number_of_residents_per_day"], errors="coerce").notna()]
+                    if len(with_res): rows_c = with_res
+                before = sorted(rows_c["cms_month"].unique())
                 closed_last = before[-1] if before else L["cms_month"]
             rec = {"ccn": ccn, "name": e.get("display_name") or L["provider_name"], "cms_name": L["provider_name"],
                    "legal_business_name": L["legal_business_name"], "address": L["provider_address"],
@@ -268,10 +280,21 @@ def derive(d):
             if k not in ("ccn", "display_name"):
                 rec["x_" + k] = v
         fac.append(rec)
+    non_cms = {}   # homes not certified by Medicare or Medicaid, from the RIDOH licensee list (store/non_cms_homes.json)
+    nc_path = os.path.join(STORE_DIR, "non_cms_homes.json")
+    if os.path.exists(nc_path):
+        for r in json.load(open(nc_path, encoding="utf-8")):
+            non_cms[r["name"]] = r
+            if r.get("ridoh_license_no"): non_cms[r["ridoh_license_no"]] = r
     for _, e in ex[ex["ccn"] == ""].iterrows():
         rec = {"ccn": "", "name": e["display_name"], "status": "Not in CMS data"}
+        stored = non_cms.get(e["display_name"]) or non_cms.get(str(e.get("ridoh_license_no", "")).strip())
+        if stored:
+            rec = {k: v for k, v in stored.items() if k not in ("ridoh_license_no", "x")}
+            for k, v in (stored.get("x") or {}).items():   # stored details; the facility extras sheet wins where filled in
+                rec["x_" + k] = v
         for k, v in e.items():
-            if k not in ("ccn", "display_name"):
+            if k not in ("ccn", "display_name") and (str(v).strip() or "x_" + k not in rec):
                 rec["x_" + k] = v
         fac.append(rec)
     fac = pd.DataFrame(fac)
@@ -758,9 +781,13 @@ def write_dashboard_data(D, path):
         "facilities": fac, "series": series, "avg": avg, "statewide": statewide,
         "citations": cits, "tags": tags, "penalties": pens, "owners": owners, "names": names,
         "qm_labels": KEY_QMS, "qms": qms, "qm_ri": qm_ri, "surveys": surveys,
-        "links": {"pdf": CC_PDF, "cc": CC_PAGE, "pp": PROPUBLICA},
+        "links": {"pdf": CC_PDF, "cc": CC_PAGE, "pp": PROPUBLICA, "pbj320": PBJ320},
         "harm_summaries": D.get("harm_summaries", {}),
     }
+    # quarterly payroll (PBJ) staffing detail, stored as store/pbj_<quarter>.json (for example pbj_q1_2026.json)
+    import glob
+    for pth in sorted(glob.glob(os.path.join(STORE_DIR, "pbj_*.json"))):
+        data[os.path.basename(pth)[:-5]] = json.load(open(pth, encoding="utf-8"))
     txt = json.dumps(data, separators=(",", ":"), default=lambda o: None if (isinstance(o, float) and np.isnan(o)) else str(o))
     txt = txt.replace("NaN", "null")
     os.makedirs(os.path.dirname(path), exist_ok=True)

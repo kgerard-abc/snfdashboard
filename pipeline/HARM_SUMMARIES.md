@@ -31,7 +31,7 @@ desktop app open, and medicare.gov allowed in that browser.
    `[{"ccn": "...", "inspection_date": "YYYY-MM-DD", "tag": "F0689", "what_happened": "..."}]`
 7. `python3 pipeline/scripts/harm_apply.py that.json` writes them into `harm_summaries.xlsx` and adds them
    to the published `data.js` without rebuilding it. It never overwrites an existing summary. Do NOT run
-   `update.py`: the live `data.js` holds changes the build scripts don't make yet, and a rebuild would erase them.
+   `update.py`: a rebuild belongs to the monthly update, and it would mix other data changes into this pull request.
 8. Confirm only the summaries changed:
    `python3 -c "import json,subprocess;P=lambda t:json.loads(t[t.index('=')+1:].rstrip().rstrip(';'));a=P(subprocess.run(['git','show','HEAD:data.js'],capture_output=True,text=True).stdout);b=P(open('data.js').read());print(all(a[k]==b[k] for k in a if k!='harm_summaries') and set(a)==set(b))"` must print True.
 9. Commit `data.js` and `pipeline/harm_summaries.xlsx` on a branch `harm-summaries-YYYY-MM-DD`, push, and
