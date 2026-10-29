@@ -1,0 +1,23 @@
+name: Probe report access (temporary)
+on:
+  push:
+    branches: [probe-report-access]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Try the CMS report PDFs and ProPublica
+        run: |
+          UA="Mozilla/5.0 (compatible; abc-ri-update/1.1; +https://snfdashboard.abc-ri.org)"
+          BR="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          for kind in health-inspection complaint-inspection; do
+            for ua in "$UA" "$BR"; do
+              u="https://www.medicare.gov/care-compare/inspections/pdf/nursing-home/415067/health/$kind?date=2026-07-20"
+              r=$(curl -sS -L -A "$ua" -o out.bin -w "%{http_code} %{content_type} %{size_download}" --max-time 90 "$u" 2>&1 | tail -1)
+              echo "::notice::CMS $kind [${ua:0:20}]: $r first bytes: $(head -c 8 out.bin | tr -dc '[:print:]')"
+            done
+          done
+          r=$(curl -sS -L -A "$BR" -o pp.html -w "%{http_code} %{content_type} %{size_download}" --max-time 60 "https://projects.propublica.org/nursing-homes/homes/h-415067" 2>&1 | tail -1)
+          echo "::notice::ProPublica home page: $r; mentions F0658 or 658: $(grep -c -i 'f0658\|658' pp.html)"
+          r=$(curl -sS -L -A "$UA" -o cat.json -w "%{http_code} %{size_download}" --max-time 90 "https://data.cms.gov/provider-data/api/1/metastore/schemas/dataset/items?show-reference-ids=false" 2>&1 | tail -1)
+          echo "::notice::CMS catalog (control): $r"
