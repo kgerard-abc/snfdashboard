@@ -640,7 +640,13 @@ function riAvg(key){ const a = D.avg.RI && D.avg.RI[key]; const c = D.avg.RI_cal
   if (!a) return c || []; return a.map((v,i)=> v!=null ? v : (c ? c[i] : null)); }
 function usAvg(key){ return (D.avg.NATION && D.avg.NATION[key]) || []; }
 function pips(r, lg){ const cc = r==null ? "" : r<=2 ? " r-bad" : r===3 ? " r-warn" : " r-good"; const w = h("span",{class:"pips"+(lg?" lg":"")+cc, "aria-hidden":"true"}); for (let i=1;i<=5;i++) w.append(h("i",{class: r!=null && i<=r ? "f":""})); return w; }
-function ratingEl(r, lg){ return r==null ? h("span",{class:"small",text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
+function ratingEl(r, lg, reason){ return r==null ? h("span",{class:"small",title:reason||undefined,text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
+function notRatedReason(f, i){
+  if ((f.x||{}).not_in_cms) return "Not certified by Medicare or Medicaid, so CMS doesn't publish a rating for this home.";
+  if ((ser(f.ccn,"sff"))[i]==="SFF") return "Special Focus Facilities don't get a CMS star rating while in the program.";
+  if (f.status!=="Open") return "This home is closed; CMS no longer publishes a rating for it.";
+  return "CMS hasn't published a rating for this period.";
+}
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
 // CMS's own claims-based measure set (from Medicare claims, not facility-submitted assessments); every other
@@ -1040,7 +1046,7 @@ function homesTable(){
           h("div",{class:"sub"}, f.city, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
           flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
-        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI)))),
+        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)))),
         h("td",{class:"r num",text:fmt(cols[6].get(f))}),
         h("td",{class:"r num",text:fmt(cols[7].get(f))}),
         h("td",{class:"r num",text:cols[8].get(f)==null?"–":fmt(cols[8].get(f),1)+"%"}),
@@ -1060,7 +1066,7 @@ function homesTable(){
     hm += '<div class="pop-line">'+escapeHtml(f.address||"")+', '+escapeHtml(f.city||"")+', RI '+escapeHtml(f.zip||"")+'</div>';
     if (nearLoc && f._dist!=null) hm += '<div class="pop-line">'+fmtMiles(f._dist)+' from '+escapeHtml(nearLoc.label)+' (straight line)</div>';
     const ov = at(f.ccn,"overall",LI);
-    hm += '<div class="pop-line">'+(ov==null?"Not rated":ov+" of 5 stars overall")+(f.status!=="Open"?" · "+f.status:"")+'</div>';
+    hm += '<div class="pop-line">'+(ov==null?'<span title="'+escapeHtml(notRatedReason(f,LI))+'">Not rated</span>':ov+" of 5 stars overall")+(f.status!=="Open"?" · "+f.status:"")+'</div>';
     hm += '<button type="button" class="pop-btn" data-open-facility="'+escapeHtml(f.ccn)+'">See full record</button>';
     return hm;
   }
@@ -1306,7 +1312,7 @@ function viewFacility(ccn){
   // rating tiles
   const rt = (k, label) => {
     const now = at(ccn,k,li), y1 = at(ccn,k,I12), y3 = at(ccn,k,I36);
-    return h("div",{class:"card tile"}, h("div",{class:"label",text:label}), h("div",{class:"val",style:"margin-top:6px"}, ratingEl(now,true)),
+    return h("div",{class:"card tile"}, h("div",{class:"label",text:label}), h("div",{class:"val",style:"margin-top:6px"}, ratingEl(now,true,notRatedReason(f,li))),
       h("div",{class:"sub"}, y1!=null ? ["1 yr ago: ", String(y1), " "] : null, delta(now,y1,"up")),
       h("div",{class:"sub"}, y3!=null ? "3 yrs ago: " + y3 : ""));
   };
