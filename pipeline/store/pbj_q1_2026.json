@@ -1,0 +1,570 @@
+{
+ "415002": {
+  "contract_pct": 0,
+  "weekday_hprd": 5.607,
+  "weekend_drop_pct": 13.3,
+  "weekend_hprd": 4.863,
+  "worst_day_date": "2026-01-17",
+  "worst_day_hprd": 4.27
+ },
+ "415004": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.39,
+  "weekend_drop_pct": 18.8,
+  "weekend_hprd": 2.754,
+  "worst_day_date": "2026-02-08",
+  "worst_day_hprd": 2.44
+ },
+ "415008": {
+  "contract_pct": 14,
+  "weekday_hprd": 3.396,
+  "weekend_drop_pct": 6.1,
+  "weekend_hprd": 3.188,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.33
+ },
+ "415009": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.705,
+  "weekend_drop_pct": 14.2,
+  "weekend_hprd": 3.179,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 2.91
+ },
+ "415010": {
+  "contract_pct": 3.4,
+  "weekday_hprd": 5.087,
+  "weekend_drop_pct": 11.6,
+  "weekend_hprd": 4.496,
+  "worst_day_date": "2026-02-08",
+  "worst_day_hprd": 4.18
+ },
+ "415012": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.844,
+  "weekend_drop_pct": 13.3,
+  "weekend_hprd": 4.2,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 3.67
+ },
+ "415014": {
+  "contract_pct": 4.6,
+  "weekday_hprd": 4.138,
+  "weekend_drop_pct": 22.7,
+  "weekend_hprd": 3.199,
+  "worst_day_date": "2026-01-25",
+  "worst_day_hprd": 2.88
+ },
+ "415020": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.858,
+  "weekend_drop_pct": 16.1,
+  "weekend_hprd": 3.237,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 2.82
+ },
+ "415023": {
+  "contract_pct": 36.8,
+  "weekday_hprd": 3.745,
+  "weekend_drop_pct": 8.2,
+  "weekend_hprd": 3.437,
+  "worst_day_date": "2026-01-03",
+  "worst_day_hprd": 1.64
+ },
+ "415027": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.536,
+  "weekend_drop_pct": 12.1,
+  "weekend_hprd": 3.107,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.49
+ },
+ "415028": {
+  "contract_pct": 10.5,
+  "weekday_hprd": 3.208,
+  "weekend_drop_pct": 14.7,
+  "weekend_hprd": 2.735,
+  "worst_day_date": "2026-02-22",
+  "worst_day_hprd": 2.43
+ },
+ "415029": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.847,
+  "weekend_drop_pct": 10.7,
+  "weekend_hprd": 3.437,
+  "worst_day_date": "2026-01-01",
+  "worst_day_hprd": 3.15
+ },
+ "415031": {
+  "contract_pct": 4.3,
+  "weekday_hprd": 3.523,
+  "weekend_drop_pct": 12.7,
+  "weekend_hprd": 3.077,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.54
+ },
+ "415032": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.253,
+  "weekend_drop_pct": 12.7,
+  "weekend_hprd": 3.714,
+  "worst_day_date": "2026-03-22",
+  "worst_day_hprd": 3.43
+ },
+ "415033": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.454,
+  "weekend_drop_pct": 10.7,
+  "weekend_hprd": 3.084,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 1.84
+ },
+ "415034": {
+  "contract_pct": 16.6,
+  "weekday_hprd": 3.452,
+  "weekend_drop_pct": 8.4,
+  "weekend_hprd": 3.162,
+  "worst_day_date": "2026-03-29",
+  "worst_day_hprd": 2.8
+ },
+ "415035": {
+  "contract_pct": 0.5,
+  "weekday_hprd": 3.542,
+  "weekend_drop_pct": 14.9,
+  "weekend_hprd": 3.014,
+  "worst_day_date": "2026-03-22",
+  "worst_day_hprd": 2.49
+ },
+ "415038": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.178,
+  "weekend_drop_pct": 12.7,
+  "weekend_hprd": 2.773,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.38
+ },
+ "415039": {
+  "contract_pct": 1.1,
+  "weekday_hprd": 3.794,
+  "weekend_drop_pct": 5.4,
+  "weekend_hprd": 3.591,
+  "worst_day_date": "2026-01-26",
+  "worst_day_hprd": 3
+ },
+ "415040": {
+  "contract_pct": 14.1,
+  "weekday_hprd": 3.315,
+  "weekend_drop_pct": 11.2,
+  "weekend_hprd": 2.944,
+  "worst_day_date": "2026-01-25",
+  "worst_day_hprd": 1.91
+ },
+ "415041": {
+  "contract_pct": 0.8,
+  "weekday_hprd": 3.62,
+  "weekend_drop_pct": 9.9,
+  "weekend_hprd": 3.26,
+  "worst_day_date": "2026-01-25",
+  "worst_day_hprd": 2.97
+ },
+ "415042": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.212,
+  "weekend_drop_pct": 7.9,
+  "weekend_hprd": 2.957,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.49
+ },
+ "415044": {
+  "contract_pct": 1.3,
+  "weekday_hprd": 3.83,
+  "weekend_drop_pct": 15.7,
+  "weekend_hprd": 3.229,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 2.6
+ },
+ "415045": {
+  "contract_pct": 9.4,
+  "weekday_hprd": 3.863,
+  "weekend_drop_pct": 13.4,
+  "weekend_hprd": 3.346,
+  "worst_day_date": "2026-03-28",
+  "worst_day_hprd": 2.98
+ },
+ "415049": {
+  "contract_pct": 10.2,
+  "weekday_hprd": 3.376,
+  "weekend_drop_pct": 11.8,
+  "weekend_hprd": 2.977,
+  "worst_day_date": "2026-02-24",
+  "worst_day_hprd": 2.42
+ },
+ "415050": {
+  "contract_pct": 3.5,
+  "weekday_hprd": 3.963,
+  "weekend_drop_pct": 22.6,
+  "weekend_hprd": 3.068,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 2.67
+ },
+ "415053": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.27,
+  "weekend_drop_pct": 16.4,
+  "weekend_hprd": 3.568,
+  "worst_day_date": "2026-03-28",
+  "worst_day_hprd": 3.34
+ },
+ "415054": {
+  "contract_pct": 21.1,
+  "weekday_hprd": 3.718,
+  "weekend_drop_pct": 12.7,
+  "weekend_hprd": 3.246,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 2.87
+ },
+ "415056": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.132,
+  "weekend_drop_pct": 17.7,
+  "weekend_hprd": 3.401,
+  "worst_day_date": "2026-01-03",
+  "worst_day_hprd": 3.04
+ },
+ "415057": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.759,
+  "weekend_drop_pct": 16.7,
+  "weekend_hprd": 3.13,
+  "worst_day_date": "2026-01-25",
+  "worst_day_hprd": 2.58
+ },
+ "415059": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.458,
+  "weekend_drop_pct": 21.2,
+  "weekend_hprd": 3.511,
+  "worst_day_date": "2026-02-01",
+  "worst_day_hprd": 0
+ },
+ "415060": {
+  "contract_pct": 1.8,
+  "weekday_hprd": 4.11,
+  "weekend_drop_pct": 16.7,
+  "weekend_hprd": 3.423,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 1.03
+ },
+ "415061": {
+  "contract_pct": 15.6,
+  "weekday_hprd": 3.617,
+  "weekend_drop_pct": 9.3,
+  "weekend_hprd": 3.282,
+  "worst_day_date": "2026-03-22",
+  "worst_day_hprd": 2.91
+ },
+ "415062": {
+  "contract_pct": 0.2,
+  "weekday_hprd": 4.002,
+  "weekend_drop_pct": 22.1,
+  "weekend_hprd": 3.117,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 2.76
+ },
+ "415063": {
+  "contract_pct": 0.1,
+  "weekday_hprd": 3.433,
+  "weekend_drop_pct": 14.4,
+  "weekend_hprd": 2.94,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.58
+ },
+ "415064": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.892,
+  "weekend_drop_pct": 6.2,
+  "weekend_hprd": 3.651,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.81
+ },
+ "415066": {
+  "contract_pct": 2,
+  "weekday_hprd": 6.421,
+  "weekend_drop_pct": 16,
+  "weekend_hprd": 5.393,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 3.28
+ },
+ "415067": {
+  "contract_pct": 23.2,
+  "weekday_hprd": 4.076,
+  "weekend_drop_pct": 11.8,
+  "weekend_hprd": 3.594,
+  "worst_day_date": "2026-03-29",
+  "worst_day_hprd": 2.1
+ },
+ "415068": {
+  "contract_pct": 9.7,
+  "weekday_hprd": 4.02,
+  "weekend_drop_pct": 11,
+  "weekend_hprd": 3.579,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.44
+ },
+ "415070": {
+  "contract_pct": 2.5,
+  "weekday_hprd": 3.839,
+  "weekend_drop_pct": 19.7,
+  "weekend_hprd": 3.082,
+  "worst_day_date": "2026-02-22",
+  "worst_day_hprd": 2.79
+ },
+ "415071": {
+  "contract_pct": 11.3,
+  "weekday_hprd": 3.361,
+  "weekend_drop_pct": 16.3,
+  "weekend_hprd": 2.814,
+  "worst_day_date": "2026-01-18",
+  "worst_day_hprd": 2.39
+ },
+ "415072": {
+  "contract_pct": 2.2,
+  "weekday_hprd": 3.488,
+  "weekend_drop_pct": 16,
+  "weekend_hprd": 2.929,
+  "worst_day_date": "2026-02-08",
+  "worst_day_hprd": 2.63
+ },
+ "415073": {
+  "contract_pct": 9.3,
+  "weekday_hprd": 6.041,
+  "weekend_drop_pct": 6.4,
+  "weekend_hprd": 5.654,
+  "worst_day_date": "2026-02-24",
+  "worst_day_hprd": 4.73
+ },
+ "415074": {
+  "contract_pct": 9.7,
+  "weekday_hprd": 3.461,
+  "weekend_drop_pct": 11.2,
+  "weekend_hprd": 3.072,
+  "worst_day_date": "2026-02-14",
+  "worst_day_hprd": 2.71
+ },
+ "415075": {
+  "contract_pct": 9.4,
+  "weekday_hprd": 4.337,
+  "weekend_drop_pct": 6,
+  "weekend_hprd": 4.075,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 3.1
+ },
+ "415076": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.618,
+  "weekend_drop_pct": 13.9,
+  "weekend_hprd": 3.114,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.72
+ },
+ "415078": {
+  "contract_pct": 28.9,
+  "weekday_hprd": 4.248,
+  "weekend_drop_pct": 12.6,
+  "weekend_hprd": 3.711,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.19
+ },
+ "415079": {
+  "contract_pct": 2.3,
+  "weekday_hprd": 3.015,
+  "weekend_drop_pct": 22.8,
+  "weekend_hprd": 2.328,
+  "worst_day_date": "2026-03-21",
+  "worst_day_hprd": 1.42
+ },
+ "415080": {
+  "contract_pct": 13.3,
+  "weekday_hprd": 3.663,
+  "weekend_drop_pct": 16.4,
+  "weekend_hprd": 3.062,
+  "worst_day_date": "2026-02-01",
+  "worst_day_hprd": 2.81
+ },
+ "415081": {
+  "contract_pct": 0.2,
+  "weekday_hprd": 3.278,
+  "weekend_drop_pct": 24.6,
+  "weekend_hprd": 2.472,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 2.07
+ },
+ "415082": {
+  "contract_pct": 0.4,
+  "weekday_hprd": 3.669,
+  "weekend_drop_pct": 9.2,
+  "weekend_hprd": 3.332,
+  "worst_day_date": "2026-02-06",
+  "worst_day_hprd": 3.12
+ },
+ "415083": {
+  "contract_pct": 12.6,
+  "weekday_hprd": 3.439,
+  "weekend_drop_pct": 9.1,
+  "weekend_hprd": 3.127,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.58
+ },
+ "415084": {
+  "contract_pct": 0.5,
+  "weekday_hprd": 3.747,
+  "weekend_drop_pct": 14.7,
+  "weekend_hprd": 3.198,
+  "worst_day_date": "2026-01-04",
+  "worst_day_hprd": 2.87
+ },
+ "415085": {
+  "contract_pct": 12.4,
+  "weekday_hprd": 4.117,
+  "weekend_drop_pct": 11.1,
+  "weekend_hprd": 3.659,
+  "worst_day_date": "2026-03-01",
+  "worst_day_hprd": 3.28
+ },
+ "415087": {
+  "contract_pct": 17.2,
+  "weekday_hprd": 3.704,
+  "weekend_drop_pct": 8.2,
+  "weekend_hprd": 3.402,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.32
+ },
+ "415089": {
+  "contract_pct": 3.5,
+  "weekday_hprd": 3.933,
+  "weekend_drop_pct": 11.4,
+  "weekend_hprd": 3.485,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 2.93
+ },
+ "415091": {
+  "contract_pct": 0,
+  "weekday_hprd": 4.847,
+  "weekend_drop_pct": 14.5,
+  "weekend_hprd": 4.144,
+  "worst_day_date": "2026-03-08",
+  "worst_day_hprd": 3.73
+ },
+ "415096": {
+  "contract_pct": 0,
+  "weekday_hprd": 5.158,
+  "weekend_drop_pct": 21.3,
+  "weekend_hprd": 4.058,
+  "worst_day_date": "2026-01-24",
+  "worst_day_hprd": 3.44
+ },
+ "415097": {
+  "contract_pct": 30.9,
+  "weekday_hprd": 3.112,
+  "weekend_drop_pct": 5.8,
+  "weekend_hprd": 2.93,
+  "worst_day_date": "2026-03-20",
+  "worst_day_hprd": 2.18
+ },
+ "415098": {
+  "contract_pct": 18,
+  "weekday_hprd": 3.575,
+  "weekend_drop_pct": 5.7,
+  "weekend_hprd": 3.37,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.52
+ },
+ "415099": {
+  "contract_pct": 11.4,
+  "weekday_hprd": 3.765,
+  "weekend_drop_pct": 16.9,
+  "weekend_hprd": 3.129,
+  "worst_day_date": "2026-02-07",
+  "worst_day_hprd": 2.6
+ },
+ "415104": {
+  "contract_pct": 1.3,
+  "weekday_hprd": 5.005,
+  "weekend_drop_pct": 13.9,
+  "weekend_hprd": 4.308,
+  "worst_day_date": "2026-03-14",
+  "worst_day_hprd": 3.78
+ },
+ "415106": {
+  "contract_pct": 9.7,
+  "weekday_hprd": 4.084,
+  "weekend_drop_pct": 17.3,
+  "weekend_hprd": 3.378,
+  "worst_day_date": "2026-02-01",
+  "worst_day_hprd": 2.79
+ },
+ "415108": {
+  "contract_pct": 1.1,
+  "weekday_hprd": 2.481,
+  "weekend_drop_pct": 22,
+  "weekend_hprd": 1.934,
+  "worst_day_date": "2026-02-22",
+  "worst_day_hprd": 0.85
+ },
+ "415110": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.607,
+  "weekend_drop_pct": 11.5,
+  "weekend_hprd": 3.193,
+  "worst_day_date": "2026-01-25",
+  "worst_day_hprd": 2.95
+ },
+ "415111": {
+  "contract_pct": 6.2,
+  "weekday_hprd": 4.828,
+  "weekend_drop_pct": 16.7,
+  "weekend_hprd": 4.02,
+  "worst_day_date": "2026-01-01",
+  "worst_day_hprd": 3.4
+ },
+ "415113": {
+  "contract_pct": 1.6,
+  "weekday_hprd": 5.18,
+  "weekend_drop_pct": 21.4,
+  "weekend_hprd": 4.07,
+  "worst_day_date": "2026-03-30",
+  "worst_day_hprd": 0
+ },
+ "415119": {
+  "contract_pct": 9.9,
+  "weekday_hprd": 3.628,
+  "weekend_drop_pct": 15.4,
+  "weekend_hprd": 3.069,
+  "worst_day_date": "2026-02-23",
+  "worst_day_hprd": 2.28
+ },
+ "415120": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.264,
+  "weekend_drop_pct": 10.6,
+  "weekend_hprd": 2.919,
+  "worst_day_date": "2026-01-10",
+  "worst_day_hprd": 2.42
+ },
+ "415123": {
+  "contract_pct": 14.9,
+  "weekday_hprd": 3.628,
+  "weekend_drop_pct": 16.6,
+  "weekend_hprd": 3.027,
+  "worst_day_date": "2026-02-22",
+  "worst_day_hprd": 2.44
+ },
+ "415129": {
+  "contract_pct": 0,
+  "weekday_hprd": 3.584,
+  "weekend_drop_pct": 12.4,
+  "weekend_hprd": 3.138,
+  "worst_day_date": "2026-01-31",
+  "worst_day_hprd": 2.48
+ }
+}
