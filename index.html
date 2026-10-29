@@ -1316,7 +1316,11 @@ function viewFacility(ccn){
 
   // key numbers
   const kn = (key, label, dp, unit, better) => {
-    const [v, i] = lastVal(ser(ccn,key)); const ri = riAvg(key)[i];
+    const [v, i] = lastVal(ser(ccn,key)); let ri = riAvg(key)[i];
+    if (ri==null && i>=0){
+      const vals = FAC.filter(g=>g.status==="Open").map(g=>at(g.ccn,key,i)).filter(x=>x!=null);
+      if (vals.length) ri = vals.reduce((a,b)=>a+b,0)/vals.length;
+    }
     let sub = null;
     if (v!=null && ri!=null){ const d = v - ri; const good = better==="up" ? d>0 : d<0;
       sub = h("span",null, `RI average ${fmt(ri,dp)}${unit} · `, h("span",{class:"delta " + (Math.abs(d)<(dp?0.01:0.5)?"same": good?"up":"down"), text: Math.abs(d)<(dp?0.01:0.5) ? "about average" : (good ? "better than average" : "worse than average")})); }
@@ -1330,8 +1334,9 @@ function viewFacility(ccn){
   })();
   app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}),
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
-      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), cmiTile),
-    cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null));
+      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), cmiTile),
+    cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null,
+    h("p",{class:"note",style:"max-width:70ch"},"Case-mix adjusted hours take the home's own reported staffing and adjust it for how medically complex its residents are, so homes with different resident populations can be compared on a level footing. This is the figure CMS itself uses to calculate the staffing star rating above, and it can differ from the raw “total nurse hours” figure when a home's residents are more or less complex than the national average.")));
 
   // trend chart with selector
   const trendKeys = [["overall","Overall rating"],["health","Inspection rating"],["staffing","Staffing rating"],["qm","Quality rating"],["hprd","Nurse hours"],["rn_hprd","RN hours"],["aide_hprd","Aide hours"],["wkend_hprd","Weekend nurse hours"],["turnover","Turnover"],["rn_turnover","RN turnover"],["residents","Residents per day"],["cmi","Case-mix index"]];
