@@ -3,10 +3,11 @@
 The monthly update rebuilds `data.js` from CMS files. A few things on the site don't come from
 those monthly files, so they are saved here and the build adds them back every time.
 
-- `pbj_q1_2026.json`: staffing for each home from the CMS Payroll-Based Journal files for
-  January to March 2026 (kg's upload of Oct 25, 2026). Any file named `pbj_<period>.json` here
-  is added to `data.js` under that name. A newer quarter goes in as a new file; the page's
-  "Q1 2026" wording in `index.html` would need updating to show it.
+- `pbj_qN_YYYY.json`: staffing for each home for one quarter, from CMS's daily Payroll-Based
+  Journal files (contract staff share, weekday and weekend staffing, and the lowest-staffed day).
+  Every Monday, `pipeline/fetch_pbj.py` checks CMS for a newer quarter and saves it here. The
+  build adds every saved quarter to `data.js`, and the page shows the newest one. Q1 2026 came
+  from kg's Oct 25, 2026 upload; recomputing it from CMS gives the same numbers.
 - `non_cms_homes.json`: the three licensed homes that aren't Medicare-certified and so aren't in
   CMS data (Brookdale Sakonnet Bay, Brookdale South Bay, RI Veterans Home). They are matched to
   rows in the facility extras sheet by name or RIDOH license number. Anything filled in on the
