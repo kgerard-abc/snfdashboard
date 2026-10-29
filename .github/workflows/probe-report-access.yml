@@ -13,15 +13,9 @@ jobs:
           python3 - <<'PY'
           import re,html,subprocess
           t=open('pp.html',encoding='utf-8',errors='replace').read()
-          m=re.search(r'(?i)(data (?:last )?updated|updated)[^<]{0,80}',t); print('::notice::updated line:',m.group(0) if m else None)
-          links=sorted(set(re.findall(r'href="(/nursing-homes/[^"]*(?:deficien|inspection|survey)[^"]*)"',t)))
-          print('::notice::links:',len(links),' '.join(links[:6]))
-          dates=sorted(set(re.findall(r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+20\d\d',t)),reverse=True)[:8]
-          print('::notice::dates on page:',dates)
-          i=t.find('658'); print('::notice::around 658:',html.unescape(re.sub(r'<[^>]+>',' ',t[max(0,i-300):i+900]))[:900].replace('\n',' '))
-          if links:
-              u='https://projects.propublica.org'+links[0]
-              s=subprocess.run(['curl','-sS','-L','-A','Mozilla/5.0','-o','d.html',u]); d=open('d.html',encoding='utf-8',errors='replace').read()
-              txt=re.sub(r'\s+',' ',html.unescape(re.sub(r'<[^>]+>',' ',d)))
-              j=txt.find('Based on'); print('::notice::deficiency page',u,len(d),'text:',txt[j:j+700] if j>=0 else txt[:500])
+          hrefs=sorted(set(re.findall(r'href="([^"]+)"',t)))
+          print('::notice::hrefs:',' '.join(h for h in hrefs if 'h-415067' in h or 'deficien' in h.lower() or 'inspect' in h.lower())[:900])
+          txt=re.sub(r'\s+',' ',html.unescape(re.sub(r'<[^>]+>',' ',t)))
+          for kw in ['Data last','updated','Inspection Date','inspection on','Based on','resident']:
+              j=txt.find(kw); print(f'::notice::[{kw}]', txt[max(0,j-150):j+350] if j>=0 else 'none')
           PY
