@@ -72,6 +72,21 @@ jobs:
               problems.append(f"facility count jumped from {len(old['facilities'])} to {len(new['facilities'])}")
           if len(new['harm_summaries']) < len(old['harm_summaries']):
               problems.append(f"harm summaries dropped from {len(old['harm_summaries'])} to {len(new['harm_summaries'])}")
+          # Nothing the live site has may disappear in a rebuild (changes uploaded by hand would be erased).
+          gone = sorted(set(old) - set(new))
+          if gone:
+              problems.append(f"the rebuild would remove these sections of the live data: {', '.join(gone)}")
+          gone_links = sorted(set(old.get('links', {})) - set(new.get('links', {})))
+          if gone_links:
+              problems.append(f"the rebuild would remove these links: {', '.join(gone_links)}")
+          fid = lambda f: f.get('ccn') or f.get('name')
+          new_f = {fid(f): f for f in new['facilities']}
+          gone_f = [fid(f) for f in old['facilities'] if fid(f) not in new_f]
+          if gone_f:
+              problems.append(f"the rebuild would remove these homes: {', '.join(map(str, gone_f))}")
+          reopened = [fid(f) for f in old['facilities'] if str(f.get('status', '')).startswith('Closed') and fid(f) in new_f and not str(new_f[fid(f)].get('status', '')).startswith('Closed')]
+          if reopened:
+              problems.append(f"the rebuild would show these closed homes as open again: {', '.join(reopened)}")
           if problems:
               print("STOPPED:", *problems, sep="\n  "); sys.exit(1)
           print("Safety checks passed. Latest month:", new['meta']['latest_label'])
