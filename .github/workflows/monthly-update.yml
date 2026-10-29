@@ -49,8 +49,20 @@ jobs:
           if [ "$ok" = "0" ]; then echo "::error::The CMS download step failed (see the notices above)."; exit 1; fi
           if grep -q "NOTHING NEW" fetch.log; then echo "new=no" >> "$GITHUB_OUTPUT"; else echo "new=yes" >> "$GITHUB_OUTPUT"; fi
 
+      - name: Add any new quarter of daily staffing data
+        id: pbj
+        run: |
+          set -o pipefail
+          if python3 pipeline/fetch_pbj.py 2>&1 | tee pbj.log; then ok=1; else ok=0; fi
+          while IFS= read -r line; do echo "::notice::Staffing: $line"; done < pbj.log
+          if [ "$ok" = "0" ]; then
+            echo "::warning::Could not check CMS for new daily staffing data this time. The rest of the update goes on; it will try again next Monday."
+            echo "new=no" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if grep -q "NOTHING NEW" pbj.log; then echo "new=no" >> "$GITHUB_OUTPUT"; else echo "new=yes" >> "$GITHUB_OUTPUT"; fi
+
       - name: Rebuild the dashboard data
-        if: steps.fetch.outputs.new == 'yes' || github.event_name == 'workflow_dispatch'
+        if: steps.fetch.outputs.new == 'yes' || steps.pbj.outputs.new == 'yes' || github.event_name == 'workflow_dispatch'
         run: |
           cd pipeline
           cp ../data.js ../data.previous.js
@@ -58,7 +70,7 @@ jobs:
           cp out/dashboard/data.js ../data.js
 
       - name: Safety checks before anything is published
-        if: steps.fetch.outputs.new == 'yes' || github.event_name == 'workflow_dispatch'
+        if: steps.fetch.outputs.new == 'yes' || steps.pbj.outputs.new == 'yes' || github.event_name == 'workflow_dispatch'
         run: |
           python3 - <<'PY'
           import json, sys
@@ -104,9 +116,9 @@ jobs:
             pipeline/harm_summaries.xlsx
 
       - name: Publish (commit the new data)
-        if: steps.fetch.outputs.new == 'yes' && !(github.event_name == 'workflow_dispatch' && inputs.test_only)
+        if: (steps.fetch.outputs.new == 'yes' || steps.pbj.outputs.new == 'yes') && !(github.event_name == 'workflow_dispatch' && inputs.test_only)
         run: |
-          rm -f data.previous.js
+          rm -f data.previous.js pbj.log
           rm -rf pipeline/new_cms_zips pipeline/out
           git config user.name "abc-ri-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -114,20 +126,3 @@ jobs:
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git commit -m "Monthly CMS update"
           git push
-
-      - name: Open an issue listing harm citations that still need a summary
-        if: steps.fetch.outputs.new == 'yes' && !(github.event_name == 'workflow_dispatch' && inputs.test_only)
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python3 - <<'PY' > issue.md
-          import pandas as pd
-          x = pd.read_excel('pipeline/harm_summaries.xlsx', dtype=str).fillna('')
-          todo = x[x.what_happened.str.strip() == '']
-          print(f"{len(todo)} harm citations on Care Compare have no plain-language summary yet.\n")
-          print("Add a row for each new one to the harm_summaries Google Sheet (same columns), then write what_happened. The next update picks it up.\n")
-          print("| facility | inspection date | tag | severity | report |\n|---|---|---|---|---|")
-          for _, r in todo.head(60).iterrows():
-              print(f"| {r.facility} | {r.inspection_date} | {r.tag} | {r.severity} | [report]({r.report_link}) |")
-          PY
-          gh issue create --title "Monthly CMS update done: harm citations needing summaries" --body-file issue.md

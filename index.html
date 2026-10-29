@@ -652,21 +652,27 @@ function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolate
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
 function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
-function pbjInfo(ccn){ return (D.pbj_q1_2026||{})[ccn] || null; }
+// Staffing detail: the newest saved quarter of CMS daily payroll data (keys like pbj_q1_2026)
+const PBJ_KEY = Object.keys(D).filter(k=>/^pbj_q[1-4]_\d{4}$/.test(k)).sort((a,b)=>(+a.slice(-4)*10 + +a[5])-(+b.slice(-4)*10 + +b[5])).pop() || null;
+const PBJ = PBJ_KEY ? D[PBJ_KEY] : {};
+const PBJ_Q = PBJ_KEY ? `Q${PBJ_KEY[5]} ${PBJ_KEY.slice(-4)}` : "";
+const PBJ_MONTHS = PBJ_KEY ? ["Jan\u2013Mar","Apr\u2013Jun","Jul\u2013Sep","Oct\u2013Dec"][+PBJ_KEY[5]-1] : "";
+const pbjAvg = k => { const v = Object.values(PBJ).map(x=>x[k]).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+function pbjInfo(ccn){ return PBJ[ccn] || null; }
 
 function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   const bullets = [];
-  if (sffNow==="SFF") bullets.push("This is a Special Focus Facility — CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
+  if (sffNow==="SFF") bullets.push("This is a Special Focus Facility. CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
   else if (sffNow) bullets.push("CMS has flagged this home as a Special Focus Facility candidate, meaning it's on a watch list for poor performance.");
   if (abuseNow) bullets.push("This home carries CMS's abuse icon, meaning it was cited for abuse, neglect, or a related form of harm to a resident.");
   if (overall!=null && overall<=2) bullets.push(`Its overall CMS rating is ${overall} of 5 stars, below average.`);
   if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) bullets.push(`${fmt(pbj.contract_pct,0)}% of nurse staff hours this quarter came from contract or agency staff rather than the home's own employees, a higher share than most RI homes.`);
-  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) bullets.push(`Staffing drops sharply on weekends here — about ${fmt(pbj.weekend_drop_pct,0)}% lower than weekdays this quarter.`);
+  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) bullets.push(`Staffing drops sharply on weekends here: about ${fmt(pbj.weekend_drop_pct,0)}% lower than weekdays this quarter.`);
   if (newOperator) bullets.push("This home changed operators within the past year, so its history under current management may be short.");
   if (st.harm3) bullets.push(`Inspectors found ${st.harm3} citation${st.harm3===1?"":"s"} of actual harm or immediate jeopardy to residents here in the past 3 years.`);
   if (st.fines3) bullets.push(`CMS fined this home ${money(st.fines3)} in the past 3 years.`);
   if (!bullets.length){
-    bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page — see the sections below for the full picture.");
+    bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page. See the sections below for the full picture.");
   }
   return bullets.slice(0,4);
 }
@@ -1033,8 +1039,8 @@ function homesTable(){
       if ((f.x||{}).not_in_cms) flags.push(h("span",{class:"chip plain",title:"Licensed by RIDOH but not certified by Medicare/Medicaid, so CMS publishes none of the usual ratings, staffing, or inspection data for it.",text:"Not Medicare-certified"}));
       else if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       const pbj0 = pbjInfo(f.ccn);
-      if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
-      if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
+      if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
+      if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
         h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
           h("div",{class:"sub"}, f.city, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
@@ -1083,7 +1089,7 @@ function homesTable(){
     if (st){
       if (!lastFiltered.length) st.textContent = "No homes match your filters, so there is nothing to show on the map.";
       else st.textContent = `Showing ${mappable.length} of ${lastFiltered.length} ${lastFiltered.length===1?"home":"homes"} on the map.` +
-        (missing ? ` ${missing} can't be placed on the map yet — find ${missing===1?"it":"them"} in List view.` : "");
+        (missing ? ` ${missing} can't be placed on the map yet. Find ${missing===1?"it":"them"} in List view.` : "");
     }
     if (fit){
       const pts = [];
@@ -1169,7 +1175,7 @@ function homesTable(){
     h("div",{class:"list-key small"},
       h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"}))),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"}))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, viewBar, mapPanel, tblWrap
   );
@@ -1212,7 +1218,7 @@ function viewAbout(){
   app.append(h("section",{style:"max-width:75ch"},
     h("h1",{text:"About the data"}),
     P(`Everything here comes from the Centers for Medicare & Medicaid Services (CMS) Care Compare nursing home files, which CMS publishes every month. This site keeps every monthly release since January 2019, so you can see how a home has changed over time, not just where it stands today. The newest data is from the ${D.meta.latest_label} release.`),
-    P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all — no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them.`),
+    P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all: no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them.`),
     h("h2",{text:"What the ratings mean",style:"margin-top:20px"}),
     P("CMS rates each home from 1 to 5 stars. The overall rating starts from the health inspection rating, then moves up or down based on staffing and quality measures. Inspection ratings are based on the last few years of inspections, so a home's rating can lag behind recent changes."),
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
@@ -1223,7 +1229,7 @@ function viewAbout(){
     P("A Special Focus candidate is on CMS's monthly list of the homes with the worst inspection records in the state. The state picks new Special Focus Facilities from that list, so being a candidate does not mean a home has been chosen."),
     h("h2",{text:"Staffing",style:"margin-top:20px"}),
     P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
-    P("Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently Q1 2026) rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard."),
+    P(`Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently ${PBJ_Q||"none"}) rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard.`),
     h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
     h("ul",null,
       h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
@@ -1258,8 +1264,8 @@ function viewFacility(ccn){
     if (recent.length) flags.push(h("span",{class:"chip warn",text:"New operator in the past year"}));
   }
   const pbj = pbjInfo(ccn);
-  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
-  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
+  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
+  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
 
   app.append(
     h("a",{class:"back",href:"#home",text:"← All homes"}),
@@ -1291,8 +1297,8 @@ function viewFacility(ccn){
 
   if (x.not_in_cms){
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Not Medicare-certified"}),
-      h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data — the star ratings, staffing hours, health inspections, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
-      h("p",null,"What's shown above (address, beds, ownership) comes from RIDOH's own facility licensing records. For anything else about this home — inspection history, complaints, licensing status — contact RIDOH directly."),
+      h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data: the star ratings, staffing hours, health inspections, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
+      h("p",null,"What's shown above (address, beds, ownership) comes from RIDOH's own facility licensing records. For anything else about this home, such as inspection history, complaints, or licensing status, contact RIDOH directly."),
       h("p",{style:"margin:0"}, h("a",{href:"https://healthri.mylicense.com/verification/",target:"_blank",rel:"noopener",text:"Verify this home's RIDOH license"}))));
     return;
   }
@@ -1331,7 +1337,7 @@ function viewFacility(ccn){
   app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}),
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
       kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), cmiTile),
-    cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects how much nursing care residents need, based on their health conditions. A higher number means a more medically complex population to care for — not necessarily worse care.") : null));
+    cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects how much nursing care residents need, based on their health conditions. A higher number means a more medically complex population to care for, not necessarily worse care.") : null));
 
   // trend chart with selector
   const trendKeys = [["overall","Overall rating"],["health","Inspection rating"],["staffing","Staffing rating"],["qm","Quality rating"],["hprd","Nurse hours"],["rn_hprd","RN hours"],["aide_hprd","Aide hours"],["wkend_hprd","Weekend nurse hours"],["turnover","Turnover"],["rn_turnover","RN turnover"],["residents","Residents per day"],["cmi","Case-mix index"]];
@@ -1351,10 +1357,10 @@ function viewFacility(ccn){
   app.append(h("section",null, h("div",{class:"sec-head"}, h("h2",{text:"Over time"}), ctl), h("div",{class:"card"}, holder)));
   drawTrend();
 
-  // PBJ staffing detail (Q1 2026, one quarter — not a running series like the metrics above)
+  // PBJ staffing detail (newest quarter only; not a running series like the metrics above)
   if (pbj){
     app.append(h("section",null,
-      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:"From CMS's daily payroll-based staffing records (PBJ), Q1 2026 (Jan–Mar). A single quarter, not a running average like the figures above."}))),
+      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:`From CMS's daily payroll-based staffing records (PBJ), ${PBJ_Q} (${PBJ_MONTHS}). A single quarter, not a running average like the figures above.`}))),
       h("div",{class:"grid g2"},
         h("div",{class:"card"},
           h("div",{class:"chart-title",text:"Contract (agency) staff"}),
@@ -1366,7 +1372,7 @@ function viewFacility(ccn){
             pbj.weekend_drop_pct!=null ? h("strong",{text:" ("+fmt(pbj.weekend_drop_pct,0)+"% lower)"}) : null, "."),
           pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text:"Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null)
       ),
-      h("p",{class:"note",style:"max-width:70ch"},"Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS — not CMS's star-rating averages. Statewide, Rhode Island homes averaged 5.4% contract staff and a 13.7% weekend staffing drop this quarter, for comparison.")
+      h("p",{class:"note",style:"max-width:70ch"},`Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS, not CMS's star-rating averages. For comparison, the average Rhode Island home had ${fmt(pbjAvg("contract_pct"),1)}% contract staff and a ${fmt(pbjAvg("weekend_drop_pct"),1)}% weekend staffing drop this quarter.`)
     ));
   }
 
@@ -1472,12 +1478,12 @@ function viewFacility(ccn){
       const mk = (pairs) => { const v = M.map(()=>null); const extra = {}; pairs.forEach(([q,s])=>{ const m = toM(q); const i = M.indexOf(m); if (i>=0) v[i]=s; else extra[m]=s; }); return v; };
       const selfReported = !QM_CLAIMS_BASED.has(code);
       return h("div",{class:"card"}, h("div",{class:"chart-title",style:"font-size:13px"}, D.qm_labels[code],
-          selfReported ? h("span",{class:"tag-self",title:"From the facility's own resident assessments (MDS), completed by the home's own staff — not independently verified the way Medicare claims data is."},"Self-reported") : null),
+          selfReported ? h("span",{class:"tag-self",title:"From the facility's own resident assessments (MDS), completed by the home's own staff, and not independently verified the way Medicare claims data is."},"Self-reported") : null),
         lineChart({series:[{name:f.name,color:"var(--s1)",values:mk(qms[code])},{name:"RI average",color:"var(--s2)",values:mk(D.qm_ri[code]||[]),endDot:false}], dp: code.startsWith("55")?2:1, height:160, aria:D.qm_labels[code]}));
     };
     app.append(h("section",null, h("h2",{text:"Resident outcomes"}),
-      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter — usually because too few residents at the home qualified for that measure."),
-      h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{class:"tag-self",style:"margin-left:0"},"Self-reported"), " measures come from the facility's own resident assessments (MDS), filled out by the home's own staff, rather than from Medicare claims — treat them as somewhat less independently verified than the rest."),
+      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter, usually because too few residents at the home qualified for that measure."),
+      h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{class:"tag-self",style:"margin-left:0"},"Self-reported"), " measures come from the facility's own resident assessments (MDS), filled out by the home's own staff, rather than from Medicare claims, so treat them as somewhat less independently verified than the rest."),
       h("div",{class:"grid g3"}, codes.map(qchart))));
   }
 
