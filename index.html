@@ -1001,7 +1001,7 @@ function homesTable(){
     {k:"staffing", t:"Staffing", r:1, get:f=>at(f.ccn,"staffing",LI)},
     {k:"qm", t:"Quality", r:1, get:f=>at(f.ccn,"qm",LI)},
     {k:"hprd", t:"Nurse hrs/res/day", r:1, get:f=>lastVal(ser(f.ccn,"hprd"))[0]},
-    {k:"adj", t:"Case-mix adjusted nurse hrs/res/day", r:1, tip:"Total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. Compare it to the unadjusted column: if adjusted hours are lower, the residents needed more care than the raw hours suggest. This is the figure CMS uses for the staffing star rating.", get:f=>lastVal(ser(f.ccn,"adj_hprd"))[0]},
+    {k:"adj", t:"Case-mix adjusted nurse hrs/res/day", lines:["Case-mix adjusted ","nurse hrs/res/day"], r:1, tip:"Total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. Compare it to the unadjusted column: if adjusted hours are lower, the residents needed more care than the raw hours suggest. This is the figure CMS uses for the staffing star rating.", get:f=>lastVal(ser(f.ccn,"adj_hprd"))[0]},
     {k:"rn", t:"RN hrs", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
     {k:"turn", t:"Turnover", r:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
     {k:"harm", t:"Harm citations (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].harm3 : null},
@@ -1026,7 +1026,7 @@ function homesTable(){
     thead.textContent = "";
     thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), tabindex:0, title:c.tip||null, "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none",
       onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); },
-      onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, c.t, state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
+      onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, ...(c.lines ? [c.lines[0], h("br"), c.lines[1]] : [c.t]), state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
     let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open" || (f.x||{}).not_in_cms));
     if (state.city) rows = rows.filter(f=>f.city===state.city);
     if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
