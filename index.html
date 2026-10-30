@@ -654,6 +654,9 @@ const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal
 const QM_CLAIMS_BASED = new Set(["521","551","552"]);
 const SFFTXT = {SFF:"Special Focus Facility: one of the few homes CMS has singled out for a long record of serious problems. It is inspected at least every six months and faces tougher penalties until it improves.",
   cand:"Special Focus candidate: on CMS's monthly list of the homes with the worst inspection records in the state. New Special Focus Facilities are chosen from this list."};
+const CONTRACT_TXT = "High contract staffing: 10% or more of the home's nurse staff hours came from contract or agency staff, Q1 2026.";
+const WEEKEND_TXT = "Weekend staffing drop: nurse staffing on weekends was at least 20% lower than on weekdays, Q1 2026.";
+const SELF_TXT = "Self-reported: from the facility's own resident assessments (MDS), completed by the home's own staff, and not independently verified the way Medicare claims data is.";
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
@@ -1183,7 +1186,9 @@ function homesTable(){
     h("div",{class:"list-key small"},
       h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"}))),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher — see ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
+      h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
+        h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, viewBar, mapPanel, tblWrap
   );
@@ -1285,6 +1290,8 @@ function viewFacility(ccn){
         h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+(x.not_in_cms?" licensed beds":" certified beds") : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
         flags.length ? h("div",{class:"flags"}, flags) : null,
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
+        (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:CONTRACT_TXT}) : null,
+        (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:WEEKEND_TXT}) : null,
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
           h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
           h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"}),
@@ -1326,6 +1333,7 @@ function viewFacility(ccn){
   };
   app.append(h("section",null,
     h("div",{class:"sec-head"},h("h2",{text:"Star ratings"}), h("span",{class:"small",text: f.status==="Open" ? D.meta.latest_label + " release" : "As of " + mlabel(f.last_month)})),
+    at(ccn,"overall",li)==null ? h("p",{class:"small",style:"margin:0 0 8px;max-width:70ch",text:notRatedReason(f,li)}) : null,
     h("div",{class:"grid g4"}, rt("overall","Overall"), rt("health","Health inspections"), rt("staffing","Staffing"), rt("qm","Quality measures"))));
 
   // key numbers
@@ -1495,7 +1503,7 @@ function viewFacility(ccn){
         lineChart({series:[{name:f.name,color:"var(--s1)",values:mk(qms[code])},{name:"RI average",color:"var(--s2)",values:mk(D.qm_ri[code]||[]),endDot:false}], dp: code.startsWith("55")?2:1, height:160, aria:D.qm_labels[code]}));
     };
     app.append(h("section",null, h("h2",{text:"Resident outcomes"}),
-      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter — usually because too few residents at the home qualified for that measure."),
+      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter — usually because too few residents at the home qualified for that measure. " + SELF_TXT),
       h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{class:"tag-self",style:"margin-left:0"},"Self-reported"), " measures come from the facility's own resident assessments (MDS), filled out by the home's own staff, rather than from Medicare claims — treat them as somewhat less independently verified than the rest."),
       h("div",{class:"grid g3"}, codes.map(qchart))));
   }
