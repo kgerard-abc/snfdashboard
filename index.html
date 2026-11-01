@@ -72,6 +72,9 @@ nav.tabs a.on{background:var(--ink);color:var(--bg)}
 nav.tabs a.ext{border-left:1px solid var(--line);margin-left:6px;padding-left:16px;display:inline-flex;align-items:center;gap:4px}
 nav.tabs a.ext svg{width:12px;height:12px;flex:none}
 .search{flex:1 1 300px;max-width:460px;position:relative;min-width:0}
+.lang-toggle{font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:var(--r);padding:6px 14px;cursor:pointer}
+.lang-toggle:hover{background:var(--panel)}
+.lang-note{font-size:13px;color:var(--ink-2);margin:10px 0 0;max-width:640px}
 .search-row{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
 .search-row:focus-within{border-bottom-color:var(--accent)}
 .search-row svg{flex:none;opacity:.55}
@@ -282,7 +285,9 @@ footer p{max-width:90ch;margin:0 0 10px}
         </div>
         <div class="sugg" id="sugg" hidden></div>
       </div>
+      <button type="button" id="langToggle" class="lang-toggle" lang="es" aria-label="Cambiar a español">Español</button>
     </div>
+    <p id="langNote" class="lang-note" hidden></p>
     <span id="asof" hidden></span>
   </div>
 </header>
@@ -1549,4 +1554,6 @@ window.addEventListener("hashchange", route);
 route();
 })();
 </script>
+<script src="i18n-es.js"></script>
+<script src="i18n.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "438235093f584b3fa82f19da8e477be2"}'></script><!-- End Cloudflare Web Analytics -->
