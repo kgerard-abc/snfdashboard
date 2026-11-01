@@ -152,7 +152,7 @@
   });
 
   var TITLE_EN = document.title;
-  var NOTE_ES = "Las descripciones de las citaciones y los resúmenes de daños aparecen en inglés por ahora. El resto de la página está en español.";
+  var NOTE_ES = "Esta traducción al español fue hecha con inteligencia artificial (traducción automática) y todavía está en proceso, así que puede tener errores. La versión en inglés es la oficial. Las descripciones de las citaciones usan el texto en español de CMS cuando existe; los resúmenes de daños y las citaciones más antiguas siguen en inglés por ahora. Para avisar de un error: corrections@abc-ri.org.";
 
   function setLang(next, persist) {
     lang = next;
