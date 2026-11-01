@@ -1531,7 +1531,7 @@ function viewFacility(ccn){
 
 function footer(){
   app.append(h("footer",null,
-    h("p",null, h("strong",{text:"About this page."}), " This page is published by Advocates for Better Care in Rhode Island (ABC-RI), a grassroots community advocacy organization. ABC-RI is not a registered nonprofit. It is not produced, reviewed, or endorsed by CMS, the Rhode Island Department of Health (RIDOH), or any state agency, and it is not a substitute for their records."),
+    h("p",null, h("strong",{text:"About this page."}), " This page is published by Advocates for Better Care in Rhode Island (ABC-RI), a grassroots community advocacy organization. It is not produced, reviewed, or endorsed by CMS, the Rhode Island Department of Health (RIDOH), or any state agency, and it is not a substitute for their records."),
     h("p",{text:`Ratings, staffing, inspections, fines, and ownership come from the CMS Care Compare nursing home files, monthly releases January 2019 to ${D.meta.latest_label}. Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from the sources named on each home's page. The linked CMS inspection report is the official record; if anything here conflicts with it, the report governs. Updated ${D.meta.built}.`}),
     h("p",null, "Spotted an error? Email ", h("strong",{text:"corrections@abc-ri.org"}), ".")));
 }
