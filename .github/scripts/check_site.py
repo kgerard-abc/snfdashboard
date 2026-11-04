@@ -120,11 +120,13 @@ def check_snf():
     for f in facs:
         if f["status"] == "Open" and f["last_month"] != meta["latest"]:
             err(f"{f['name']} ({f['ccn']}) is Open but its last month is {f['last_month']}, not {meta['latest']}")
+        closed = f["status"].startswith(("No longer", "Closed"))
         if f.get("lat") is None or f.get("lon") is None:
-            no_xy.append(f["name"])
+            if not closed:   # closed homes get no map pin
+                no_xy.append(f["name"])
         elif not (41.1 < f["lat"] < 42.1 and -71.95 < f["lon"] < -71.0):
             err(f"{f['name']} map coordinates fall outside Rhode Island")
-        if not f.get("x", {}).get("owner_group"):
+        if not f.get("x", {}).get("owner_group") and not closed:
             no_grp.append(f["name"])
     if no_xy:
         warn(f"{len(no_xy)} facilities have no map coordinates: {', '.join(no_xy)}")

@@ -8,8 +8,8 @@ those monthly files, so they are saved here and the build adds them back every t
   Every Monday, `pipeline/fetch_pbj.py` checks CMS for a newer quarter and saves it here. The
   build adds every saved quarter to `data.js`, and the page shows the newest one. Q1 2026 came
   from kg's Oct 25, 2026 upload; recomputing it from CMS gives the same numbers.
-- `non_cms_homes.json`: the three licensed homes that aren't Medicare-certified and so aren't in
-  CMS data (Brookdale Sakonnet Bay, Brookdale South Bay, RI Veterans Home). They are matched to
+- `non_cms_homes.json`: the licensed homes that aren't Medicare-certified and so aren't in
+  CMS data (Brookdale Sakonnet Bay, Brookdale South Bay, RI Veterans Home, Village at Waterman Lake). They are matched to
   rows in the facility extras sheet by name or RIDOH license number. Anything filled in on the
   sheet replaces what is saved here; a blank cell on the sheet keeps the saved value.
 
