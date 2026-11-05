@@ -23,7 +23,11 @@ missing = [c for c in mine.columns if c not in sheet.columns]
 if missing:
     print(f"NOTE: the Sheet is missing these columns: {missing}. Using the saved copy.")
     sys.exit(0)
-sheet = sheet.reindex(columns=list(mine.columns))
+# keep every saved column, plus any new column added in the Sheet (the Sheet's help tab says new columns carry through)
+extra = [c for c in sheet.columns if c not in mine.columns and str(c).strip() and not str(c).startswith("Unnamed")]
+if extra:
+    print(f"New column(s) in the Sheet: {extra}")
+sheet = sheet.reindex(columns=list(mine.columns) + extra)
 clean = lambda d: set(d["ccn"].str.replace(".0", "", regex=False).str.strip()) - {""}
 lost = clean(mine) - clean(sheet)
 if len(sheet) < len(mine) - 3 or len(lost) > 3:
@@ -31,6 +35,6 @@ if len(sheet) < len(mine) - 3 or len(lost) > 3:
     sys.exit(0)
 changed = 0
 if len(sheet) == len(mine):
-    changed = int((sheet.reset_index(drop=True) != mine.reset_index(drop=True)).to_numpy().sum())
+    changed = int((sheet[list(mine.columns)].reset_index(drop=True) != mine.reset_index(drop=True)).to_numpy().sum())
 sheet.to_excel(path, index=False, sheet_name="Extras")
 print(f"Took {len(sheet)} rows from the Google Sheet ({changed} cell change(s), {len(lost)} home(s) absent).")

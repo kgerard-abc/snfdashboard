@@ -655,6 +655,15 @@ const money = v => v == null ? "–" : "$" + Math.round(v).toLocaleString("en-US
 const SALES_URL = "https://snfsales.abc-ri.org/";
 let SALES = null;
 const salesReady = fetch(SALES_URL + "sales.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : null).then(j => (SALES = j)).catch(() => null);
+// Property owner from the Facility extras sheet: the owner's name, then a "Source" link
+// (property_owner_source, or a web address typed into the owner cell itself).
+function propertyOwner(x){
+  const raw = String(x.property_owner || "");
+  const inText = (raw.match(/https?:\/\/\S+/) || [])[0];
+  const src = String(x.property_owner_source || "").trim() || inText;
+  const name = raw.replace(/https?:\/\/\S+/, " ").replace(/\s*\($/, "").replace(/\s+/g, " ").trim();
+  return [h("span",{text:name}), src ? [" (", h("a",{href:src,target:"_blank",rel:"noopener",text:"Source"}), ")"] : null];
+}
 function saleLines(ccn){
   const evs = ((SALES && SALES.homes) || {})[ccn] || [];
   return evs.map(e => {
@@ -1351,7 +1360,7 @@ function viewFacility(ccn){
           f.cms_chain ? [h("dt",{text:"CMS chain"}), h("dd",{text:f.cms_chain + (f.chain_facilities ? ` (${f.chain_facilities} homes)` : "")})] : null,
           f.legal_business_name ? [h("dt",{text:"Operator (legal name)"}), h("dd",{text:f.legal_business_name})] : null,
           [h("dt",{id:"sale-dt",hidden:true,text:"Sale"}), h("dd",{id:"sale-dd",hidden:true})],
-          x.property_owner ? [h("dt",{text:"Property owner"}), h("dd",{text:x.property_owner})] : null,
+          x.property_owner ? [h("dt",{text:"Property owner"}), h("dd",null, propertyOwner(x))] : null,
           x.not_in_cms ? null : [h("dt",{text:"CMS number"}), h("dd",{class:"num",text:ccn})],
           x.ridoh_license_no ? [h("dt",{text:"RIDOH license"}), h("dd",{text:x.ridoh_license_no})] : null
         ))

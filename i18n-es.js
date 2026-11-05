@@ -669,4 +669,5 @@ window.RINH_ES = {
   "Buyer managing the home since {D}": "El comprador administra el hogar desde {D}",
   "Sale record and before-and-after details": "Registro de la venta y detalles de antes y después",
   "The state is reviewing an application to sell this home to {*}.": "El estado está revisando una solicitud para vender este hogar a {1}.",
+  "Source": "Fuente",
 };
