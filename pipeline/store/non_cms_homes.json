@@ -105,5 +105,38 @@
    "ridoh_licensed_beds": "192"
   },
   "ridoh_license_no": "LTC00682"
+ },
+ {
+  "ccn": "RIDOH-LTC00722",
+  "name": "Village at Waterman Lake (Greenville)",
+  "legal_business_name": null,
+  "address": "715 Putnam Pike",
+  "city": "Greenville",
+  "zip": "02828",
+  "county": "Providence",
+  "phone": null,
+  "status": "Not Medicare-certified",
+  "first_month": null,
+  "last_month": null,
+  "beds": 30,
+  "residents": null,
+  "ownership_type": null,
+  "cms_chain": null,
+  "chain_facilities": null,
+  "ccrc": null,
+  "in_hospital": null,
+  "council": null,
+  "certified_since": null,
+  "lat": null,
+  "lon": null,
+  "changed_ownership_flag_months": null,
+  "former_names": "",
+  "x": {
+   "ridoh_license_no": "LTC00722",
+   "ridoh_licensed_beds": "30",
+   "ridoh_alz_scu_beds": "0",
+   "not_in_cms": "yes"
+  },
+  "ridoh_license_no": "LTC00722"
  }
 ]
