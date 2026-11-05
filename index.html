@@ -1566,6 +1566,17 @@ function route(){
   if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
   document.title = f ? f.name + " · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  if (f) gcEvent(f.name);
+}
+// GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is
+// counted as an event named home/<name>, the same way the sales and assisted living sites do it.
+// count.js loads after this script, so a home opened from a shared link waits for it (up to 10 seconds).
+function gcEvent(n, tries){
+  try {
+    const g = window.goatcounter;
+    if (g && g.count) g.count({path: "home/" + n, title: n, event: true});
+    else if ((tries||0) < 20) setTimeout(() => gcEvent(n, (tries||0) + 1), 500);
+  } catch (e) {}
 }
 window.addEventListener("hashchange", route);
 route();
@@ -1573,6 +1584,7 @@ route();
 </script>
 <script src="i18n-es.js"></script>
 <script src="i18n.js"></script>
+<script data-goatcounter="https://abc-ri-snf.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "438235093f584b3fa82f19da8e477be2"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
