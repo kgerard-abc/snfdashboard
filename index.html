@@ -125,6 +125,7 @@ section{margin-top:40px}
 
 .chip{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:2px;white-space:nowrap;line-height:1.5;border-left:3px solid transparent}
 .chip.bad{color:var(--brick-deep);background:var(--brick-bg);border-left-color:var(--brick)}
+td.ij{color:var(--bad);font-weight:700}
 .chip.warn{color:var(--orange-deep);background:var(--orange-bg);border-left-color:var(--orange)}
 .chip.good{color:var(--sage);background:var(--sage-bg);border-left-color:var(--sage)}
 .chip.plain{color:var(--bg);background:var(--ink);border-left-color:var(--accent)}
@@ -183,6 +184,7 @@ td.home{min-width:150px}
 .ttk ul{margin:0;padding-left:20px}
 .ttk li{margin:0 0 6px;line-height:1.45;font-size:14.5px}
 .ttk li:last-child{margin-bottom:0}
+.sale-line{margin:0 0 6px}
 .fac-head{margin-top:12px;display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between}
 .fac-head .meta{color:var(--ink-2);font-size:14px;margin-top:6px}
 .fac-head .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -648,6 +650,25 @@ const mlabel = m => m ? MON[+m.slice(5,7)-1] + " " + m.slice(0,4) : "";
 const dlabel = d => { if (!d) return ""; const [y,mo,da] = d.split("-"); return MON[+mo-1] + " " + (+da) + ", " + y; };
 const fmt = (v, dp=2) => v == null ? "–" : (+v).toLocaleString("en-US", {minimumFractionDigits:dp, maximumFractionDigits:dp});
 const money = v => v == null ? "–" : "$" + Math.round(v).toLocaleString("en-US");
+// Sales and changes of control come from the sales site, which follows RIDOH's list of reviews.
+// It publishes sales.json: for each home, pending applications and the most recent completed sale.
+const SALES_URL = "https://snfsales.abc-ri.org/";
+let SALES = null;
+const salesReady = fetch(SALES_URL + "sales.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : null).then(j => (SALES = j)).catch(() => null);
+function saleLines(ccn){
+  const evs = ((SALES && SALES.homes) || {})[ccn] || [];
+  return evs.map(e => {
+    const who = e.buyer || "a new owner";
+    const when = e.pending ? "Application filed " + dlabel(e.date)
+      : e.date_note === "CMS takeover date" ? "New operator from " + dlabel(e.date)
+      : e.date_note === "Approximate date" ? "About " + dlabel(e.date)
+      : "State decision " + dlabel(e.date);
+    return h("div",{class:"sale-line"},
+      h("div",{text:(e.pending ? "Pending sale to " : "Sold to ") + who}),
+      h("div",{class:"small",text:when}),
+      e.mgmt_start ? h("div",{class:"small",text:"Buyer managing the home since " + dlabel(e.mgmt_start)}) : null);
+  });
+}
 const mi = m => +m.slice(0,4)*12 + (+m.slice(5,7)-1);
 const monthsAgo = (ym, n) => { let y = +ym.slice(0,4), mo = +ym.slice(5,7)-1-n; y += Math.floor(mo/12); mo = ((mo%12)+12)%12; return y + "-" + String(mo+1).padStart(2,"0") + "-01"; };
 const phone = p => { p = String(p||"").replace(/\D/g,""); return p.length===10 ? `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}` : p; };
@@ -688,16 +709,19 @@ function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   if (sffNow==="SFF") bullets.push("This is a Special Focus Facility. CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
   else if (sffNow) bullets.push("CMS has flagged this home as a Special Focus Facility candidate, meaning it's on a watch list for poor performance.");
   if (abuseNow) bullets.push("This home carries CMS's abuse icon, meaning it was cited for abuse, neglect, or a related form of harm to a resident.");
+  if (st.ij3) bullets.push(`Inspectors found ${st.ij3} immediate jeopardy citation${st.ij3===1?"":"s"} here in the past 3 years. Immediate jeopardy is CMS's most serious level: a resident was seriously harmed, or was likely to be.`);
   if (overall!=null && overall<=2) bullets.push(`Its overall CMS rating is ${overall} of 5 stars, below average.`);
+  const harmOnly = (st.harm3||0) - (st.ij3||0);
+  if (st.ij3 && harmOnly>0) bullets.push(`Inspectors also found ${harmOnly} citation${harmOnly===1?"":"s"} where a resident was actually harmed in the past 3 years.`);
+  else if (!st.ij3 && st.harm3) bullets.push(`Inspectors found ${st.harm3} citation${st.harm3===1?"":"s"} where a resident was actually harmed in the past 3 years.`);
   if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) bullets.push(`${fmt(pbj.contract_pct,0)}% of nurse staff hours this quarter came from contract or agency staff rather than the home's own employees, a higher share than most RI homes.`);
   if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) bullets.push(`Staffing drops sharply on weekends here, about ${fmt(pbj.weekend_drop_pct,0)}% lower than weekdays this quarter.`);
   if (newOperator) bullets.push("This home changed operators within the past year, so its history under current management may be short.");
-  if (st.harm3) bullets.push(`Inspectors found ${st.harm3} citation${st.harm3===1?"":"s"} of actual harm or immediate jeopardy to residents here in the past 3 years.`);
   if (st.fines3) bullets.push(`CMS fined this home ${money(st.fines3)} in the past 3 years.`);
   if (!bullets.length){
     bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page. See the sections below for the full picture.");
   }
-  return bullets.slice(0,4);
+  return bullets.slice(0,5);
 }
 function citationLink(ccn, r){
   // the official report that contains this citation (health citations Care Compare still lists)
@@ -1025,6 +1049,7 @@ function homesTable(){
     {k:"rn", t:"RN hrs", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
     {k:"turn", t:"Turnover", r:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
     {k:"harm", t:"Harm citations (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].harm3 : null},
+    {k:"ij", t:"Immediate jeopardy (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].ij3 : null},
     {k:"fines", t:"Fines (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].fines3 : null},
     {k:"beds", t:"Beds", r:1, get:f=>num(f.beds)},
   ];
@@ -1082,6 +1107,7 @@ function homesTable(){
         h("td",{class:"r num",text:fmt(colByKey.rn.get(f))}),
         h("td",{class:"r num",text:colByKey.turn.get(f)==null?"–":fmt(colByKey.turn.get(f),1)+"%"}),
         h("td",{class:"r num",text:st.harm3==null?"–":String(st.harm3)}),
+        h("td",{class:"r num"+(st.ij3?" ij":""),text:st.ij3==null?"–":String(st.ij3)}),
         h("td",{class:"r num",text:st.fines3==null?"–":money(st.fines3)}),
         h("td",{class:"r num",text:f.beds==null?"–":String(Math.round(f.beds))})
       ));
@@ -1206,7 +1232,7 @@ function homesTable(){
     h("div",{class:"list-key small"},
       h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
@@ -1324,7 +1350,7 @@ function viewFacility(ccn){
           x.owner_group ? [h("dt",{text:"Owner group"}), h("dd",{text:x.owner_group})] : null,
           f.cms_chain ? [h("dt",{text:"CMS chain"}), h("dd",{text:f.cms_chain + (f.chain_facilities ? ` (${f.chain_facilities} homes)` : "")})] : null,
           f.legal_business_name ? [h("dt",{text:"Operator (legal name)"}), h("dd",{text:f.legal_business_name})] : null,
-          x.year_sold ? [h("dt",{text:"Sold / pending sale"}), h("dd",{text:x.year_sold})] : null,
+          [h("dt",{id:"sale-dt",hidden:true,text:"Sale"}), h("dd",{id:"sale-dd",hidden:true})],
           x.property_owner ? [h("dt",{text:"Property owner"}), h("dd",{text:x.property_owner})] : null,
           x.not_in_cms ? null : [h("dt",{text:"CMS number"}), h("dd",{class:"num",text:ccn})],
           x.ridoh_license_no ? [h("dt",{text:"RIDOH license"}), h("dd",{text:x.ridoh_license_no})] : null
@@ -1343,7 +1369,18 @@ function viewFacility(ccn){
   {
     const newOperator = f.changed_ownership_flag_months && f.status==="Open" && changes.filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
     const ttk = thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOperator);
-    app.append(h("div",{class:"ttk"}, h("h2",{text:"Things to know"}), h("ul",null, ttk.map(t=>h("li",{text:t})))));
+    const ttkList = h("ul",null, ttk.map(t=>h("li",{text:t})));
+    app.append(h("div",{class:"ttk"}, h("h2",{text:"Things to know"}), ttkList));
+    salesReady.then(() => {
+      const dd = document.getElementById("sale-dd"), dt = document.getElementById("sale-dt");
+      if (!dd || !dd.isConnected || location.hash !== "#f-" + ccn) return;
+      const lines = saleLines(ccn);
+      if (!lines.length) return;
+      dd.append(...lines, h("a",{href:SALES_URL + "#home=" + encodeURIComponent(ccn),target:"_blank",rel:"noopener",text:"Sale record and before-and-after details"}));
+      dd.hidden = false; dt.hidden = false;
+      const pend = (SALES.homes[ccn] || []).find(e => e.pending);
+      if (pend) ttkList.prepend(h("li",{text:"The state is reviewing an application to sell this home to " + (pend.buyer || "a new owner") + "."}));
+    });
   }
 
   // rating tiles
