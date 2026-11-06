@@ -778,6 +778,9 @@ function pbjInfo(ccn){ return (D[PBJ_KEY]||{})[ccn] || null; }
 
 function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   const bullets = [];
+  // ABC-RI's own note from the facility details sheet (a "Closed ..." note already shows as the home's status)
+  const note = ((f.x||{}).notes||"").trim();
+  if (note && !/^closed\b/i.test(note)) bullets.push(note);
   if (sffNow==="SFF") bullets.push("This is a Special Focus Facility. CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
   else if (sffNow) bullets.push("CMS has flagged this home as a Special Focus Facility candidate, meaning it's on a watch list for poor performance.");
   if (abuseNow) bullets.push("This home carries CMS's abuse icon, meaning it was cited for abuse, neglect, or a related form of harm to a resident.");
@@ -793,7 +796,7 @@ function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   if (!bullets.length){
     bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page. See the sections below for the full picture.");
   }
-  return bullets.slice(0,5);
+  return bullets.slice(0, note && !/^closed\b/i.test(note) ? 6 : 5);
 }
 function citationLink(ccn, r){
   // the official report that contains this citation (health citations Care Compare still lists)
