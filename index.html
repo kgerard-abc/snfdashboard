@@ -167,6 +167,13 @@ td.home{min-width:150px}
 .tip .row{display:flex;align-items:center;gap:6px}
 .tip .row b{font-variant-numeric:tabular-nums}
 .tip .key{width:12px;height:2px;border-radius:1px;display:inline-block}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.chart-table{margin:2px 0 8px}
+.chart-table summary{cursor:pointer;font-size:13px;color:var(--ink-2);padding:4px 0}
+.chart-table summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chart-table .ct-wrap{max-height:320px;overflow:auto;border-top:1px solid var(--line)}
+.chart-table table{font-size:13px}
+.chart-table th,.chart-table td{padding:5px 8px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:4px 0 6px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend .ln{width:14px;height:2px;border-radius:1px}
@@ -799,6 +806,21 @@ function operatorChanges(ccn){
 
 // ---------- charts
 let tipEl = null;
+// "Show as a table" under each chart, so the numbers can be read without hovering and by screen readers.
+// The table is built when it is first opened.
+function chartTable(caption, heads, rowsFn){
+  const d = h("details",{class:"chart-table"}, h("summary",{text:"Show as a table"}));
+  let built = false;
+  d.addEventListener("toggle", () => {
+    if (!d.open || built) return; built = true;
+    const rows = rowsFn(), isNum = c => /^[\d$.,%+\u2013\u2212 -]+$/.test(String(c));
+    const numCol = heads.map((_,i) => i > 0 && rows.every(r => r[i] === "" || isNum(r[i])));   // numbers right, text left
+    const tb = h("tbody"); rows.forEach(r => tb.append(h("tr",null, r.map((c,i) => h("td",{class: numCol[i] ? "r num" : "", text: c})))));
+    d.append(h("div",{class:"ct-wrap"}, h("table",null, caption ? h("caption",{class:"sr-only",text:caption}) : null,
+      h("thead",null, h("tr",null, heads.map((t,i) => h("th",{class: numCol[i] ? "r" : "", scope:"col", text:t})))), tb)));
+  });
+  return d;
+}
 function lineChart(opts){
   // opts: {series:[{name,color,values,width,dash}], dp, height, yMin, yMax, markers:[{month,label}], fromIdx, unit}
   const box = h("div",{class:"chart"});
@@ -807,7 +829,22 @@ function lineChart(opts){
     opts.series.forEach(sr => legend.append(h("span",null, h("i",{class:"ln", style:`background:${sr.color}`}), sr.name)));
     if ((opts.markers||[]).length) legend.append(h("span",null, h("i",{class:"mk"}), "New operator name"));
   }
-  const wrap = h("div",null, legend, box);
+  const lineRows = () => {
+    let a = opts.fromIdx != null ? opts.fromIdx : M.length;
+    if (opts.fromIdx == null) opts.series.forEach(sr => sr.values.forEach((v,i) => { if (v != null) a = Math.min(a, i); }));
+    const out = [];
+    for (let i = M.length - 1; i >= a; i--){
+      if (!opts.series.some(sr => sr.values[i] != null)) continue;
+      const note = (opts.markers||[]).filter(mk => mk.month === M[i]).map(mk => mk.label).join("; ");
+      out.push([mlabel(M[i]), ...opts.series.map(sr => { const v = sr.values[i]; if (v == null) return "\u2013";
+        const dp = opts.dp==null ? 2 : (opts.dp === 0 && !Number.isInteger(v) ? 1 : opts.dp);   // averages keep a decimal
+        return fmt(v, dp) + (opts.unit||""); })]
+        .concat((opts.markers||[]).length ? [note] : []));
+    }
+    return out;
+  };
+  const table = chartTable(opts.aria, ["Month", ...opts.series.map(sr => sr.name)].concat((opts.markers||[]).length ? ["Note"] : []), lineRows);
+  const wrap = h("div",null, legend, box, table);
   const draw = () => {
     box.textContent = "";
     const W = Math.max(280, box.clientWidth || 600), H = opts.height || 220;
@@ -903,8 +940,12 @@ function barChart(opts){
   const box = h("div",{class:"chart"});
   const legend = h("div",{class:"legend"});
   if (opts.series.length>1) opts.series.forEach(sr => legend.append(h("span",null,h("i",{class:"bx",style:`background:${sr.color}`}), sr.name)));
-  const wrap = h("div",null,legend,box);
   const fv = opts.fmtV || (v => Math.round(v).toLocaleString("en-US"));
+  const multi = opts.series.length > 1;
+  const table = chartTable(opts.aria, [opts.catName || "Year", ...opts.series.map(sr => sr.name)].concat(multi ? ["Total"] : []).concat(opts.extra ? ["Note"] : []),
+    () => opts.cats.map((c,i) => [String(c), ...opts.series.map(sr => fv(sr.values[i]||0))]
+      .concat(multi ? [fv(opts.series.reduce((a,sr)=>a+(sr.values[i]||0),0))] : []).concat(opts.extra ? [opts.extra(i) || ""] : [])).reverse());
+  const wrap = h("div",null,legend,box,table);
   const draw = () => {
     box.textContent = "";
     const W = Math.max(260, box.clientWidth||500), H = opts.height||200, pad={l:44,r:8,t:12,b:24};
