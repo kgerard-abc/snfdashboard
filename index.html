@@ -229,6 +229,34 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .list-key{max-width:100ch;margin:0 0 10px;color:var(--ink-2)}
 .list-key summary{cursor:pointer;font-weight:600;color:var(--ink)}
 .sort-row{display:none}
+.cmp-check{width:17px;height:17px;margin:0 8px 0 0;vertical-align:-3px;accent-color:var(--ink);cursor:pointer}
+.cmp-hint{margin:0 0 8px;font-style:italic}
+.cmp-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:2px solid var(--ink);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.cmp-bar[hidden]{display:none}
+.cmp-count{font-weight:700}
+.cmp-msg{font-size:13px;color:var(--ink-2)}
+.cmp-go:disabled{opacity:.5;cursor:default}
+.cmp-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto}
+.cmp-panel{background:var(--bg);border-radius:4px;max-width:900px;width:100%;padding:18px 16px 20px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.cmp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.cmp-head h2{margin:0}
+.cmp-scroll{overflow-x:auto}
+.cmp-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.cmp-tbl th,.cmp-tbl td{white-space:normal;padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cmp-tbl thead th{font-size:15px}
+.cmp-tbl tbody th{font-weight:600;color:var(--ink-2);width:26%}
+.cmp-tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.cmp-tbl .chip{white-space:normal}
+body.cmp-on{padding-bottom:84px}
+@media (max-width:700px){
+  .cmp-overlay{padding:10px 6px}
+  .cmp-panel{padding:14px 10px 16px}
+  .cmp-tbl{table-layout:fixed;font-size:13px}
+  .cmp-tbl th,.cmp-tbl td{padding:6px 4px;white-space:normal;overflow-wrap:anywhere}
+  .cmp-tbl thead th{font-size:13.5px}
+  .cmp-tbl tbody th{width:27%;font-size:12px}
+  .cmp-tbl .rating{display:inline-flex;flex-wrap:wrap;gap:2px 4px}
+}
 .homes-tbl .cl{display:none}
 @media (max-width:700px){
   .sort-row{display:flex;align-items:center;gap:8px;margin:0 0 10px}
@@ -1138,6 +1166,84 @@ function viewHarms(){
   );
 }
 
+// Compare up to 3 homes side by side. The choice lasts while the visitor stays on the site.
+const CMP = [];
+const CMP_MAX = 3;
+function cmpBox(f){
+  const cb = h("input",{type:"checkbox",class:"cmp-check","aria-label":"Compare "+f.name,title:"Select to compare (up to 3)"});
+  cb.checked = CMP.includes(f.ccn);
+  cb.addEventListener("click", e => {
+    e.stopPropagation();
+    if (cb.checked){ if (CMP.length >= CMP_MAX){ cb.checked = false; cmpUpdate("You can compare up to 3 homes. Uncheck one first."); return; } CMP.push(f.ccn); }
+    else CMP.splice(CMP.indexOf(f.ccn), 1);
+    cmpUpdate();
+  });
+  return cb;
+}
+let cmpBar = null, cmpOverlay = null;
+function cmpUpdate(msg){
+  if (!cmpBar){
+    cmpBar = h("div",{class:"cmp-bar",role:"region","aria-label":"Compare homes"},
+      h("span",{class:"cmp-count"}), h("button",{type:"button",class:"btn-quiet cmp-go",text:"Compare",onclick:cmpOpen}),
+      h("button",{type:"button",class:"btn-quiet cmp-clear",text:"Clear",onclick:()=>{ CMP.length = 0; document.querySelectorAll(".cmp-check").forEach(c=>c.checked=false); cmpUpdate(); }}),
+      h("span",{class:"cmp-msg",role:"status","aria-live":"polite"}));
+    document.body.append(cmpBar);
+  }
+  const onList = !!document.getElementById("list");
+  cmpBar.hidden = !(onList && CMP.length >= 1);
+  document.body.classList.toggle("cmp-on", !cmpBar.hidden);
+  cmpBar.querySelector(".cmp-count").textContent = CMP.length + " selected";
+  cmpBar.querySelector(".cmp-go").disabled = CMP.length < 2;
+  cmpBar.querySelector(".cmp-msg").textContent = msg || (CMP.length === 1 ? "Check at least one more home." : "");
+}
+function cmpOpen(){
+  const homes = CMP.map(c=>byCCN[c]).filter(Boolean);
+  if (homes.length < 2) return;
+  const row = (label, cell) => h("tr",null, h("th",{scope:"row",text:label}), homes.map(f => h("td",null, cell(f))));
+  const tags = f => {
+    const out = [], sff = ser(f.ccn,"sff")[LI];
+    if (sff) out.push(h("span",{class:"chip bad",text: sff==="SFF" ? "Special Focus" : "Special Focus candidate"}));
+    if (ser(f.ccn,"abuse")[LI]) out.push(h("span",{class:"chip bad",text:"Cited for abuse"}));
+    return out.length ? h("div",{class:"cmp-tags"}, out) : "–";
+  };
+  const st = f => STATS[f.ccn] || {};
+  const val = (k, dp, unit) => f => { const v = lastVal(ser(f.ccn,k))[0]; return v==null ? "–" : fmt(v,dp) + (unit||""); };
+  const tbl = h("table",{class:"cmp-tbl"},
+    h("thead",null, h("tr",null, h("td"), homes.map(f => h("th",{scope:"col"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:cmpClose}))))),
+    h("tbody",null,
+      row("Town", f => f.place || ""),
+      row("Owner group", f => (f.x||{}).owner_group || "–"),
+      row("Tags", tags),
+      row("Overall", f => ratingEl(at(f.ccn,"overall",LI), false, notRatedReason(f,LI))),
+      row("Inspections", f => ratingEl(at(f.ccn,"health",LI), false, notRatedReason(f,LI))),
+      row("Staffing", f => ratingEl(at(f.ccn,"staffing",LI), false, notRatedReason(f,LI))),
+      row("Quality", f => ratingEl(at(f.ccn,"qm",LI), false, notRatedReason(f,LI))),
+      row("Nurse hrs/res/day", val("hprd",2)),
+      row("RN hrs", val("rn_hprd",2)),
+      row("Turnover", val("turnover",1,"%")),
+      row("Harm citations (3 yrs)", f => st(f).harm3==null ? "–" : String(st(f).harm3)),
+      row("Immediate jeopardy (3 yrs)", f => st(f).ij3==null ? "–" : String(st(f).ij3)),
+      row("Fines (3 yrs)", f => st(f).fines3==null ? "–" : money(st(f).fines3)),
+      row("Beds", f => f.beds==null ? "–" : String(Math.round(f.beds))),
+      row("Phone", f => f.phone ? h("a",{href:"tel:+1"+String(f.phone).replace(/\D/g,"").slice(-10),text:phone(f.phone)}) : "–")));
+  if (cmpOverlay) cmpOverlay.remove();
+  cmpOverlay = h("div",{class:"cmp-overlay",role:"dialog","aria-modal":"true","aria-label":"Comparing homes",onclick:e=>{ if (e.target===cmpOverlay) cmpClose(); }},
+    h("div",{class:"cmp-panel"},
+      h("div",{class:"cmp-head"}, h("h2",{text:"Comparing homes"}), h("button",{type:"button",class:"btn-quiet cmp-close",text:"Close",onclick:cmpClose})),
+      h("p",{class:"small",style:"margin:0 0 10px",text:`Ratings from the ${D.meta.latest_label} CMS release. Tap a home's name to see its full record.`}),
+      h("div",{class:"cmp-scroll"}, tbl)));
+  document.body.append(cmpOverlay);
+  document.addEventListener("keydown", cmpEsc);
+  cmpOverlay.querySelector(".cmp-close").focus();
+}
+function cmpEsc(e){ if (e.key === "Escape") cmpClose(); }
+function cmpClose(){
+  if (cmpOverlay){ cmpOverlay.remove(); cmpOverlay = null; }
+  document.removeEventListener("keydown", cmpEsc);
+  const go = cmpBar && cmpBar.querySelector(".cmp-go"); if (go && !cmpBar.hidden) go.focus();
+}
+window.addEventListener("hashchange", () => setTimeout(() => cmpUpdate(), 0));
+
 function homesTable(){
   const sec = h("section",{id:"list"});
   let viewMode = "list", nearLoc = null, tmap = null, lastFiltered = [], mapDirty = true;
@@ -1197,14 +1303,14 @@ function homesTable(){
       const st = STATS[f.ccn] || {};
       const flags = [];
       const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",title:sff==="SFF"?SFFTXT.SFF:SFFTXT.cand,text:sff==="SFF"?"Special Focus":"Special Focus candidate"}));
-      if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Abuse icon"}));
+      if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Cited for abuse"}));
       if ((f.x||{}).not_in_cms) flags.push(h("span",{class:"chip plain",title:"Licensed by RIDOH but not certified by Medicare/Medicaid, so CMS publishes none of the usual ratings, staffing, or inspection data for it.",text:"Not Medicare-certified"}));
       else if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       const pbj0 = pbjInfo(f.ccn);
       if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
       if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
-        h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
+        h("td",{class:"home"}, h("div",{class:"nm"}, cmpBox(f), h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
           h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
           flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
@@ -1350,12 +1456,14 @@ function homesTable(){
     nearRow, sortRow,
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
       h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
-        h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
+        h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ",
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
+    h("p",{class:"small cmp-hint",text:"Check up to 3 homes to compare them side by side."}),
     viewBar, mapPanel, tblWrap
   );
+  cmpUpdate();
   const keyEl = sec.querySelector("#list-key");
   if (window.matchMedia && matchMedia("(min-width:701px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
   render(); syncSort();
@@ -1503,7 +1611,8 @@ function viewFacility(ccn){
       h("div",{style:"min-width:0;flex:1 1 420px"},
         h("h1",{text:f.name}),
         f.former_names ? h("div",{class:"meta",text:"Formerly: " + f.former_names}) : null,
-        h("div",{class:"meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ") + (f.phone ? " · " + phone(f.phone) : "")}),
+        h("div",{class:"meta"}, [f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", "),
+          f.phone ? [" · ", h("a",{href:"tel:+1"+String(f.phone).replace(/\D/g,"").slice(-10),text:phone(f.phone)})] : null),
         h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+(x.not_in_cms?" licensed beds":" certified beds") : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
         flags.length ? h("div",{class:"flags"}, flags) : null,
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
