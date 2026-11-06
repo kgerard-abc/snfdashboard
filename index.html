@@ -325,6 +325,24 @@ const M = D.months;                       // 'YYYY-MM'
 const LATEST = D.meta.latest;
 const LI = M.indexOf(LATEST);
 const FAC = D.facilities;
+// CMS lists owners and operators in capitals ("GELLIS, LOUIS"). Show them in normal case ("Gellis, Louis").
+const KEEP_UP = new Set(["LLC","LLP","LP","PC","PA","PLLC","II","III","IV","RI","USA","US","DBA","NH","SNF","ALF","CT","MA","NY","NJ","PACE","UFCW","SEIU","RN","IRA","UBS","JP","LTC","HCR","CCH","NHS","OHI","REIT","MD","CEO","CFO"]);
+const KEEP_LOW = new Set(["of","and","the","at","for","in","on","by","to","a","an"]);
+function nameCase(s){
+  if (!s || /[a-z]/.test(s)) return s;
+  return String(s).replace(/[A-Z0-9][A-Z0-9'\.&]*/g, (w, i) => {
+    if (KEEP_UP.has(w.replace(/\.$/,""))) return w;
+    if (/^\d/.test(w)) return w.toLowerCase();
+    const lw = w.toLowerCase();
+    if (i > 0 && KEEP_LOW.has(lw)) return lw;
+    let t = lw.charAt(0).toUpperCase() + lw.slice(1);
+    t = t.replace(/^(Mc|O')([a-z])/, (m, a, b) => a + b.toUpperCase());
+    return t;
+  }).replace(/-([a-z])/g, (m, c) => "-" + c.toUpperCase());
+}
+Object.values(D.owners || {}).forEach(rows => rows.forEach(o => { o[1] = nameCase(o[1]); }));
+Object.values(D.names || {}).forEach(rows => rows.forEach(r => { r[1] = nameCase(r[1]); }));
+FAC.forEach(f => { if (f.cms_chain) f.cms_chain = nameCase(f.cms_chain); if (f.legal_business_name) f.legal_business_name = nameCase(f.legal_business_name); });
 const byCCN = {}; FAC.forEach(f => { if (f.ccn) byCCN[f.ccn] = f; });
 
 /* ---------- map: list/map toggle, "near me" and ZIP search ---------- */
@@ -1459,7 +1477,8 @@ function viewFacility(ccn){
           h("div",{class:"chart-title",text:"Weekday vs. weekend staffing"}),
           h("p",{style:"margin:6px 0 0;font-size:15px"}, fmt(pbj.weekday_hprd), " hrs/resident/day on weekdays, vs ", fmt(pbj.weekend_hprd), " on weekends",
             pbj.weekend_drop_pct!=null ? h("strong",{text:" ("+fmt(pbj.weekend_drop_pct,0)+"% lower)"}) : null, "."),
-          pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text:"Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null)
+          pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text:"Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null,
+          h("p",{class:"small",style:"margin:6px 0 0",text:"The weekend figure under Staffing above is CMS's own calculation. These are ABC-RI's counts from the daily payroll records, so the two can differ a little."}))
       ),
       h("p",{class:"note",style:"max-width:70ch"},"Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS. These are not CMS's star-rating averages. Statewide, Rhode Island homes averaged 5.4% contract staff and a 13.7% weekend staffing drop this quarter, for comparison.")
     ));
@@ -1571,7 +1590,7 @@ function viewFacility(ccn){
         lineChart({series:[{name:f.name,color:"var(--s1)",values:mk(qms[code])},{name:"RI average",color:"var(--s2)",values:mk(D.qm_ri[code]||[]),endDot:false}], dp: code.startsWith("55")?2:1, height:160, aria:D.qm_labels[code]}));
     };
     app.append(h("section",null, h("h2",{text:"Resident outcomes"}),
-      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter, usually because too few residents at the home qualified for that measure. " + SELF_TXT),
+      h("p",{class:"small",style:"margin:0 0 4px"},"Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter, usually because too few residents at the home qualified for that measure."),
       h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{class:"tag-self",style:"margin-left:0"},"Self-reported"), " measures come from the facility's own resident assessments (MDS), filled out by the home's own staff, rather than from Medicare claims. Treat them as somewhat less independently verified than the rest."),
       h("div",{class:"grid g3"}, codes.map(qchart))));
   }

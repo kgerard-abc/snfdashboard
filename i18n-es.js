@@ -670,4 +670,5 @@ window.RINH_ES = {
   "Sale record and before-and-after details": "Registro de la venta y detalles de antes y después",
   "The state is reviewing an application to sell this home to {*}.": "El estado está revisando una solicitud para vender este hogar a {1}.",
   "Source": "Fuente",
+  "The weekend figure under Staffing above is CMS's own calculation. These are ABC-RI's counts from the daily payroll records, so the two can differ a little.": "La cifra de fines de semana en la sección de Personal de arriba es el cálculo propio de CMS. Estas son cuentas de ABC-RI a partir de los registros diarios de nómina, así que las dos pueden diferir un poco.",
 };
