@@ -669,7 +669,7 @@ const dlabel = d => { if (!d) return ""; const [y,mo,da] = d.split("-"); return 
 const fmt = (v, dp=2) => v == null ? "–" : (+v).toLocaleString("en-US", {minimumFractionDigits:dp, maximumFractionDigits:dp});
 const money = v => v == null ? "–" : "$" + Math.round(v).toLocaleString("en-US");
 // Sales and changes of control come from the sales site, which follows RIDOH's list of reviews.
-// It publishes sales.json: for each home, pending applications and the most recent completed sale.
+// It publishes sales.json: for each home, pending applications and every completed sale, newest first.
 const SALES_URL = "https://snfsales.abc-ri.org/";
 let SALES = null;
 const salesReady = fetch(SALES_URL + "sales.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : null).then(j => (SALES = j)).catch(() => null);
@@ -683,7 +683,9 @@ function propertyOwner(x){
   return [h("span",{text:name}), src ? [" (", h("a",{href:src,target:"_blank",rel:"noopener",text:"Source"}), ")"] : null];
 }
 function saleLines(ccn){
-  const evs = ((SALES && SALES.homes) || {})[ccn] || [];
+  const all = ((SALES && SALES.homes) || {})[ccn] || [];
+  const done = all.find(e => !e.pending);   // sales.json lists every sale, newest first; show only the newest completed one
+  const evs = all.filter(e => e.pending).concat(done ? [done] : []);
   return evs.map(e => {
     const who = e.buyer || "a new owner";
     const when = e.pending ? "Application filed " + dlabel(e.date)
@@ -1269,34 +1271,83 @@ function homesTable(){
   return sec;
 }
 
+// When the current owner group took over a home, from the sales site's sales.json. Uses the newest completed sale
+// to the home's owner group on this site (or, if none matches, the newest completed sale CMS's files already cover),
+// reaching back through earlier sales to the same buyer, and the start of any management agreement if that came
+// first. null means no sale on record, so the group has run the home at least as long as the records reach.
+const DATA_END_ISO = LATEST + "-01";   // first day of the newest CMS month; CUT3 is exactly three years before it
+function ownerStart(f){
+  const evs = (((SALES && SALES.homes) || {})[f.ccn] || []).filter(e => !e.pending && e.date && e.date < DATA_END_ISO);
+  if (!evs.length) return null;
+  const grp = (f.x||{}).owner_group;
+  let i = evs.findIndex(e => e.buyer === grp); if (i < 0) i = 0;
+  let start = null;
+  for (const e of evs.slice(i)){
+    if (e.buyer !== evs[i].buyer) break;
+    [e.date, e.mgmt_start].forEach(d => { if (d && (!start || d < start)) start = d; });
+  }
+  return start;
+}
+// Citations and fines for one home from `from` (YYYY-MM-DD) to the newest CMS file, counted the same way as STATS.
+function windowStats(ccn, from){
+  const c = (D.citations[ccn]||[]).filter(r => r[0] >= from && r[5]==="H" && r[7]);
+  const p = (D.penalties[ccn]||[]).filter(r => r[0] >= from && r[5]===1 && r[1]==="Fine");
+  const yrs = Math.max(0, (new Date(DATA_END_ISO + "T00:00:00Z") - new Date(from + "T00:00:00Z")) / (365.25*864e5));
+  return {harm: c.filter(r => "GHIJKL".includes(r[2])).length, ij: c.filter(r => "JKL".includes(r[2])).length,
+    fines: p.reduce((a,r)=>a+(r[2]||0),0), yrs};
+}
+let ownersMode = "owner";   // "owner": only while the current owner ran the home; "all": last three years
 function viewOwners(){
   const open = FAC.filter(f=>f.status==="Open");
   const groups = {};
   open.forEach(f => { const g = (f.x||{}).owner_group || "(not set)"; (groups[g] = groups[g] || []).push(f); });
-  const rows = Object.entries(groups).map(([g, fs]) => {
-    // A Special Focus Facility has no CMS star rating while in the program. ABC-RI counts it as 0 stars in group averages.
-    const stars = f => (ser(f.ccn,"sff")||[])[LI]==="SFF" ? 0 : at(f.ccn,"overall",LI);
-    const avg = k => { const v = fs.map(f=> k==="overall" ? stars(f) : lastVal(ser(f.ccn,k))[0]).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
-    return {g, fs, n:fs.length, beds:fs.reduce((a,f)=>a+(num(f.beds)||0),0), overall:avg("overall"), hprd:avg("hprd"), rn:avg("rn_hprd"), turn:avg("turnover"),
-      harm: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).harm3||0),0), ij: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).ij3||0),0), fines: fs.reduce((a,f)=>a+((STATS[f.ccn]||{}).fines3||0),0)};
-  }).sort((a,b)=> b.n - a.n || a.g.localeCompare(b.g));
+  const btnOwner = h("button",{type:"button",class:"view-btn",text:"Only while the current owner ran the home"});
+  const btnAll = h("button",{type:"button",class:"view-btn",text:"Last three years, whoever ran it"});
+  const note = h("p",{class:"small",role:"status","aria-live":"polite"});
+  const thHarm = h("th",{class:"r"}), thIJ = h("th",{class:"r"}), thFines = h("th",{class:"r"}), thYrs = h("th",{class:"r"});
   const tb = h("tbody");
-  rows.forEach(r => {
-    const tr = h("tr",null,
+  function draw(){
+    const own = ownersMode === "owner";
+    btnOwner.setAttribute("aria-pressed", own ? "true" : "false");
+    btnAll.setAttribute("aria-pressed", own ? "false" : "true");
+    thHarm.textContent = own ? "Harm citations per home (current owner)" : "Harm citations per home (3 yrs)";
+    thIJ.textContent = own ? "Immediate jeopardy (current owner)" : "Immediate jeopardy (3 yrs)";
+    thFines.textContent = own ? "Fines (current owner)" : "Fines (3 yrs)";
+    thYrs.textContent = "Avg years counted";
+    const rows = Object.entries(groups).map(([g, fs]) => {
+      // A Special Focus Facility has no CMS star rating while in the program. ABC-RI counts it as 0 stars in group averages.
+      const stars = f => (ser(f.ccn,"sff")||[])[LI]==="SFF" ? 0 : at(f.ccn,"overall",LI);
+      const avg = k => { const v = fs.map(f=> k==="overall" ? stars(f) : lastVal(ser(f.ccn,k))[0]).filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+      const w = fs.filter(f=>f.ccn).map(f => { const st = own ? ownerStart(f) : null; return windowStats(f.ccn, st && st > CUT3 ? st : CUT3); });
+      const sum = k => w.reduce((a,x)=>a+x[k],0);
+      return {g, fs, n:fs.length, beds:fs.reduce((a,f)=>a+(num(f.beds)||0),0), overall:avg("overall"), hprd:avg("hprd"), rn:avg("rn_hprd"), turn:avg("turnover"),
+        harm: sum("harm"), ij: sum("ij"), fines: sum("fines"), yrs: w.length ? sum("yrs")/w.length : null};
+    }).sort((a,b)=> b.n - a.n || a.g.localeCompare(b.g));
+    tb.replaceChildren();
+    rows.forEach(r => tb.append(h("tr",null,
       h("td",null, h("div",{class:"nm",text:r.g}), h("div",{class:"sub"}, r.fs.map((f,i)=>[i?", ":"", h("a",{href:"#f-"+f.ccn,text:f.name})]))),
       h("td",{class:"r num",text:r.n}), h("td",{class:"r num",text:Math.round(r.beds)}),
       h("td",{class:"r num",text:fmt(r.overall,1)}), h("td",{class:"r num",text:fmt(r.hprd)}), h("td",{class:"r num",text:fmt(r.rn)}),
       h("td",{class:"r num",text:r.turn==null?"–":fmt(r.turn,1)+"%"}),
-      h("td",{class:"r num",text:fmt(r.harm/r.n,1)}), h("td",{class:"r num",text:r.ij}), h("td",{class:"r num",text:money(r.fines)}));
-    tb.append(tr);
-  });
+      h("td",{class:"r num",text:fmt(r.harm/r.n,1)}), h("td",{class:"r num",text:r.ij}), h("td",{class:"r num",text:money(r.fines)}),
+      h("td",{class:"r num",text:r.yrs==null?"–":fmt(r.yrs,1)}))));
+    note.textContent = !own ? "Counting the last three years for every home, including any time before the current owner took over."
+      : SALES ? "Counting from when the current owner began running each home, up to three years back. Homes with no sale on ABC-RI's sales site are counted for the full three years."
+      : "Sale dates from ABC-RI's sales site could not be loaded, so every home is counted for the full three years.";
+  }
+  btnOwner.addEventListener("click", () => { ownersMode = "owner"; draw(); });
+  btnAll.addEventListener("click", () => { ownersMode = "all"; draw(); });
+  draw();
+  if (!SALES) salesReady.then(() => { if (tb.isConnected && SALES) draw(); });
   app.append(
     h("section",null, h("h1",{text:"Owner groups"}),
-      h("p",{class:"lede",text:"Open homes grouped by who runs them. Groups are ABC-RI's reading of CMS ownership records and state filings; CMS's own chain names can differ. Averages are simple averages across the group's homes. A Special Focus Facility has no CMS star rating while it is in the program, so it counts as 0 stars in the average. Citation and fine totals cover the last three years, including any time before the current owner took over."})),
-    h("section",null, h("div",{class:"tbl-wrap"}, h("table",null,
+      h("p",{class:"lede",text:"Open homes grouped by who runs them. Groups are ABC-RI's reading of CMS ownership records and state filings; CMS's own chain names can differ. Averages are simple averages across the group's homes. A Special Focus Facility has no CMS star rating while it is in the program, so it counts as 0 stars in the average. Citation and fine totals cover at most the last three years. Choose whether to count only the time the current owner has run each home (from the start of any management agreement or the sale date, whichever came first) or the whole three years."})),
+    h("section",null,
+      h("div",{class:"view-bar",role:"group","aria-label":"Count citations and fines"}, btnOwner, btnAll), note,
+      h("div",{class:"tbl-wrap"}, h("table",null,
       h("thead",null,h("tr",null, h("th",{text:"Owner group and homes"}), h("th",{class:"r",text:"Homes"}), h("th",{class:"r",text:"Beds"}), h("th",{class:"r",text:"Avg overall stars"}),
-        h("th",{class:"r",text:"Avg nurse hrs"}), h("th",{class:"r",text:"Avg RN hrs"}), h("th",{class:"r",text:"Avg turnover"}), h("th",{class:"r",text:"Harm citations per home (3 yrs)"}),
-        h("th",{class:"r",text:"Immediate jeopardy (3 yrs)"}), h("th",{class:"r",text:"Fines (3 yrs)"}))), tb)))
+        h("th",{class:"r",text:"Avg nurse hrs"}), h("th",{class:"r",text:"Avg RN hrs"}), h("th",{class:"r",text:"Avg turnover"}), thHarm, thIJ, thFines, thYrs)), tb)),
+      h("p",{class:"small",text:"Avg years counted is how many years of citations and fines the totals cover for each home, averaged across the group. A group that took over its homes recently has had less time to be cited."}))
   );
 }
 
