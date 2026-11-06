@@ -15,6 +15,11 @@ Per home and quarter (the same formulas as the original Q1 2026 numbers):
   weekend_hprd      the same for Saturday and Sunday
   weekend_drop_pct  how much lower the weekend figure is than the weekday figure
   worst_day_hprd / worst_day_date   the single lowest-staffed day
+  gap_days          days left out because they look like gaps in the payroll records (see GAP_HPRD)
+Days with fewer than GAP_HPRD nurse hours per resident are left out of every figure above. CMS treats
+a quarter under 1.5 hours per resident day as "highly improbable" staffing data, and a single day
+that low (sometimes 0) almost always means hours were not reported, not that no one worked. Left in,
+a missing Sunday makes the weekend figure look worse than it was.
 Nurse staff hours = RN director of nursing, RN admin, RN, LPN admin, LPN, aides, aides in
 training, and medication aides.
 """
@@ -34,6 +39,8 @@ CATALOG = "https://data.cms.gov/data.json"
 TITLE = "Payroll Based Journal Daily Nurse Staffing"
 NURSE_CATS = ["RNDON", "RNadmin", "RN", "LPNadmin", "LPN", "CNA", "NAtrn", "MedAide"]
 PAGE = 5000
+GAP_HPRD = 1.5   # below this, a day is treated as missing payroll data
+METHOD = 2       # saved quarters from an older method are recomputed
 
 
 def saved_quarters():
@@ -103,6 +110,9 @@ def summarize(rows):
 
     out = {}
     for ccn, rs in sorted(by_home.items()):
+        kept = [x for x in rs if not (x["census"] > 0 and x["total"] / x["census"] < GAP_HPRD)]
+        gaps = len(rs) - len(kept)
+        rs = kept
         th, tc = sum(x["total"] for x in rs), sum(x["ctr"] for x in rs)
         wd_h = hprd([x for x in rs if x["day"].weekday() < 5])
         we_h = hprd([x for x in rs if x["day"].weekday() >= 5])
@@ -114,7 +124,15 @@ def summarize(rows):
             "weekend_drop_pct": round((1 - we_h / wd_h) * 100, 1) if (wd_h and we_h) else None,
             "worst_day_hprd": daily[0][0] if daily else None,
             "worst_day_date": daily[0][1] if daily else None,
+            "gap_days": gaps,
+            "method": METHOD,
         }
+    # Statewide figures for comparison: contract share of all RI nurse hours, and the average home's weekend drop
+    allh = sum(x["total"] for rs in by_home.values() for x in rs if not (x["census"] > 0 and x["total"] / x["census"] < GAP_HPRD))
+    allc = sum(x["ctr"] for rs in by_home.values() for x in rs if not (x["census"] > 0 and x["total"] / x["census"] < GAP_HPRD))
+    drops = [v["weekend_drop_pct"] for v in out.values() if v["weekend_drop_pct"] is not None]
+    out["_RI"] = {"contract_pct": round(allc / allh * 100, 1) if allh else None,
+                  "weekend_drop_pct": round(sum(drops) / len(drops), 1) if drops else None, "method": METHOD}
     return out
 
 
@@ -127,7 +145,7 @@ def main():
         new = summarize(ri_rows(avail[(y, q)]))
         old = json.load(open(os.path.join(STORE, f"pbj_q{q}_{y}.json")))
         diff = [(c, k, old.get(c, {}).get(k), new.get(c, {}).get(k)) for c in sorted(set(old) | set(new))
-                for k in ("contract_pct", "weekday_hprd", "weekend_hprd", "weekend_drop_pct", "worst_day_hprd", "worst_day_date")
+                for k in ("contract_pct", "weekday_hprd", "weekend_hprd", "weekend_drop_pct", "worst_day_hprd", "worst_day_date", "gap_days")
                 if old.get(c, {}).get(k) != new.get(c, {}).get(k)]
         print(f"Q{q} {y}: saved {len(old)} homes, recomputed {len(new)}, {len(diff)} value(s) differ")
         for d in diff[:15]:
@@ -135,18 +153,31 @@ def main():
         sys.exit(1 if diff else 0)
 
     have = saved_quarters()
+    redo = []
+    for y, q in have:   # quarters saved with an older method are recomputed from CMS's file
+        old = json.load(open(os.path.join(STORE, f"pbj_q{q}_{y}.json")))
+        if any(v.get("method") != METHOD for v in old.values()) and (y, q) in avail:
+            redo.append((y, q))
+    for y, q in redo:
+        homes = summarize(ri_rows(avail[(y, q)]))
+        if len(homes) - ("_RI" in homes) < 40:
+            die(f"Q{q} {y} has staffing for only {len(homes)} Rhode Island homes; not saving it")
+        with open(os.path.join(STORE, f"pbj_q{q}_{y}.json"), "w", encoding="utf-8") as f:
+            json.dump(homes, f, indent=0, sort_keys=True)
+        g = {c: v["gap_days"] for c, v in homes.items() if v.get("gap_days")}
+        print(f"Recomputed Q{q} {y} leaving out likely payroll gaps: {sum(g.values())} day(s) at {len(g)} home(s) {g}")
     newest = have[-1] if have else (0, 0)
     todo = [k for k in sorted(avail) if k > newest]
-    if not todo:
+    if not todo and not redo:
         print(f"NOTHING NEW: the newest saved quarter is Q{newest[1]} {newest[0]}")
         return
     for y, q in todo:
         homes = summarize(ri_rows(avail[(y, q)]))
-        if len(homes) < 40:   # Rhode Island has about 70 homes; a short file means something went wrong
+        if len(homes) - ("_RI" in homes) < 40:   # Rhode Island has about 70 homes; a short file means something went wrong
             die(f"Q{q} {y} has staffing for only {len(homes)} Rhode Island homes; not saving it")
         with open(os.path.join(STORE, f"pbj_q{q}_{y}.json"), "w", encoding="utf-8") as f:
             json.dump(homes, f, indent=0, sort_keys=True)
-        print(f"Added staffing for Q{q} {y}: {len(homes)} Rhode Island homes")
+        print(f"Added staffing for Q{q} {y}: {len(homes) - 1} Rhode Island homes")
 
 
 if __name__ == "__main__":

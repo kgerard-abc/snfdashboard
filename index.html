@@ -227,10 +227,30 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .sev-key span{display:inline-flex;gap:8px;align-items:center}
 .sev-key .sev{width:34px}
 .list-key{max-width:100ch;margin:0 0 10px;color:var(--ink-2)}
+.list-key summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.sort-row{display:none}
+.homes-tbl .cl{display:none}
+@media (max-width:700px){
+  .sort-row{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+  .sort-row select{flex:1;min-width:0}
+  .tbl-wrap:has(.homes-tbl){overflow:visible}
+  .homes-tbl,.homes-tbl tbody{display:block;width:100%}
+  .homes-tbl thead{display:none}
+  .homes-tbl tr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 10px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .homes-tbl td{display:block;padding:0;border:0;text-align:left;min-width:0}
+  .homes-tbl td.home{grid-column:1/-1}
+  .homes-tbl td.c-group{grid-column:1/-1}
+  .homes-tbl td.c-group .cl{display:inline;margin-right:6px}
+  .homes-tbl .cl{display:block;font-size:12px;line-height:1.25;color:var(--muted);margin-bottom:2px;font-weight:400}
+  .homes-tbl td.c-adj,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
+}
 footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
 footer p{max-width:90ch;margin:0 0 10px}
 @media (max-width:560px){
   .tl-row{grid-template-columns:1fr;gap:2px}
+  .g4.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .g4.tiles .card{padding:12px 12px}
+  .g4.tiles > :first-child{grid-column:1/-1}
   .tile .val{font-size:24px}
   .survey li{grid-template-columns:44px 1fr}
   .search{max-width:none}
@@ -332,6 +352,17 @@ const M = D.months;                       // 'YYYY-MM'
 const LATEST = D.meta.latest;
 const LI = M.indexOf(LATEST);
 const FAC = D.facilities;
+// Mailing addresses often name a village, not the town or city it is in. Group homes by town so a
+// search for East Providence also finds Riverside, and show the village in parentheses.
+const VILLAGE_TOWN = {"Riverside":"East Providence","Wakefield":"South Kingstown","Greenville":"Smithfield",
+  "Greene":"Coventry","Manville":"Lincoln","Pascoag":"Burrillville","North Scituate":"Scituate"};
+// West Kingston mail goes to homes in more than one town, so these are set one by one (checked Nov 2026).
+const TOWN_BY_CCN = {"415107":"Exeter","415054":"South Kingstown"};
+FAC.forEach(f => {
+  if (!f.city) return;
+  f.town = TOWN_BY_CCN[f.ccn] || VILLAGE_TOWN[f.city] || f.city;
+  f.place = f.town !== f.city ? f.town + " (" + f.city + ")" : f.city;
+});
 // CMS lists owners and operators in capitals ("GELLIS, LOUIS"). Show them in normal case ("Gellis, Louis").
 const KEEP_UP = new Set(["LLC","LLP","LP","PC","PA","PLLC","II","III","IV","RI","USA","US","DBA","NH","SNF","ALF","CT","MA","NY","NJ","PACE","UFCW","SEIU","RN","IRA","UBS","JP","LTC","HCR","CCH","NHS","OHI","REIT","MD","CEO","CFO"]);
 const KEEP_LOW = new Set(["of","and","the","at","for","in","on","by","to","a","an"]);
@@ -731,14 +762,19 @@ const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal
 const QM_CLAIMS_BASED = new Set(["521","551","552"]);
 const SFFTXT = {SFF:"Special Focus Facility: one of the few homes CMS has singled out for a long record of serious problems. It is inspected at least every six months and faces tougher penalties until it improves.",
   cand:"Special Focus candidate: on CMS's monthly list of the homes with the worst inspection records in the state. New Special Focus Facilities are chosen from this list."};
-const CONTRACT_TXT = "High contract staffing: 10% or more of the home's nurse staff hours came from contract or agency staff, Q1 2026.";
-const WEEKEND_TXT = "Weekend staffing drop: nurse staffing on weekends was at least 20% lower than on weekdays, Q1 2026.";
+// Daily payroll staffing (PBJ): the newest quarter saved in data.js
+const PBJ_KEY = Object.keys(D).filter(k => /^pbj_q[1-4]_\d{4}$/.test(k)).sort((a,b) => a.slice(-4)+a[5] < b.slice(-4)+b[5] ? -1 : 1).pop() || "";
+const PBJ_Q = PBJ_KEY ? "Q" + PBJ_KEY[5] + " " + PBJ_KEY.slice(-4) : "";
+const PBJ_MONTHS = PBJ_KEY ? (q => ["Jan","Apr","Jul","Oct"][q-1] + " " + PBJ_KEY.slice(-4) + " to " + ["Mar","Jun","Sep","Dec"][q-1] + " " + PBJ_KEY.slice(-4))(+PBJ_KEY[5]) : "";
+const GAP_HPRD = 1.5;   // a day under this many nurse hours per resident is almost always missing payroll data
+const CONTRACT_TXT = `High contract staffing: 10% or more of the home's nurse staff hours came from contract or agency staff, ${PBJ_Q}.`;
+const WEEKEND_TXT = `Weekend staffing drop: nurse staffing on weekends was at least 20% lower than on weekdays, ${PBJ_Q}.`;
 const SELF_TXT = "Self-reported: from the facility's own resident assessments (MDS), completed by the home's own staff, and not independently verified the way Medicare claims data is.";
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
 function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
-function pbjInfo(ccn){ return (D.pbj_q1_2026||{})[ccn] || null; }
+function pbjInfo(ccn){ return (D[PBJ_KEY]||{})[ccn] || null; }
 
 function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   const bullets = [];
@@ -1000,7 +1036,7 @@ function barChart(opts){
 
 // ---------- search
 const qEl = document.getElementById("q"), sugg = document.getElementById("sugg");
-const searchIndex = FAC.map(f => ({f, text:(f.name+" "+(f.former_names||"")+" "+(f.city||"")+" "+((f.x||{}).owner_group||"")+" "+(f.cms_chain||"")+" "+(f.legal_business_name||"")).toLowerCase()}));
+const searchIndex = FAC.map(f => ({f, text:(f.name+" "+(f.former_names||"")+" "+(f.city||"")+" "+(f.town||"")+" "+((f.x||{}).owner_group||"")+" "+(f.cms_chain||"")+" "+(f.legal_business_name||"")).toLowerCase()}));
 let suggIdx = -1, suggList = [];
 function renderSugg(){
   const q = qEl.value.trim().toLowerCase();
@@ -1009,7 +1045,7 @@ function renderSugg(){
   const words = q.split(/\s+/);
   suggList = searchIndex.filter(x => words.every(w => x.text.includes(w))).slice(0,12).map(x=>x.f);
   if (!suggList.length){ sugg.append(h("div",{class:"small",style:"padding:8px 12px",text:"No homes match."})); sugg.hidden=false; return; }
-  suggList.forEach((f,i) => sugg.append(h("button",{type:"button", onclick:()=>go(f)}, f.name, h("small",{text:[f.city, f.status!=="Open"?f.status:"", f.former_names? "Formerly: "+f.former_names.split("; ")[0]:""].filter(Boolean).join(" · ")}))));
+  suggList.forEach((f,i) => sugg.append(h("button",{type:"button", onclick:()=>go(f)}, f.name, h("small",{text:[f.place, f.status!=="Open"?f.status:"", f.former_names? "Formerly: "+f.former_names.split("; ")[0]:""].filter(Boolean).join(" · ")}))));
   sugg.hidden = false;
 }
 function go(f){ sugg.hidden = true; qEl.value = ""; if (f.ccn) location.hash = "f-" + f.ccn; else { location.hash = "home"; } }
@@ -1060,7 +1096,7 @@ function viewHome(){
         )
       )
     ),
-    h("section",null, h("div",{class:"grid g4"},
+    h("section",null, h("div",{class:"grid g4 tiles"},
       tile("Homes open now", String(open.length), `${Math.round(beds).toLocaleString()} certified beds, about ${Math.round(res).toLocaleString()} residents a day`),
       tile("Rated 1 or 2 stars overall", `${low} of ${ovr.length}`, `${Math.round(low/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
       tile("Rated 4 or 5 stars overall", `${high} of ${ovr.length}`, `${Math.round(high/ovr.length*100)}% of rated homes, ${D.meta.latest_label}`),
@@ -1092,7 +1128,7 @@ function viewHarms(){
         h("tbody",null, serious.map(([f,r]) => { const sc = sevClass(r[2]); const hs = harmSummary(f.ccn, r);
           return h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
             h("td",{class:"num",style:"white-space:nowrap",text:dlabel(r[0])}),
-            h("td",{class:"home"},h("div",{class:"nm"}, f.name+" ", (f.x||{}).owner_group ? h("span",{class:"nm-owner",text:"("+f.x.owner_group+")"}) : null),h("div",{class:"sub",text:f.city})),
+            h("td",{class:"home"},h("div",{class:"nm"}, f.name+" ", (f.x||{}).owner_group ? h("span",{class:"nm-owner",text:"("+f.x.owner_group+")"}) : null),h("div",{class:"sub",text:f.place})),
             h("td",null,h("span",{class:"sev "+sc, style:"display:inline-block;width:30px",text:r[2]}), " ", h("span",{class:"small",text:SEVTXT[sc] + (r[3]?" · complaint":"")})),
             h("td",{class:"desc"}, hs ? h("p",{class:"harm-note",style:"margin-top:0",text:hs}) : null, h("div",{class: hs?"small":null,text:(D.tags[r[1]]||[""])[0]})),
             h("td",{style:"white-space:nowrap",onclick:e=>e.stopPropagation()}, reportLinks(f.ccn, r[0], (D.citations[f.ccn]||[]).filter(x=>x[0]===r[0])).slice(0,1).map(a=>{ a.textContent="Read it"; return a; }))); })),
@@ -1105,7 +1141,8 @@ function viewHarms(){
 function homesTable(){
   const sec = h("section",{id:"list"});
   let viewMode = "list", nearLoc = null, tmap = null, lastFiltered = [], mapDirty = true;
-  const cities = [...new Set(FAC.filter(f=>f.city).map(f=>f.city))].sort();
+  const cities = [...new Set(FAC.filter(f=>f.town).map(f=>f.town))].sort();
+  if (state.city && !cities.includes(state.city)) state.city = VILLAGE_TOWN[state.city] || "";
   const groups = [...new Set(FAC.map(f=>(f.x||{}).owner_group).filter(Boolean))].sort();
   const cols = [
     {k:"name", t:"Home", get:f=>f.name},
@@ -1140,10 +1177,10 @@ function homesTable(){
   function render(){
     thead.textContent = "";
     thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), tabindex:0, title:c.tip||null, "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none",
-      onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); },
+      onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); syncSort(); },
       onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, ...(c.lines ? [c.lines[0], h("br"), c.lines[1]] : [c.t]), state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
     let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open" || (f.x||{}).not_in_cms));
-    if (state.city) rows = rows.filter(f=>f.city===state.city);
+    if (state.city) rows = rows.filter(f=>f.town===state.city);
     if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
     if (state.minStars){ rows = rows.filter(f=>{ const v = at(f.ccn,"overall",LI); return state.minStars==="low" ? (v!=null && v<=2) : (v!=null && v>=+state.minStars); }); }
     if (nearLoc){
@@ -1164,11 +1201,11 @@ function homesTable(){
       if ((f.x||{}).not_in_cms) flags.push(h("span",{class:"chip plain",title:"Licensed by RIDOH but not certified by Medicare/Medicaid, so CMS publishes none of the usual ratings, staffing, or inspection data for it.",text:"Not Medicare-certified"}));
       else if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       const pbj0 = pbjInfo(f.ccn);
-      if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
-      if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
+      if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
+      if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
         h("td",{class:"home"}, h("div",{class:"nm"}, h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
-          h("div",{class:"sub"}, f.city, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
+          h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
           flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
         ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)))),
@@ -1181,6 +1218,8 @@ function homesTable(){
         h("td",{class:"r num",text:st.fines3==null?"–":money(st.fines3)}),
         h("td",{class:"r num",text:f.beds==null?"–":String(Math.round(f.beds))})
       ));
+      const tr = tbody.lastChild;   // phone layout: each cell carries its column name, hidden on wider screens
+      [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); td.prepend(h("span",{class:"cl",text:cols[i].t})); } });
     });
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
     lastFiltered = rows;
@@ -1209,7 +1248,7 @@ function homesTable(){
     buildMap(); if (!tmap) return;
     tmap.resize();
     const mappable = lastFiltered.filter(hasCoords);
-    tmap.setMarkers(mappable.map(f => ({key:f.ccn, lat:f.lat, lng:f.lon, label:f.name+", "+f.city})));
+    tmap.setMarkers(mappable.map(f => ({key:f.ccn, lat:f.lat, lng:f.lon, label:f.name+", "+f.place})));
     tmap.setMe(nearLoc ? {lat:nearLoc.lat, lng:nearLoc.lng} : null);
     const missing = lastFiltered.length - mappable.length;
     const st = document.getElementById("mapStatus");
@@ -1295,20 +1334,31 @@ function homesTable(){
   mapToList.addEventListener("click", () => { setViewMode("list"); viewListBtn.focus(); });
   const mapPanel = h("div",{id:"mapPanel",hidden:true}, mapStatus, mapDiv,
     h("p",{class:"map-note"}, "Pins show where each home is located. They don't indicate quality; use ", h("strong",{text:"See full record"}), " on a pin for that. Prefer a list? ", mapToList, ", which shows the same homes and distances. Map tiles come from OpenStreetMap, which can see your IP address and the area of the map you are viewing."));
-  const tblWrap = h("div",{class:"tbl-wrap"}, h("table",null, thead, tbody));
+  const tblWrap = h("div",{class:"tbl-wrap"}, h("table",{class:"homes-tbl"}, thead, tbody));
+  // Phones hide the column headings, so they get a sort menu instead.
+  const SORTS = [["name",1,"Name"],["overall",-1,"Overall rating, highest first"],["overall",1,"Overall rating, lowest first"],
+    ["harm",-1,"Harm citations, most first"],["ij",-1,"Immediate jeopardy, most first"],["fines",-1,"Fines, highest first"],
+    ["hprd",-1,"Nurse hours, most first"],["staffing",-1,"Staffing rating, highest first"]];
+  const sortSel = h("select",{id:"f-sort","aria-label":"Sort by"}, SORTS.map((s,i)=>h("option",{value:i,text:s[2]})));
+  const syncSort = () => { const i = SORTS.findIndex(s=>s[0]===state.sort && s[1]===state.dir); sortSel.value = i<0 ? "" : i; };
+  sortSel.addEventListener("change",()=>{ const s = SORTS[+sortSel.value]; if (!s) return; state.sort=s[0]; state.dir=s[1]; saveState(); render(); });
+  const sortRow = h("div",{class:"sort-row"}, h("label",{for:"f-sort",text:"Sort by"}), sortSel);
 
   sec.append(
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
-    h("div",{class:"list-key small"},
-      h("p",{style:"margin:0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
+    h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
+    nearRow, sortRow,
+    h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
+      h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Abuse icon"}), ": CMS's warning that the home was cited for abuse. ",
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
-    h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
-    nearRow, viewBar, mapPanel, tblWrap
+    viewBar, mapPanel, tblWrap
   );
-  render();
+  const keyEl = sec.querySelector("#list-key");
+  if (window.matchMedia && matchMedia("(min-width:701px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
+  render(); syncSort();
   return sec;
 }
 
@@ -1409,7 +1459,7 @@ function viewAbout(){
     P("A Special Focus candidate is on CMS's monthly list of the homes with the worst inspection records in the state. The state picks new Special Focus Facilities from that list, so being a candidate does not mean a home has been chosen."),
     h("h2",{text:"Staffing",style:"margin-top:20px"}),
     P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
-    P("Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently Q1 2026) rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard."),
+    P("Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently "+PBJ_Q+") rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard."),
     h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
     h("ul",null,
       h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
@@ -1444,8 +1494,8 @@ function viewFacility(ccn){
     if (recent.length) flags.push(h("span",{class:"chip warn",text:"New operator in the past year"}));
   }
   const pbj = pbjInfo(ccn);
-  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, Q1 2026",text:"High contract staffing"}));
-  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, Q1 2026",text:"Weekend staffing drop"}));
+  if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
+  if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
 
   app.append(
     h("a",{class:"back",href:"#home",text:"← All homes"}),
@@ -1556,10 +1606,15 @@ function viewFacility(ccn){
   app.append(h("section",null, h("div",{class:"sec-head"}, h("h2",{text:"Over time"}), ctl), h("div",{class:"card"}, holder)));
   drawTrend();
 
-  // PBJ staffing detail (Q1 2026, one quarter, not a running series like the metrics above)
+  // PBJ staffing detail (newest quarter, one quarter, not a running series like the metrics above)
+  if (!pbj && PBJ_KEY && f.status==="Open" && !(f.x||{}).not_in_cms){
+    app.append(h("section",null,
+      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}))),
+      h("p",{class:"note",style:"max-width:70ch",text:`CMS's daily payroll staffing file for ${PBJ_Q} has no records for this home. Every Medicare- or Medicaid-certified nursing home is required to send CMS these records each quarter.`})));
+  }
   if (pbj){
     app.append(h("section",null,
-      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:"From CMS's daily payroll-based staffing records (PBJ), Q1 2026 (Jan–Mar). A single quarter, not a running average like the figures above."}))),
+      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:`From CMS's daily payroll-based staffing records (PBJ), ${PBJ_Q}, ${PBJ_MONTHS}. A single quarter, not a running average like the figures above.`}))),
       h("div",{class:"grid g2"},
         h("div",{class:"card"},
           h("div",{class:"chart-title",text:"Contract (agency) staff"}),
@@ -1569,10 +1624,15 @@ function viewFacility(ccn){
           h("div",{class:"chart-title",text:"Weekday vs. weekend staffing"}),
           h("p",{style:"margin:6px 0 0;font-size:15px"}, fmt(pbj.weekday_hprd), " hrs/resident/day on weekdays, vs ", fmt(pbj.weekend_hprd), " on weekends",
             pbj.weekend_drop_pct!=null ? h("strong",{text:" ("+fmt(pbj.weekend_drop_pct,0)+"% lower)"}) : null, "."),
-          pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text:"Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null,
+          pbj.worst_day_date ? h("p",{class:"small",style:"margin:6px 0 0",text: pbj.worst_day_hprd < GAP_HPRD
+            ? "Lowest-staffed single day: n/a. At least one day's payroll records look incomplete."
+            : "Lowest-staffed single day: "+dlabel(pbj.worst_day_date)+", at "+fmt(pbj.worst_day_hprd)+" hrs/resident/day."}) : null,
+          pbj.gap_days ? h("p",{class:"small",style:"margin:6px 0 0",text: pbj.gap_days===1
+            ? "1 day was left out of these figures because its payroll records look incomplete (fewer than 1.5 nurse hours per resident)."
+            : pbj.gap_days+" days were left out of these figures because their payroll records look incomplete (fewer than 1.5 nurse hours per resident)."}) : null,
           h("p",{class:"small",style:"margin:6px 0 0",text:"The weekend figure under Staffing above is CMS's own calculation. These are ABC-RI's counts from the daily payroll records, so the two can differ a little."}))
       ),
-      h("p",{class:"note",style:"max-width:70ch"},"Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS. These are not CMS's star-rating averages. Statewide, Rhode Island homes averaged 5.4% contract staff and a 13.7% weekend staffing drop this quarter, for comparison.")
+      h("p",{class:"note",style:"max-width:70ch"},"Nurse staff hours include RNs, LPNs, nurse aides, and nursing leadership, counted from payroll records each home submits to CMS. These are not CMS's star-rating averages." + ((D[PBJ_KEY]||{})._RI ? " Statewide, Rhode Island homes averaged "+fmt(D[PBJ_KEY]._RI.contract_pct,1)+"% contract staff and a "+fmt(D[PBJ_KEY]._RI.weekend_drop_pct,1)+"% weekend staffing drop this quarter, for comparison." : ""))
     ));
   }
 
