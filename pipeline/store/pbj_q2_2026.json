@@ -1,6 +1,8 @@
 {
 "415002": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 5.693,
 "weekend_drop_pct": 15.0,
 "weekend_hprd": 4.841,
@@ -9,6 +11,8 @@
 },
 "415004": {
 "contract_pct": 0.8,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.639,
 "weekend_drop_pct": 19.6,
 "weekend_hprd": 2.927,
@@ -17,6 +21,8 @@
 },
 "415008": {
 "contract_pct": 8.2,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.487,
 "weekend_drop_pct": 5.9,
 "weekend_hprd": 3.283,
@@ -25,6 +31,8 @@
 },
 "415009": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.63,
 "weekend_drop_pct": 13.9,
 "weekend_hprd": 3.127,
@@ -33,6 +41,8 @@
 },
 "415010": {
 "contract_pct": 4.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.929,
 "weekend_drop_pct": 11.1,
 "weekend_hprd": 4.384,
@@ -41,6 +51,8 @@
 },
 "415012": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 5.169,
 "weekend_drop_pct": 14.0,
 "weekend_hprd": 4.447,
@@ -49,6 +61,8 @@
 },
 "415014": {
 "contract_pct": 6.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.105,
 "weekend_drop_pct": 22.8,
 "weekend_hprd": 3.168,
@@ -57,6 +71,8 @@
 },
 "415020": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.793,
 "weekend_drop_pct": 15.2,
 "weekend_hprd": 3.218,
@@ -65,6 +81,8 @@
 },
 "415023": {
 "contract_pct": 35.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.242,
 "weekend_drop_pct": 17.3,
 "weekend_hprd": 3.508,
@@ -73,6 +91,8 @@
 },
 "415027": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.67,
 "weekend_drop_pct": 9.6,
 "weekend_hprd": 3.319,
@@ -81,6 +101,8 @@
 },
 "415028": {
 "contract_pct": 11.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.259,
 "weekend_drop_pct": 17.0,
 "weekend_hprd": 2.706,
@@ -89,6 +111,8 @@
 },
 "415029": {
 "contract_pct": 0.2,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.974,
 "weekend_drop_pct": 15.0,
 "weekend_hprd": 3.376,
@@ -97,6 +121,8 @@
 },
 "415031": {
 "contract_pct": 4.8,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.411,
 "weekend_drop_pct": 12.1,
 "weekend_hprd": 2.999,
@@ -105,6 +131,8 @@
 },
 "415032": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.105,
 "weekend_drop_pct": 13.3,
 "weekend_hprd": 3.559,
@@ -113,14 +141,18 @@
 },
 "415033": {
 "contract_pct": 0.0,
-"weekday_hprd": 3.606,
-"weekend_drop_pct": 8.8,
+"gap_days": 2,
+"method": 2,
+"weekday_hprd": 3.714,
+"weekend_drop_pct": 11.5,
 "weekend_hprd": 3.288,
-"worst_day_date": "2026-05-25",
-"worst_day_hprd": 0.18
+"worst_day_date": "2026-04-05",
+"worst_day_hprd": 2.85
 },
 "415034": {
 "contract_pct": 12.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.423,
 "weekend_drop_pct": 10.1,
 "weekend_hprd": 3.077,
@@ -129,6 +161,8 @@
 },
 "415035": {
 "contract_pct": 0.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.57,
 "weekend_drop_pct": 21.2,
 "weekend_hprd": 2.812,
@@ -137,6 +171,8 @@
 },
 "415038": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.358,
 "weekend_drop_pct": 14.4,
 "weekend_hprd": 2.874,
@@ -145,6 +181,8 @@
 },
 "415039": {
 "contract_pct": 0.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.695,
 "weekend_drop_pct": 9.5,
 "weekend_hprd": 3.344,
@@ -153,6 +191,8 @@
 },
 "415040": {
 "contract_pct": 27.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.314,
 "weekend_drop_pct": 13.9,
 "weekend_hprd": 2.855,
@@ -161,6 +201,8 @@
 },
 "415041": {
 "contract_pct": 0.6,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.683,
 "weekend_drop_pct": 10.6,
 "weekend_hprd": 3.292,
@@ -169,6 +211,8 @@
 },
 "415042": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.423,
 "weekend_drop_pct": 11.9,
 "weekend_hprd": 3.017,
@@ -177,6 +221,8 @@
 },
 "415044": {
 "contract_pct": 1.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.911,
 "weekend_drop_pct": 19.0,
 "weekend_hprd": 3.169,
@@ -185,6 +231,8 @@
 },
 "415045": {
 "contract_pct": 11.9,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.756,
 "weekend_drop_pct": 11.3,
 "weekend_hprd": 3.332,
@@ -193,6 +241,8 @@
 },
 "415049": {
 "contract_pct": 5.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.403,
 "weekend_drop_pct": 12.3,
 "weekend_hprd": 2.983,
@@ -201,6 +251,8 @@
 },
 "415050": {
 "contract_pct": 4.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.798,
 "weekend_drop_pct": 24.9,
 "weekend_hprd": 2.851,
@@ -209,6 +261,8 @@
 },
 "415053": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.205,
 "weekend_drop_pct": 15.7,
 "weekend_hprd": 3.546,
@@ -217,6 +271,8 @@
 },
 "415054": {
 "contract_pct": 22.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.732,
 "weekend_drop_pct": 14.4,
 "weekend_hprd": 3.194,
@@ -225,6 +281,8 @@
 },
 "415056": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.296,
 "weekend_drop_pct": 19.9,
 "weekend_hprd": 3.442,
@@ -233,6 +291,8 @@
 },
 "415057": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.096,
 "weekend_drop_pct": 11.7,
 "weekend_hprd": 3.616,
@@ -241,6 +301,8 @@
 },
 "415060": {
 "contract_pct": 3.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.093,
 "weekend_drop_pct": 16.7,
 "weekend_hprd": 3.411,
@@ -249,6 +311,8 @@
 },
 "415061": {
 "contract_pct": 29.7,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.799,
 "weekend_drop_pct": 8.0,
 "weekend_hprd": 3.496,
@@ -257,6 +321,8 @@
 },
 "415062": {
 "contract_pct": 1.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.987,
 "weekend_drop_pct": 22.9,
 "weekend_hprd": 3.072,
@@ -265,6 +331,8 @@
 },
 "415063": {
 "contract_pct": 0.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.526,
 "weekend_drop_pct": 14.4,
 "weekend_hprd": 3.017,
@@ -273,6 +341,8 @@
 },
 "415064": {
 "contract_pct": 1.6,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.766,
 "weekend_drop_pct": 8.9,
 "weekend_hprd": 3.43,
@@ -281,6 +351,8 @@
 },
 "415067": {
 "contract_pct": 18.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.553,
 "weekend_drop_pct": 16.4,
 "weekend_hprd": 3.807,
@@ -289,6 +361,8 @@
 },
 "415068": {
 "contract_pct": 4.4,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.941,
 "weekend_drop_pct": 15.6,
 "weekend_hprd": 3.327,
@@ -297,6 +371,8 @@
 },
 "415070": {
 "contract_pct": 4.4,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.7,
 "weekend_drop_pct": 18.6,
 "weekend_hprd": 3.011,
@@ -305,6 +381,8 @@
 },
 "415071": {
 "contract_pct": 16.7,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.512,
 "weekend_drop_pct": 14.2,
 "weekend_hprd": 3.015,
@@ -313,6 +391,8 @@
 },
 "415072": {
 "contract_pct": 4.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.473,
 "weekend_drop_pct": 15.8,
 "weekend_hprd": 2.925,
@@ -321,6 +401,8 @@
 },
 "415073": {
 "contract_pct": 9.2,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 5.273,
 "weekend_drop_pct": 2.7,
 "weekend_hprd": 5.132,
@@ -329,6 +411,8 @@
 },
 "415074": {
 "contract_pct": 8.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.53,
 "weekend_drop_pct": 14.3,
 "weekend_hprd": 3.026,
@@ -337,6 +421,8 @@
 },
 "415075": {
 "contract_pct": 8.6,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.314,
 "weekend_drop_pct": 6.6,
 "weekend_hprd": 4.03,
@@ -345,6 +431,8 @@
 },
 "415076": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.649,
 "weekend_drop_pct": 14.7,
 "weekend_hprd": 3.113,
@@ -353,6 +441,8 @@
 },
 "415078": {
 "contract_pct": 30.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.431,
 "weekend_drop_pct": 11.7,
 "weekend_hprd": 3.912,
@@ -361,6 +451,8 @@
 },
 "415079": {
 "contract_pct": 1.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 6.042,
 "weekend_drop_pct": 30.4,
 "weekend_hprd": 4.207,
@@ -369,6 +461,8 @@
 },
 "415080": {
 "contract_pct": 13.2,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.657,
 "weekend_drop_pct": 14.7,
 "weekend_hprd": 3.118,
@@ -377,6 +471,8 @@
 },
 "415081": {
 "contract_pct": 0.9,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.183,
 "weekend_drop_pct": 22.7,
 "weekend_hprd": 2.462,
@@ -385,6 +481,8 @@
 },
 "415082": {
 "contract_pct": 0.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.728,
 "weekend_drop_pct": 12.2,
 "weekend_hprd": 3.275,
@@ -393,6 +491,8 @@
 },
 "415083": {
 "contract_pct": 13.5,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.429,
 "weekend_drop_pct": 10.4,
 "weekend_hprd": 3.074,
@@ -401,6 +501,8 @@
 },
 "415084": {
 "contract_pct": 0.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.936,
 "weekend_drop_pct": 16.0,
 "weekend_hprd": 3.307,
@@ -409,6 +511,8 @@
 },
 "415085": {
 "contract_pct": 12.8,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.288,
 "weekend_drop_pct": 13.1,
 "weekend_hprd": 3.727,
@@ -417,6 +521,8 @@
 },
 "415087": {
 "contract_pct": 9.4,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.906,
 "weekend_drop_pct": 8.9,
 "weekend_hprd": 3.558,
@@ -424,15 +530,19 @@
 "worst_day_hprd": 2.93
 },
 "415089": {
-"contract_pct": 4.3,
-"weekday_hprd": 2.669,
-"weekend_drop_pct": 9.9,
-"weekend_hprd": 2.405,
-"worst_day_date": "2026-06-02",
-"worst_day_hprd": 0.0
+"contract_pct": 2.9,
+"gap_days": 30,
+"method": 2,
+"weekday_hprd": 3.935,
+"weekend_drop_pct": 14.7,
+"weekend_hprd": 3.358,
+"worst_day_date": "2026-04-19",
+"worst_day_hprd": 2.98
 },
 "415091": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.775,
 "weekend_drop_pct": 15.3,
 "weekend_hprd": 4.046,
@@ -441,6 +551,8 @@
 },
 "415096": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 5.309,
 "weekend_drop_pct": 19.0,
 "weekend_hprd": 4.301,
@@ -449,6 +561,8 @@
 },
 "415097": {
 "contract_pct": 29.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.097,
 "weekend_drop_pct": 6.9,
 "weekend_hprd": 2.882,
@@ -457,6 +571,8 @@
 },
 "415098": {
 "contract_pct": 12.3,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.704,
 "weekend_drop_pct": 12.0,
 "weekend_hprd": 3.258,
@@ -465,6 +581,8 @@
 },
 "415099": {
 "contract_pct": 14.9,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.909,
 "weekend_drop_pct": 21.6,
 "weekend_hprd": 3.064,
@@ -473,6 +591,8 @@
 },
 "415104": {
 "contract_pct": 2.2,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.867,
 "weekend_drop_pct": 11.1,
 "weekend_hprd": 4.328,
@@ -481,6 +601,8 @@
 },
 "415106": {
 "contract_pct": 8.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.142,
 "weekend_drop_pct": 16.0,
 "weekend_hprd": 3.48,
@@ -489,14 +611,18 @@
 },
 "415108": {
 "contract_pct": 1.0,
-"weekday_hprd": 2.674,
-"weekend_drop_pct": 21.7,
-"weekend_hprd": 2.093,
-"worst_day_date": "2026-04-06",
-"worst_day_hprd": 1.41
+"gap_days": 2,
+"method": 2,
+"weekday_hprd": 2.694,
+"weekend_drop_pct": 21.5,
+"weekend_hprd": 2.116,
+"worst_day_date": "2026-05-03",
+"worst_day_hprd": 1.52
 },
 "415110": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.674,
 "weekend_drop_pct": 10.0,
 "weekend_hprd": 3.308,
@@ -505,6 +631,8 @@
 },
 "415111": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 4.739,
 "weekend_drop_pct": 17.3,
 "weekend_hprd": 3.92,
@@ -513,6 +641,8 @@
 },
 "415113": {
 "contract_pct": 0.6,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 5.3,
 "weekend_drop_pct": 22.1,
 "weekend_hprd": 4.129,
@@ -521,6 +651,8 @@
 },
 "415119": {
 "contract_pct": 8.1,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.76,
 "weekend_drop_pct": 15.4,
 "weekend_hprd": 3.18,
@@ -529,6 +661,8 @@
 },
 "415123": {
 "contract_pct": 20.6,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.808,
 "weekend_drop_pct": 15.4,
 "weekend_hprd": 3.222,
@@ -537,10 +671,17 @@
 },
 "415129": {
 "contract_pct": 0.0,
+"gap_days": 0,
+"method": 2,
 "weekday_hprd": 3.682,
 "weekend_drop_pct": 9.1,
 "weekend_hprd": 3.348,
 "worst_day_date": "2026-05-24",
 "worst_day_hprd": 3.11
+},
+"_RI": {
+"contract_pct": 5.4,
+"method": 2,
+"weekend_drop_pct": 14.6
 }
 }
