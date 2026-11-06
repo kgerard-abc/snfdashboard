@@ -702,5 +702,10 @@ window.RINH_ES = {
   "Nurse hours, most first": "Horas de enfermería, de más a menos",
   "Staffing rating, highest first": "Calificación de personal, de mayor a menor",
   "What the tags and columns mean": "Qué significan las etiquetas y columnas",
-  "CMS's daily payroll staffing file for Q{n} {n} has no records for this home. Every Medicare- or Medicaid-certified nursing home is required to send CMS these records each quarter.": "El archivo diario de personal basado en nómina de CMS para el T{1} {2} no tiene registros de este hogar. Todo hogar de ancianos certificado por Medicare o Medicaid debe enviar estos registros a CMS cada trimestre."
+  "CMS's daily payroll staffing file for Q{n} {n} has no records for this home. Every Medicare- or Medicaid-certified nursing home is required to send CMS these records each quarter.": "El archivo diario de personal basado en nómina de CMS para el T{1} {2} no tiene registros de este hogar. Todo hogar de ancianos certificado por Medicare o Medicaid debe enviar estos registros a CMS cada trimestre.",
+  "Why 1 staffing star?": "¿Por qué 1 estrella en personal?",
+  "CMS automatically gives 1 staffing star to a home that does not send in its payroll staffing records, reports 4 or more days with no registered nurse, or fails a CMS staffing audit. CMS does not say which rule applied.": "CMS da automáticamente 1 estrella en personal a un hogar que no envía sus registros de nómina del personal, reporta 4 días o más sin una enfermera registrada, o no pasa una auditoría de personal de CMS. CMS no dice cuál de estas reglas se aplicó.",
+  "CMS's daily payroll file for Q{n} {n} has no records for this home.": "El archivo diario de nómina de CMS para el trimestre {1} de {2} no tiene registros de este hogar.",
+  "{n} days in Q{n} {n} have missing or incomplete payroll records.": "{1} días del trimestre {2} de {3} tienen registros de nómina faltantes o incompletos.",
+  "So the 1 star may come from missing records rather than from how many staff were actually working. The hours below may not be reliable either.": "Por eso, la estrella puede deberse a registros faltantes y no a cuánto personal trabajó en realidad. Es posible que las horas de abajo tampoco sean confiables.",
 };
