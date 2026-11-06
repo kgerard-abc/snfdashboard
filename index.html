@@ -1582,7 +1582,26 @@ function viewFacility(ccn){
     return tile("Nursing case-mix index", fmt(cmiLV[0],2),
       h("span",null, ri!=null ? `RI average ${fmt(ri,2)}` : null, cmiLV[1]>=0 && cmiLV[1]!==li ? h("div",{text:"as of " + mlabel(M[cmiLV[1]])}) : null));
   })();
-  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}),
+  // A 1-star staffing rating next to normal-looking hours usually means missing payroll records, not short staffing.
+  // CMS gives 1 staffing star automatically for missing records, 4 or more days with no RN, or a failed audit
+  // (Five-Star Technical Users' Guide). It doesn't publish which rule applied, so the note says so.
+  const staffNote = (() => {
+    if (f.status !== "Open" || at(ccn,"staffing",li) !== 1 || !PBJ_KEY) return null;
+    const prevKey = Object.keys(D).filter(k => /^pbj_q[1-4]_\d{4}$/.test(k) && k !== PBJ_KEY).sort((a,b) => a.slice(-4)+a[5] < b.slice(-4)+b[5] ? -1 : 1).pop();
+    const prevQ = prevKey ? "Q" + prevKey[5] + " " + prevKey.slice(-4) : "";
+    const prev = prevKey ? (D[prevKey]||{})[ccn] : null;
+    const facts = [];
+    if (!pbj) facts.push(`CMS's daily payroll file for ${PBJ_Q} has no records for this home.`);
+    else if (pbj.gap_days >= 4) facts.push(`${pbj.gap_days} days in ${PBJ_Q} have missing or incomplete payroll records.`);
+    if (prev && prev.gap_days >= 4) facts.push(`${prev.gap_days} days in ${prevQ} have missing or incomplete payroll records.`);
+    if (!facts.length) return null;
+    return h("div",{class:"card",style:"margin:0 0 12px;max-width:70ch"},
+      h("p",{style:"margin:0 0 6px"}, h("strong",{text:"Why 1 staffing star?"})),
+      h("p",{class:"small",style:"margin:0 0 6px",text:"CMS automatically gives 1 staffing star to a home that does not send in its payroll staffing records, reports 4 or more days with no registered nurse, or fails a CMS staffing audit. CMS does not say which rule applied."}),
+      facts.map(t => h("p",{class:"small",style:"margin:0 0 6px",text:t})),
+      h("p",{class:"small",style:"margin:0",text:"So the 1 star may come from missing records rather than from how many staff were actually working. The hours below may not be reliable either."}));
+  })();
+  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), staffNote,
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
       kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), cmiTile),
     cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null,
