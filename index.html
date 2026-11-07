@@ -797,6 +797,24 @@ const PBJ_MONTHS = PBJ_KEY ? (q => ["Jan","Apr","Jul","Oct"][q-1] + " " + PBJ_KE
 const GAP_HPRD = 1.5;   // a day under this many nurse hours per resident is almost always missing payroll data
 const CONTRACT_TXT = `High contract staffing: 10% or more of the home's nurse staff hours came from contract or agency staff, ${PBJ_Q}.`;
 const WEEKEND_TXT = `Weekend staffing drop: nurse staffing on weekends was at least 20% lower than on weekdays, ${PBJ_Q}.`;
+// A change of more than 1 nurse hour per resident per day in one CMS staffing update is rare. It can be real hiring
+// or cuts, or a change or mistake in the payroll records a home sends CMS (Valley View went from 2.82 to 5.52 in Oct 2026).
+// CMS updates staffing every 3 months, so the current figure is compared with the one before it changed, and the flag
+// lasts until the next update. Figures under GAP_HPRD are treated as missing payroll data and never compared.
+const JUMP_HPRD = 1.0;
+function staffJump(ccn){
+  const s = ser(ccn,"hprd"), v = s[LI];
+  if (v==null || v < GAP_HPRD) return null;
+  let j = LI - 1;
+  while (j >= 0 && (s[j]==null || Math.abs(s[j]-v) < 1e-6)) j--;
+  if (j < 0 || s[j] < GAP_HPRD) return null;
+  const d = v - s[j];
+  if (Math.abs(d) <= JUMP_HPRD) return null;
+  let k = j + 1; while (k < LI && s[k]==null) k++;   // first release that carried the new figure
+  const before = s.slice(Math.max(0, j-11), j+1).filter(x => x!=null && x >= GAP_HPRD);
+  return {now:v, prev:s[j], d, mPrev:M[j], mNow:M[k], avg: before.length ? before.reduce((a,b)=>a+b,0)/before.length : null};
+}
+const jumpTxt = J => `Big staffing change: nurse hours per resident per day went from ${fmt(J.prev)} to ${fmt(J.now)} in the ${mlabel(J.mNow)} CMS update. See Staffing below.`;
 const SELF_TXT = "Self-reported: from the facility's own resident assessments (MDS), completed by the home's own staff, and not independently verified the way Medicare claims data is.";
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
@@ -1309,6 +1327,7 @@ function homesTable(){
       const pbj0 = pbjInfo(f.ccn);
       if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
       if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
+      if (f.status==="Open" && staffJump(f.ccn)) flags.push(h("span",{class:"chip warn",title:"Nurse hours changed by more than 1 hour per resident per day in the newest CMS update",text:"Big staffing change"}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
         h("td",{class:"home"}, h("div",{class:"nm"}, cmpBox(f), h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
           h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
@@ -1457,7 +1476,7 @@ function homesTable(){
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
       h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Big staffing change"}), ": the home's nurse hours per resident per day changed by more than 1 hour in the newest CMS staffing update. That is rare. It can be real hiring or cuts, or a change or mistake in the payroll records the home sends CMS. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
     h("p",{class:"small cmp-hint",text:"Check up to 3 homes to compare them side by side."}),
@@ -1568,6 +1587,7 @@ function viewAbout(){
     h("h2",{text:"Staffing",style:"margin-top:20px"}),
     P("Staffing hours come from payroll records each home submits (Payroll-Based Journal). They usually lag the release date by about six months. Turnover data begins in 2022, and the nursing case-mix index (how much care residents need) in 2024, because CMS started publishing them then. A higher case-mix index means residents need more care."),
     P("Homes with a “High contract staffing” or “Weekend staffing drop” flag have a “Staffing detail” section on their own page with the numbers behind it. That section comes from CMS's daily (not monthly) payroll staffing records, covering one quarter (currently "+PBJ_Q+") rather than the running monthly history used everywhere else on this site. “High contract staffing” means at least 10% of a home's nurse hours that quarter came from contract or agency staff rather than its own employees; “Weekend staffing drop” means weekend staffing ran at least 20% below weekday staffing. Both are based on where a home falls compared to other Rhode Island homes that quarter, not a clinical standard."),
+    P("A “Big staffing change” flag means a home's nurse hours per resident per day went up or down by more than 1 hour in the newest CMS staffing update. CMS updates staffing figures every 3 months. A change that size is rare. It can be real hiring or cuts, or a change or mistake in the payroll records the home sends CMS. If the new number holds in the next update, it is more likely to be real. The home's own page shows the figures before and after."),
     h("h2",{text:"Things to keep in mind",style:"margin-top:20px"}),
     h("ul",null,
       h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
@@ -1604,6 +1624,8 @@ function viewFacility(ccn){
   const pbj = pbjInfo(ccn);
   if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
   if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
+  const jump = f.status==="Open" ? staffJump(ccn) : null;
+  if (jump) flags.push(h("span",{class:"chip warn",text:"Big staffing change"}));
 
   app.append(
     h("a",{class:"back",href:"#home",text:"← All homes"}),
@@ -1618,6 +1640,7 @@ function viewFacility(ccn){
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
         (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:CONTRACT_TXT}) : null,
         (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:WEEKEND_TXT}) : null,
+        jump ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:jumpTxt(jump)}) : null,
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
           h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
           h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"}),
@@ -1710,9 +1733,14 @@ function viewFacility(ccn){
       facts.map(t => h("p",{class:"small",style:"margin:0 0 6px",text:t})),
       h("p",{class:"small",style:"margin:0",text:"So the 1 star may come from missing records rather than from how many staff were actually working. The hours below may not be reliable either."}));
   })();
-  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), staffNote,
-    h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
-      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), cmiTile),
+  const jumpNote = jump ? h("div",{class:"card",style:"margin:0 0 12px;max-width:70ch"},
+      h("p",{style:"margin:0 0 6px"}, h("strong",{text:"Big change in staffing hours"})),
+      h("p",{class:"small",style:"margin:0 0 6px",text:`Reported nurse staffing went from ${fmt(jump.prev)} hours per resident per day in the ${mlabel(jump.mPrev)} CMS release to ${fmt(jump.now)} in the ${mlabel(jump.mNow)} release.`}),
+      jump.avg!=null ? h("p",{class:"small",style:"margin:0 0 6px",text:`Before that, its hours averaged ${fmt(jump.avg)} over the previous 12 months.`}) : null,
+      h("p",{class:"small",style:"margin:0",text:"A change of more than 1 hour in one update is rare. It can be real hiring or cuts, or a change or mistake in the payroll records the home sends CMS. CMS updates these figures every 3 months. If the new number holds in the next update, it is more likely to be real. You can ask the home's administrator what changed."})) : null;
+  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), staffNote, jumpNote,
+    h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
+      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), cmiTile),
     cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null,
     h("p",{class:"note",style:"max-width:70ch"},"Case-mix adjusted hours take the home's own reported staffing and adjust it for how medically complex its residents are, so homes with different resident populations can be compared on a level footing. This is the figure CMS itself uses to calculate the staffing star rating above, and it can differ from the raw “total nurse hours” figure when a home's residents are more or less complex than the national average.")));
 
