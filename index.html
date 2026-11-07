@@ -103,6 +103,9 @@ nav.tabs a.ext svg{width:12px;height:12px;flex:none}
 
 section{margin-top:40px}
 .sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px;margin-bottom:12px}
+/* On a home's page, each section heading stays at the top of the screen while its section scrolls. */
+#app.fac section>h2,#app.fac section>.sec-head{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:8px;margin-top:-8px}
+#app.fac section>h2{margin-bottom:4px}
 .grid{display:grid;gap:16px}
 .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))}
@@ -1737,12 +1740,13 @@ function viewFacility(ccn){
   // PBJ staffing detail (newest quarter, one quarter, not a running series like the metrics above)
   if (!pbj && PBJ_KEY && f.status==="Open" && !(f.x||{}).not_in_cms){
     app.append(h("section",null,
-      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}))),
+      h("div",{class:"sec-head"}, h("h2",{text:"Staffing detail"})),
       h("p",{class:"note",style:"max-width:70ch",text:`CMS's daily payroll staffing file for ${PBJ_Q} has no records for this home. Every Medicare- or Medicaid-certified nursing home is required to send CMS these records each quarter.`})));
   }
   if (pbj){
     app.append(h("section",null,
-      h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"Staffing detail"}), h("p",{class:"small",style:"margin:0",text:`From CMS's daily payroll-based staffing records (PBJ), ${PBJ_Q}, ${PBJ_MONTHS}. A single quarter, not a running average like the figures above.`}))),
+      h("div",{class:"sec-head"}, h("h2",{text:"Staffing detail"})),
+      h("p",{class:"small",style:"margin:0 0 12px",text:`From CMS's daily payroll-based staffing records (PBJ), ${PBJ_Q}, ${PBJ_MONTHS}. A single quarter, not a running average like the figures above.`}),
       h("div",{class:"grid g2"},
         h("div",{class:"card"},
           h("div",{class:"chart-title",text:"Contract (agency) staff"}),
@@ -1770,7 +1774,8 @@ function viewFacility(ccn){
   const years = [...new Set(hc.map(r=>r[0].slice(0,4)))].sort();
   const yrsShown = []; if (years.length) for (let y = Math.max(2017, +years[0]); y <= +LATEST.slice(0,4); y++) yrsShown.push(String(y));
   const insSec = h("section",null,
-    h("div",{class:"sec-head"}, h("div",null,h("h2",{text:"Inspections"}), h("p",{class:"small",style:"margin:0",text:`${st.cit3||0} health citations in the last three years, ${st.harm3||0} involving actual harm or immediate jeopardy, ${st.compl3||0} from complaint investigations.`}))),
+    h("div",{class:"sec-head"}, h("h2",{text:"Inspections"})),
+    h("p",{class:"small",style:"margin:0 0 12px",text:`${st.cit3||0} health citations in the last three years, ${st.harm3||0} involving actual harm or immediate jeopardy, ${st.compl3||0} from complaint investigations.`}),
     h("div",{class:"grid g2"},
       h("div",{class:"card"}, h("div",{class:"chart-title",text:"Health citations by year"}),
         barChart({cats:yrsShown.map(y=> y===LATEST.slice(0,4)? y+"*":y), height:180,
@@ -1901,6 +1906,7 @@ function footer(){
 function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
+  app.classList.toggle("fac", hsh.startsWith("f-"));
   ["home","harms","owners","about"].forEach(t => document.getElementById("tab-"+t).classList.toggle("on", hsh===t || (t==="home" && (hsh===""||hsh==="list"))));
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
