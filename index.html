@@ -273,7 +273,8 @@ body.cmp-on{padding-bottom:84px}
   .homes-tbl td.c-group{grid-column:1/-1}
   .homes-tbl td.c-group .cl{display:inline;margin-right:6px}
   .homes-tbl .cl{display:block;font-size:12px;line-height:1.25;color:var(--muted);margin-bottom:2px;font-weight:400}
-  .homes-tbl td.c-adj,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
+  .homes-tbl td.c-adj,.homes-tbl td.c-adj12,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
+  .homes-tbl.sort-adj12 td.c-adj12{display:block}
 }
 footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
 footer p{max-width:90ch;margin:0 0 10px}
@@ -778,6 +779,33 @@ const I12 = idxMonthsAgo(12), I36 = idxMonthsAgo(36);
 function riAvg(key){ const a = D.avg.RI && D.avg.RI[key]; const c = D.avg.RI_calc && D.avg.RI_calc[key];
   if (!a) return c || []; return a.map((v,i)=> v!=null ? v : (c ? c[i] : null)); }
 function usAvg(key){ return (D.avg.NATION && D.avg.NATION[key]) || []; }
+// CMS updates staffing figures once a quarter, and they lag the release by about six months:
+// releases in Jan to Mar carry payroll data for Jul to Sep of the year before, Apr to Jun releases carry Oct to Dec,
+// Jul to Sep releases carry Jan to Mar, and Oct to Dec releases carry Apr to Jun. (Checked against every release since
+// 2023: the staffing figures never change within a release quarter.) staffQ gives the payroll quarter as year*4 + (0 to 3).
+function staffQ(m){ const y = +m.slice(0,4), rq = Math.floor((+m.slice(5,7)-1)/3); return rq < 2 ? (y-1)*4 + rq + 2 : y*4 + rq - 2; }
+function staffQRange(a, b){ const st = ["Jan","Apr","Jul","Oct"], en = ["Mar","Jun","Sep","Dec"];
+  return st[a%4] + " " + Math.floor(a/4) + " to " + en[b%4] + " " + Math.floor(b/4); }
+// 12-month average: the simple average of the last 4 quarters of payroll data, ending with the quarter in the latest release.
+// Each quarter's figure is taken from the newest release that carries it. n is how many of the 4 quarters CMS has.
+function avg12(ccn, key){
+  if (LI < 0) return null;
+  const arr = ser(ccn, key), lastQ = staffQ(M[LI]), byQ = {};
+  for (let i = 0; i <= LI; i++){ if (arr[i] == null) continue; const q = staffQ(M[i]); if (q > lastQ-4) byQ[q] = arr[i]; }
+  const vals = Object.values(byQ);
+  if (!vals.length) return null;
+  return {v: vals.reduce((a,b)=>a+b,0)/vals.length, n: vals.length, from: lastQ-3, to: lastQ};
+}
+const ADJ12 = {};
+let ADJ12_RI = null;
+function adj12(ccn){ if (!(ccn in ADJ12)) ADJ12[ccn] = avg12(ccn, "adj_hprd"); return ADJ12[ccn]; }
+function adj12RI(){
+  if (ADJ12_RI === null){
+    const vals = FAC.filter(g => g.ccn && g.status === "Open").map(g => adj12(g.ccn)).filter(a => a && a.n === 4).map(a => a.v);
+    ADJ12_RI = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : NaN;
+  }
+  return isNaN(ADJ12_RI) ? null : ADJ12_RI;
+}
 function pips(r, lg){ const cc = r==null ? "" : r<=2 ? " r-bad" : r===3 ? " r-warn" : " r-good"; const w = h("span",{class:"pips"+(lg?" lg":"")+cc, "aria-hidden":"true"}); for (let i=1;i<=5;i++) w.append(h("i",{class: r!=null && i<=r ? "f":""})); return w; }
 function ratingEl(r, lg, reason){ return r==null ? h("span",{class:"small",title:reason||undefined,text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function notRatedReason(f, i){
@@ -1222,6 +1250,7 @@ function cmpOpen(){
       row("Staffing", f => ratingEl(at(f.ccn,"staffing",LI), false, notRatedReason(f,LI))),
       row("Quality", f => ratingEl(at(f.ccn,"qm",LI), false, notRatedReason(f,LI))),
       row("Nurse hrs/res/day", val("hprd",2)),
+      row("Adjusted nurse hrs, 12-month average", f => { const a = adj12(f.ccn); return a && a.n===4 ? fmt(a.v,2) : "–"; }),
       row("RN hrs", val("rn_hprd",2)),
       row("Turnover", val("turnover",1,"%")),
       row("Harm citations (3 yrs)", f => st(f).harm3==null ? "–" : String(st(f).harm3)),
@@ -1262,6 +1291,7 @@ function homesTable(){
     {k:"qm", t:"Quality", r:1, get:f=>at(f.ccn,"qm",LI)},
     {k:"hprd", t:"Nurse hrs/res/day", r:1, get:f=>lastVal(ser(f.ccn,"hprd"))[0]},
     {k:"adj", t:"Case-mix adjusted nurse hrs/res/day", lines:["Case-mix adjusted ","nurse hrs/res/day"], r:1, tip:"Total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. Compare it to the unadjusted column: if adjusted hours are lower, the residents needed more care than the raw hours suggest. This is the figure CMS uses for the staffing star rating.", get:f=>lastVal(ser(f.ccn,"adj_hprd"))[0]},
+    {k:"adj12", t:"Adjusted nurse hrs, 12-month average", lines:["Adjusted nurse hrs, ","12-month average"], r:1, tip:"The same case-mix adjusted hours, averaged over the last four quarters of payroll data, so one unusual quarter counts for a quarter of the figure instead of all of it. Shown only when CMS has all four quarters for the home.", get:f=>{ const a = adj12(f.ccn); return a && a.n===4 ? a.v : null; }},
     {k:"rn", t:"RN hrs", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
     {k:"turn", t:"Turnover", r:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
     {k:"harm", t:"Harm citations (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].harm3 : null},
@@ -1320,6 +1350,7 @@ function homesTable(){
         ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)))),
         h("td",{class:"r num",text:fmt(colByKey.hprd.get(f))}),
         h("td",{class:"r num",title:adjTitle(f),text:fmt(colByKey.adj.get(f))}),
+        h("td",{class:"r num",text:fmt(colByKey.adj12.get(f))}),
         h("td",{class:"r num",text:fmt(colByKey.rn.get(f))}),
         h("td",{class:"r num",text:colByKey.turn.get(f)==null?"–":fmt(colByKey.turn.get(f),1)+"%"}),
         h("td",{class:"r num",text:st.harm3==null?"–":String(st.harm3)}),
@@ -1330,6 +1361,7 @@ function homesTable(){
       const tr = tbody.lastChild;   // phone layout: each cell carries its column name, hidden on wider screens
       [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); td.prepend(h("span",{class:"cl",text:cols[i].t})); } });
     });
+    if (tbody.parentNode) tbody.parentNode.classList.toggle("sort-adj12", state.sort==="adj12");   // phones show this column only when sorting by it
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
     lastFiltered = rows;
     if (viewMode==="map") refreshMap(false); else mapDirty = true;
@@ -1447,7 +1479,7 @@ function homesTable(){
   // Phones hide the column headings, so they get a sort menu instead.
   const SORTS = [["name",1,"Name"],["overall",-1,"Overall rating, highest first"],["overall",1,"Overall rating, lowest first"],
     ["harm",-1,"Harm citations, most first"],["ij",-1,"Immediate jeopardy, most first"],["fines",-1,"Fines, highest first"],
-    ["hprd",-1,"Nurse hours, most first"],["staffing",-1,"Staffing rating, highest first"]];
+    ["hprd",-1,"Nurse hours, most first"],["adj12",-1,"Adjusted nurse hours, 12-month average, most first"],["staffing",-1,"Staffing rating, highest first"]];
   const sortSel = h("select",{id:"f-sort","aria-label":"Sort by"}, SORTS.map((s,i)=>h("option",{value:i,text:s[2]})));
   const syncSort = () => { const i = SORTS.findIndex(s=>s[0]===state.sort && s[1]===state.dir); sortSel.value = i<0 ? "" : i; };
   sortSel.addEventListener("change",()=>{ const s = SORTS[+sortSel.value]; if (!s) return; state.sort=s[0]; state.dir=s[1]; saveState(); render(); });
@@ -1462,6 +1494,7 @@ function homesTable(){
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ",
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
+        h("strong",{text:"Adjusted nurse hrs, 12-month average"}), ": the same adjusted hours averaged over the last four quarters of payroll data, so one unusual quarter can't make a home look much better or worse than its usual staffing. Shown only when CMS has all four quarters. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
     h("p",{class:"small cmp-hint",text:"Check up to 3 homes to compare them side by side."}),
     viewBar, mapPanel, tblWrap
@@ -1694,6 +1727,20 @@ function viewFacility(ccn){
     return tile("Nursing case-mix index", fmt(cmiLV[0],2),
       h("span",null, ri!=null ? `RI average ${fmt(ri,2)}` : null, cmiLV[1]>=0 && cmiLV[1]!==li ? h("div",{text:"as of " + mlabel(M[cmiLV[1]])}) : null));
   })();
+  // 12-month average of case-mix adjusted hours: one odd quarter (a census drop, a payroll reporting problem) can swing
+  // the latest figure a long way, so this tile sits next to it.
+  const a12 = adj12(ccn), adjNow = lastVal(ser(ccn,"adj_hprd"));
+  const adj12Tile = !a12 ? null : (() => {
+    const ri = adj12RI();
+    let cmp = null;
+    if (a12.n === 4 && ri != null){ const d = a12.v - ri, same = Math.abs(d) < 0.01;
+      cmp = h("span",null, `RI average ${fmt(ri,2)} · `, h("span",{class:"delta " + (same ? "same" : d > 0 ? "up" : "down"), text: same ? "about average" : d > 0 ? "better than average" : "worse than average"})); }
+    return tile("Case-mix adjusted nurse hours, 12-month average", fmt(a12.v,2),
+      h("span",null, cmp, h("div",{text: staffQRange(a12.from, a12.to)}),
+        a12.n < 4 ? h("div",{text: `Only ${a12.n} of the 4 quarters have figures`}) : null));
+  })();
+  const adjGap = (a12 && a12.n === 4 && adjNow[0] != null && adjNow[1] === li && Math.abs(adjNow[0] - a12.v) >= 0.5) ? adjNow[0] - a12.v : null;
+  const newestQ = li >= 0 ? staffQRange(staffQ(M[li]), staffQ(M[li])) : "";
   // A 1-star staffing rating next to normal-looking hours usually means missing payroll records, not short staffing.
   // CMS gives 1 staffing star automatically for missing records, 4 or more days with no RN, or a failed audit
   // (Five-Star Technical Users' Guide). It doesn't publish which rule applied, so the note says so.
@@ -1713,11 +1760,13 @@ function viewFacility(ccn){
       facts.map(t => h("p",{class:"small",style:"margin:0 0 6px",text:t})),
       h("p",{class:"small",style:"margin:0",text:"So the 1 star may come from missing records rather than from how many staff were actually working. The hours below may not be reliable either."}));
   })();
-  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), staffNote,
+  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), " ", newestQ && f.status === "Open" ? h("span",{text:`The newest figures cover ${newestQ}.`}) : null), staffNote,
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
-      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), cmiTile),
+      kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), adj12Tile, cmiTile),
     cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null,
-    h("p",{class:"note",style:"max-width:70ch"},"Case-mix adjusted hours take the home's own reported staffing and adjust it for how medically complex its residents are, so homes with different resident populations can be compared on a level footing. This is the figure CMS itself uses to calculate the staffing star rating above, and it can differ from the raw “total nurse hours” figure when a home's residents are more or less complex than the national average.")));
+    h("p",{class:"note",style:"max-width:70ch"},"Case-mix adjusted hours take the home's own reported staffing and adjust it for how medically complex its residents are, so homes with different resident populations can be compared on a level footing. This is the figure CMS itself uses to calculate the staffing star rating above, and it can differ from the raw “total nurse hours” figure when a home's residents are more or less complex than the national average."),
+    adj12Tile ? h("p",{class:"note",style:"max-width:70ch"},"The 12-month average is the average of the last four quarters of case-mix adjusted hours. CMS updates staffing once a quarter, about six months after the quarter ends. One unusual quarter can move the newest figure a lot, so the 12-month average is a steadier picture of a home's usual staffing.") : null,
+    adjGap != null ? h("p",{class:"note",style:"max-width:70ch"}, `At this home, the newest quarter is ${fmt(Math.abs(adjGap),2)} hours ${adjGap > 0 ? "higher" : "lower"} than the 12-month average. A big change in one quarter can be real, or it can come from a change in how the home reported its payroll.`) : null));
 
   // trend chart with selector
   const trendKeys = [["overall","Overall rating"],["health","Inspection rating"],["staffing","Staffing rating"],["qm","Quality rating"],["hprd","Nurse hours"],["rn_hprd","RN hours"],["aide_hprd","Aide hours"],["wkend_hprd","Weekend nurse hours"],["turnover","Turnover"],["rn_turnover","RN turnover"],["residents","Residents per day"],["cmi","Case-mix index"]];
