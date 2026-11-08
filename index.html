@@ -216,6 +216,9 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .timeline{display:grid;gap:0}
 .tl-row{display:grid;grid-template-columns:150px 1fr;gap:12px;font-size:14px;padding:7px 0;border-bottom:1px solid var(--grid)}
 .tl-row:last-child{border-bottom:0}
+.rr-head{font-weight:600;margin:8px 0 0;font-size:15px;line-height:1.4}
+.rr-list{list-style:disc !important;padding-left:20px !important;display:block !important}
+.rr-list li{display:list-item !important;margin:6px 0 0}
 .morebtn{margin-top:10px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink-2);text-decoration:underline;font-size:13.5px}
 .morebtn:hover{color:var(--ink)}
 .sev-key{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--ink-2);margin:8px 0 12px}
@@ -374,6 +377,7 @@ footer p{max-width:90ch;margin:0 0 10px}
 <script id="zip-centers" type="application/json">{"02802":[41.95213,-71.45623],"02804":[41.43303,-71.77006],"02806":[41.73819,-71.32018],"02807":[41.17678,-71.57705],"02808":[41.40825,-71.74967],"02809":[41.67573,-71.27333],"02812":[41.47896,-71.65257],"02813":[41.39422,-71.66982],"02814":[41.89612,-71.6954],"02815":[41.77463,-71.64795],"02816":[41.6965,-71.62266],"02817":[41.63708,-71.67836],"02818":[41.64292,-71.48572],"02822":[41.56943,-71.62792],"02825":[41.78207,-71.72683],"02826":[41.98275,-71.65314],"02827":[41.69875,-71.73912],"02828":[41.87769,-71.56091],"02830":[41.97562,-71.65639],"02831":[41.76984,-71.60737],"02832":[41.51472,-71.72962],"02833":[41.48969,-71.77197],"02835":[41.51009,-71.37837],"02836":[41.45404,-71.62023],"02837":[41.51877,-71.16725],"02838":[41.96541,-71.47936],"02839":[41.94076,-71.64151],"02840":[41.47697,-71.31855],"02841":[41.51024,-71.32964],"02842":[41.51764,-71.27793],"02852":[41.58857,-71.45981],"02857":[41.82276,-71.63361],"02858":[41.96449,-71.65127],"02859":[41.95907,-71.75732],"02860":[41.87056,-71.38868],"02861":[41.8786,-71.35313],"02863":[41.89006,-71.39348],"02864":[41.96746,-71.42057],"02865":[41.91546,-71.44982],"02871":[41.58661,-71.25921],"02872":[41.59696,-71.32093],"02873":[41.53313,-71.78055],"02874":[41.50906,-71.47442],"02875":[41.45238,-71.64034],"02876":[41.99723,-71.58437],"02878":[41.60698,-71.18263],"02879":[41.42884,-71.53838],"02881":[41.47808,-71.52472],"02882":[41.41709,-71.47227],"02885":[41.72514,-71.2588],"02886":[41.70543,-71.45438],"02888":[41.74767,-71.40612],"02889":[41.70059,-71.37693],"02891":[41.35777,-71.78962],"02892":[41.49712,-71.5942],"02893":[41.6796,-71.52111],"02894":[41.44425,-71.6993],"02895":[42.00171,-71.49995],"02896":[41.97519,-71.54407],"02898":[41.51764,-71.66852],"02903":[41.81823,-71.40909],"02904":[41.85833,-71.43629],"02905":[41.78473,-71.3961],"02906":[41.84017,-71.39041],"02907":[41.79859,-71.42463],"02908":[41.83982,-71.43679],"02909":[41.8212,-71.45338],"02910":[41.775,-71.43559],"02911":[41.85489,-71.47281],"02912":[41.82559,-71.40224],"02914":[41.81512,-71.36577],"02915":[41.77285,-71.35484],"02916":[41.84266,-71.35244],"02917":[41.90629,-71.52381],"02919":[41.82744,-71.51988],"02920":[41.76734,-71.46551],"02921":[41.76075,-71.51465]}</script>
 
 <script src="data.js"></script>
+<script src="ridoh-reports.js"></script>
 <script>
 (function(){
 "use strict";
@@ -835,6 +839,49 @@ const SELF_TXT = "Self-reported: from the facility's own resident assessments (M
 function scopeTxt(c){ if (!c) return ""; if ("ADGJ".includes(c)) return "isolated (one or a few residents)"; if ("BEHK".includes(c)) return "a pattern (more than a few residents)"; return "widespread (many residents)"; }
 const L = D.links || {};
 const pdfUrl = (ccn, kind, d) => (L.pdf||"").replace("{ccn}",ccn).replace("{kind}",kind).replace("{date}",d);
+// RIDOH's own inspection reports for homes CMS has no data on (ridoh-reports.js, built from
+// pipeline/store/ridoh_nh_reports.json by pipeline/scripts/ridoh_reports.py)
+const RIDOH_TIER = {most_serious:["Most serious","chip bad"], serious:["Serious","chip warn"], minor:["Minor","chip good"]};
+function ridohReports(lic){
+  const home = ((window.RIDOH_NH_REPORTS||{}).homes||{})[String(lic||"").trim()];
+  const sec = h("section",{id:"ridoh-reports"}, h("h2",{text:"State inspection reports"}));
+  if (!home || !home.reports.length){
+    sec.append(h("p",{class:"small",text:"We have not added RIDOH's inspection reports for this home yet."}));
+    return sec;
+  }
+  const reps = home.reports, cut3 = new Date(Date.now() - 3*365.25*864e5).toISOString().slice(0,10);
+  const recent = reps.filter(r => r.date >= cut3), withF = recent.filter(r => !r.no_findings);
+  const nTier = t => recent.filter(r => r.tier === t).length;
+  const counts = [["most_serious","most serious"],["serious","serious"],["minor","minor"]].filter(([t]) => nTier(t)).map(([t,w]) => nTier(t) + " " + w);
+  sec.append(
+    h("p",{class:"small",style:"max-width:75ch"}, "RIDOH inspects every licensed nursing home once a year and when someone files a complaint. RIDOH also does off-site reviews, checking documents to confirm that problems it found were fixed. ABC-RI summarizes each report in plain language from the inspectors' findings. Each finding starts with RIDOH's regulation tag (for example M595). Open RIDOH's report for the full text."),
+    h("p",{class:"small",style:"max-width:75ch"}, "Levels are ABC-RI's own judgment, not RIDOH's. Most serious means the problem would likely have been cited as immediate jeopardy (CMS's most serious level: a resident was seriously harmed, or was likely to be) under the federal nursing home standard. Serious means a failure in care or safety that could lead to harm. Minor covers everything else, such as paperwork, kitchen rules, or out-of-date supplies."),
+    h("p",{style:"font-size:14.5px;max-width:75ch"}, h("strong",{text:"Last 3 years: "}),
+      `${recent.length} report${recent.length===1?"":"s"}, ${withF.length} with problems found` + (counts.length ? ` (${counts.join(", ")})` : "") + "."));
+  const list = h("div",{class:"card"});
+  let shown = 0; const PAGE = 8;
+  const more = h("button",{class:"morebtn",type:"button"});
+  const add = () => {
+    reps.slice(shown, shown+PAGE).forEach(r => {
+      const tier = RIDOH_TIER[r.tier];
+      list.append(h("div",{class:"survey"},
+        h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(r.date)}),
+          h("span",{class:"small",text: r.type + (r.no_findings ? "" : ` · ${r.paragraphs.length} finding${r.paragraphs.length===1?"":"s"}`)}),
+          tier ? h("span",{class:tier[1],text:tier[0]}) : null,
+          h("span",{class:"small"}, h("a",{href:r.link,target:"_blank",rel:"noopener",text:"RIDOH's report"}))),
+        h("p",{class:"rr-head",text:r.headline}),
+        r.paragraphs.length ? h("ul",{class:"rr-list"}, r.paragraphs.map(p => { const i = p.indexOf(" / ");
+          return h("li",null, h("strong",{text: i > 0 ? p.slice(0,i) : p}), i > 0 ? ". " + p.slice(i+3) : ""); })) : null));
+    });
+    shown += PAGE;
+    more.hidden = shown >= reps.length;
+    more.textContent = `Show more reports (${reps.length - shown} more)`;
+  };
+  more.addEventListener("click", add);
+  add();
+  sec.append(list, more, h("p",{class:"small",text:`Reports from RIDOH's public folders. Summaries updated ${dlabel((window.RIDOH_NH_REPORTS||{}).updated)}.`}));
+  return sec;
+}
 function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
 function pbjInfo(ccn){ return (D[PBJ_KEY]||{})[ccn] || null; }
 
@@ -1628,7 +1675,7 @@ function viewAbout(){
   app.append(h("section",{style:"max-width:75ch"},
     h("h1",{text:"About the data"}),
     P(`Everything here comes from the Centers for Medicare & Medicaid Services (CMS) Care Compare nursing home files, which CMS publishes every month. This site keeps every monthly release since January 2019, so you can see how a home has changed over time, not just where it stands today. The newest data is from the ${D.meta.latest_label} release.`),
-    P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all: no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them.`),
+    P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all: no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them. RIDOH still inspects them, so each one's page lists RIDOH's inspection reports with plain-language summaries.`),
     h("h2",{text:"What the ratings mean",style:"margin-top:20px"}),
     P("CMS rates each home from 1 to 5 stars. The overall rating starts from the health inspection rating, then moves up or down based on staffing and quality measures. Inspection ratings are based on the last few years of inspections, so a home's rating can lag behind recent changes."),
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
@@ -1710,9 +1757,10 @@ function viewFacility(ccn){
 
   if (x.not_in_cms){
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Not Medicare-certified"}),
-      h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data. The star ratings, staffing hours, health inspections, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
-      h("p",null,"What's shown above (address, beds, ownership) comes from RIDOH's own facility licensing records. For anything else about this home, such as inspection history, complaints, or licensing status, contact RIDOH directly."),
+      h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data. The star ratings, staffing hours, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
+      h("p",null,"RIDOH still inspects this home. Its inspection reports are summarized below. The address, beds, and ownership above come from RIDOH's licensing records."),
       h("p",{style:"margin:0"}, h("a",{href:"https://healthri.mylicense.com/verification/",target:"_blank",rel:"noopener",text:"Verify this home's RIDOH license"}))));
+    app.append(ridohReports(x.ridoh_license_no || f.ridoh_license_no));
     return;
   }
 
