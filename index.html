@@ -338,6 +338,8 @@ footer p{max-width:90ch;margin:0 0 10px}
 .pop-name{font-weight:700;font-size:15px;margin:0 24px 4px 0}
 .pop-line{color:var(--muted);font-size:13px;margin:0 0 3px}
 .pop-btn{display:block;width:100%;margin-top:10px;font-family:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:none;border-radius:3px;padding:9px 12px;cursor:pointer}
+  ul.patterns { padding-left: 22px; }
+  ul.patterns li { margin: 0 0 10px; }
 </style>
 </head>
 <body>
@@ -348,6 +350,7 @@ footer p{max-width:90ch;margin:0 0 10px}
       <nav class="tabs" aria-label="Views">
         <a href="#home" id="tab-home" title="Every Rhode Island nursing home, with ratings, staffing, and inspections">All homes</a>
         <a href="#harms" id="tab-harms" title="Every citation in the past 12 months where a resident was harmed or at immediate risk">Recent harm citations</a>
+        <a href="#patterns" id="tab-patterns" title="What the harm citations of the past three years have in common">Patterns in harm citations</a>
         <a href="#owners" id="tab-owners" title="Homes grouped by the company or group that owns them">Owner groups</a>
         <a href="#about" id="tab-about" title="Where this data comes from and how to read it">About the data</a>
         <a class="ext first" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
@@ -1586,6 +1589,39 @@ function viewOwners(){
   );
 }
 
+// Patterns in harm citations: fixed text, counted by hand in November 2026 from the harm
+// citations and their plain-language summaries. Recount every 6 to 12 months (see the
+// ABC-RI sites reference file). Every string here has a Spanish entry in i18n-es.js.
+function viewPatterns(){
+  const P = (t)=>h("p",{text:t});
+  const LI = (b,t)=>h("li",null,h("strong",{text:b})," "+t);
+  app.append(h("section",{style:"max-width:75ch"},
+    h("h1",{text:"Patterns in harm citations"}),
+    h("p",{class:"lede",text:"We read every harm citation on this site from the last three years and sorted them by what actually happened."}),
+    P("From November 2023 to August 2026, CMS inspectors cited 55 Rhode\u00a0Island nursing homes 214 times for harming a resident or putting residents in immediate jeopardy. A few problems account for much of it:"),
+    h("ul",{class:"patterns"},
+      LI("Residents with dementia getting out.","19 times at 13 homes, 17 of them at the immediate jeopardy level. Residents were found in busy roads, outside in a snowstorm with frostbite, and at a coffee shop 13 miles away."),
+      LI("The wrong food or drink texture.","10 homes were cited at the immediate jeopardy level for serving food that wasn't pureed or ground as ordered, serving drinks that weren't thickened properly (often because staff thickened them by guesswork), or not acting when a resident was choking. Two residents choked to death."),
+      LI("Medication errors that hurt a resident.","25 citations at 19 homes. In 10 of them, a resident was given someone else's medicines."),
+      LI("Falls while staff helped a resident.","16 citations were for falls or injuries while staff helped a resident walk, move, turn in bed, or bathe, many with broken bones. In 8 of them, one aide did alone what the care plan said took two people."),
+      LI("One resident hurting another.","13 of the 19 abuse citations we have summarized were one resident against another, including 3 sexual assaults between residents with dementia.")
+    ),
+    P("Infection control is the citation the most homes get: 63 homes were cited at least once in these three years. It covers things like handwashing, wearing protective gear, keeping sick residents apart, cleaning shared equipment between residents, and keeping germs out of the water system. Most of these citations were at a lower level, but 7 homes were cited at the immediate jeopardy level. For example, staff shared blood sugar meters between residents without disinfecting them properly, a cook with COVID-19 worked without a mask before 26 residents tested positive, and a home skipped required water flushing and testing before a resident got Legionnaires' disease."),
+    h("h2",{text:"Questions to ask a nursing home",style:"margin-top:20px"}),
+    h("ul",{class:"patterns"},
+      h("li",{text:"How do you make thickened drinks? Who checks that each resident gets the diet the doctor ordered?"}),
+      h("li",{text:"If the care plan says two staff for a transfer, what happens when only one is free?"}),
+      h("li",{text:"How are wander alarms checked, and are every exit, stairwell, and elevator covered?"}),
+      h("li",{text:"How do nurses confirm a resident's identity before giving medications?"}),
+      h("li",{text:"What do you do to protect residents from a resident who is aggressive or wanders into rooms?"})
+    ),
+    h("p",null, "More questions are in our ", h("a",{href:"visit-checklist.pdf",target:"_blank",rel:"noopener",text:"printable visit checklist"}), " (", h("a",{href:"visit-checklist-large-print.pdf",target:"_blank",rel:"noopener",text:"large print version"}), ")."),
+    h("h2",{text:"How we counted",style:"margin-top:20px"}),
+    h("p",null, "We counted citations from CMS inspections dated November 8, 2023 to August 31, 2026, the newest in CMS's October 2026 files. A harm citation is severity G or higher, and immediate jeopardy is J or higher (see ", h("a",{href:"#about",text:"About the data"}), "). We grouped the harm citations by hand from our plain-language summaries of each inspection report, which cover 206 of the 214; one citation can fall in more than one group. The infection control count includes citations at every severity level. To see each citation from the past 12 months, go to ", h("a",{href:"#harms",text:"Recent harm citations"}), "."),
+    h("p",{class:"small",text:"Counted November 2026. We plan to update these counts every 6 to 12 months."})
+  ));
+}
+
 function viewAbout(){
   const gaps = []; for (let t = mi("2019-01"); t <= mi(LATEST); t++){ const m = Math.floor(t/12)+"-"+String(t%12+1).padStart(2,"0"); if (!M.includes(m)) gaps.push(mlabel(m)); }
   const P = (t)=>h("p",{text:t});
@@ -1958,9 +1994,10 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","owners","about"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  ["home","harms","patterns","owners","about"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
+  else if (hsh==="patterns") viewPatterns();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
   else viewHome();
