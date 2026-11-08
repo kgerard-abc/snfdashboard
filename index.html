@@ -1762,8 +1762,7 @@ function viewFacility(ccn){
   if (x.not_in_cms){
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Not Medicare-certified"}),
       h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data. The star ratings, staffing hours, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
-      h("p",null,"RIDOH still inspects this home. Its inspection reports are summarized below. The address, beds, and ownership above come from RIDOH's licensing records."),
-      h("p",{style:"margin:0"}, h("a",{href:"https://healthri.mylicense.com/verification/",target:"_blank",rel:"noopener",text:"Verify this home's RIDOH license"}))));
+      h("p",{style:"margin:0"},"RIDOH still inspects this home. Its inspection reports are summarized below. The address, beds, and ownership above come from RIDOH's licensing records.")));
     app.append(ridohReports(x.ridoh_license_no || f.ridoh_license_no));
     return;
   }
