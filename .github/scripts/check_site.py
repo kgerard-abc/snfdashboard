@@ -151,6 +151,16 @@ def check_snf():
         warn(f"{len(missing)} harm citation(s) from the last 120 days have no summary yet (first: {missing[0]})")
     if not os.path.exists("abcri-logo.png") and "data:image" not in html:
         err("logo is neither a file nor embedded")
+    # RIDOH inspection reports for homes CMS has no data on (pipeline/scripts/ridoh_reports.py)
+    if os.path.exists("pipeline/scripts/ridoh_reports.py"):
+        import subprocess
+        r = subprocess.run([sys.executable, "pipeline/scripts/ridoh_reports.py", "--check"], capture_output=True, text=True)
+        if r.returncode:
+            for line in r.stdout.splitlines():
+                if line.startswith("ERROR:"):
+                    err("RIDOH reports: " + line[7:])
+        if 'src="ridoh-reports.js"' not in html:
+            err("index.html does not load ridoh-reports.js")
 
 
 # ---------------------------------------------------------------- CEC sales site
