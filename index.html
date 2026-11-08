@@ -86,6 +86,7 @@ nav.tabs a.on{color:var(--ink);text-decoration:none;border-bottom-color:var(--in
 nav.tabs a.ext{display:inline-flex;align-items:center;gap:4px}nav.tabs a.ext.first{border-left:1px solid var(--line);padding-left:22px}
 nav.tabs a.ext svg{width:12px;height:12px;flex:none}
 .search{flex:1 1 300px;max-width:460px;position:relative;min-width:0}
+.list-search{margin:0 0 16px}
 .lang-toggle{font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:var(--r);padding:6px 14px;cursor:pointer}
 .lang-toggle:hover{background:var(--panel)}
 .lang-note{font-size:13px;color:var(--ink-2);margin:10px 0 0;max-width:640px}
@@ -357,13 +358,6 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a class="ext" href="visit-checklist.pdf" target="_blank" rel="noopener" title="Printable PDF: questions to ask and things to look for on a visit">Visit checklist <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist-large-print.pdf" target="_blank" rel="noopener" title="Same visit checklist in large print">Visit checklist (large print) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
       </nav>
-      <div class="search">
-        <div class="search-row">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
-          <input id="q" type="search" placeholder="Find a home by name or town" autocomplete="off" aria-label="Find a nursing home">
-        </div>
-        <div class="sugg" id="sugg" hidden></div>
-      </div>
       <button type="button" id="langToggle" class="lang-toggle" lang="es" aria-label="Cambiar a español">Español</button>
     </div>
     <p id="langNote" class="lang-note" hidden></p>
@@ -371,6 +365,14 @@ footer p{max-width:90ch;margin:0 0 10px}
   </div>
 </header>
 <main class="wrap" id="app"></main>
+<!-- The home search sits in the All homes list, under "Sort by distance from"; viewHome() moves it there. -->
+  <div class="search list-search" id="searchBox" hidden>
+    <div class="search-row">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+      <input id="q" type="search" placeholder="Find a home by name or town" autocomplete="off" aria-label="Find a nursing home">
+    </div>
+    <div class="sugg" id="sugg" hidden></div>
+  </div>
 <script id="zip-centers" type="application/json">{"02802":[41.95213,-71.45623],"02804":[41.43303,-71.77006],"02806":[41.73819,-71.32018],"02807":[41.17678,-71.57705],"02808":[41.40825,-71.74967],"02809":[41.67573,-71.27333],"02812":[41.47896,-71.65257],"02813":[41.39422,-71.66982],"02814":[41.89612,-71.6954],"02815":[41.77463,-71.64795],"02816":[41.6965,-71.62266],"02817":[41.63708,-71.67836],"02818":[41.64292,-71.48572],"02822":[41.56943,-71.62792],"02825":[41.78207,-71.72683],"02826":[41.98275,-71.65314],"02827":[41.69875,-71.73912],"02828":[41.87769,-71.56091],"02830":[41.97562,-71.65639],"02831":[41.76984,-71.60737],"02832":[41.51472,-71.72962],"02833":[41.48969,-71.77197],"02835":[41.51009,-71.37837],"02836":[41.45404,-71.62023],"02837":[41.51877,-71.16725],"02838":[41.96541,-71.47936],"02839":[41.94076,-71.64151],"02840":[41.47697,-71.31855],"02841":[41.51024,-71.32964],"02842":[41.51764,-71.27793],"02852":[41.58857,-71.45981],"02857":[41.82276,-71.63361],"02858":[41.96449,-71.65127],"02859":[41.95907,-71.75732],"02860":[41.87056,-71.38868],"02861":[41.8786,-71.35313],"02863":[41.89006,-71.39348],"02864":[41.96746,-71.42057],"02865":[41.91546,-71.44982],"02871":[41.58661,-71.25921],"02872":[41.59696,-71.32093],"02873":[41.53313,-71.78055],"02874":[41.50906,-71.47442],"02875":[41.45238,-71.64034],"02876":[41.99723,-71.58437],"02878":[41.60698,-71.18263],"02879":[41.42884,-71.53838],"02881":[41.47808,-71.52472],"02882":[41.41709,-71.47227],"02885":[41.72514,-71.2588],"02886":[41.70543,-71.45438],"02888":[41.74767,-71.40612],"02889":[41.70059,-71.37693],"02891":[41.35777,-71.78962],"02892":[41.49712,-71.5942],"02893":[41.6796,-71.52111],"02894":[41.44425,-71.6993],"02895":[42.00171,-71.49995],"02896":[41.97519,-71.54407],"02898":[41.51764,-71.66852],"02903":[41.81823,-71.40909],"02904":[41.85833,-71.43629],"02905":[41.78473,-71.3961],"02906":[41.84017,-71.39041],"02907":[41.79859,-71.42463],"02908":[41.83982,-71.43679],"02909":[41.8212,-71.45338],"02910":[41.775,-71.43559],"02911":[41.85489,-71.47281],"02912":[41.82559,-71.40224],"02914":[41.81512,-71.36577],"02915":[41.77285,-71.35484],"02916":[41.84266,-71.35244],"02917":[41.90629,-71.52381],"02919":[41.82744,-71.51988],"02920":[41.76734,-71.46551],"02921":[41.76075,-71.51465]}</script>
 
 <script src="data.js"></script>
@@ -1098,6 +1100,8 @@ function barChart(opts){
 
 // ---------- search
 const qEl = document.getElementById("q"), sugg = document.getElementById("sugg");
+const searchBox = document.getElementById("searchBox");   // shown only in the All homes list
+searchBox.remove(); searchBox.hidden = false;
 const searchIndex = FAC.map(f => ({f, text:(f.name+" "+(f.former_names||"")+" "+(f.city||"")+" "+(f.town||"")+" "+((f.x||{}).owner_group||"")+" "+(f.cms_chain||"")+" "+(f.legal_business_name||"")).toLowerCase()}));
 let suggIdx = -1, suggList = [];
 function renderSugg(){
@@ -1491,7 +1495,7 @@ function homesTable(){
   sec.append(
     h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
-    nearRow, sortRow,
+    nearRow, searchBox, sortRow,
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
       h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ",
