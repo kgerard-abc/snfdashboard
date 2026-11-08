@@ -643,7 +643,6 @@ window.RINH_ES = {
   "Try different approaches before using a bed rail.  If a bed rail is needed, the facility must (1) assess a resident for safety risk; (2) review these risks and benefits with the resident/representative; (3) get informed consent; and (4) Correctly install and maintain the bed rail.": "Intentar enfoques diferentes antes antes de usar barandas para cama.  Si se requieren barandas para cama, el centro debe (1) evaluar al residente en cuanto a riesgo de seguridad; (2) revisar esos riesgos y beneficios con el residente o su representante; (3) obtener consentimiento informado; e (4) instalar y mantener correctamente las barandas para cama.",
   "Use approved construction type or materials.": "Utilizar tipos o materiales de construcción aprobados.",
   "Use Ctrl + scroll to zoom the map": "Use Ctrl + desplazamiento para acercar el mapa",
-  "Verify this home's RIDOH license": "Verifique la licencia de RIDOH de este hogar",
   "Visit checklist": "Lista para visitas",
   "Visit checklist (large print)": "Lista para visitas (letra grande)",
   "We couldn't work out your location.": "No pudimos determinar su ubicación.",
