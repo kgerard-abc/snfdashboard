@@ -55,7 +55,7 @@
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
-.wrap{max-width:1120px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0 96px}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0 96px}
 @media (max-width:560px){.wrap{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}}
 a{color:inherit;text-decoration:underline}
 a:hover{color:var(--ink)}
@@ -73,17 +73,17 @@ h3{font-size:16px;font-weight:600}
 .eyebrow{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
 
 /* masthead */
-header.masthead .wrap{padding-block:48px 0}
-@media (max-width:560px){header.masthead .wrap{padding-block:32px 0}}
+header.masthead .wrap{padding-block:34px 0}
+@media (max-width:560px){header.masthead .wrap{padding-block:22px 0}}
 .site-logo-link{display:inline-block;text-decoration:none}
 .site-logo{height:76px;width:auto;display:block;margin:0 0 22px}
 @media (max-width:560px){.site-logo{height:60px}}
 .mast-row{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px}
-nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
-nav.tabs a{padding:7px 12px;border-radius:var(--r);text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500}
-nav.tabs a:hover{background:var(--panel)}
-nav.tabs a.on{background:var(--ink);color:var(--bg)}
-nav.tabs a.ext{border-left:1px solid var(--line);margin-left:6px;padding-left:16px;display:inline-flex;align-items:center;gap:4px}
+nav.tabs{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center}
+nav.tabs a{padding:3px 0;color:var(--accent);font-size:15px;font-weight:600;white-space:nowrap;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;border-bottom:3px solid transparent}
+nav.tabs a:hover,nav.tabs a:focus-visible{text-decoration-thickness:2px}
+nav.tabs a.on{color:var(--ink);text-decoration:none;border-bottom-color:var(--ink)}
+nav.tabs a.ext{display:inline-flex;align-items:center;gap:4px}nav.tabs a.ext.first{border-left:1px solid var(--line);padding-left:22px}
 nav.tabs a.ext svg{width:12px;height:12px;flex:none}
 .search{flex:1 1 300px;max-width:460px;position:relative;min-width:0}
 .lang-toggle{font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:var(--r);padding:6px 14px;cursor:pointer}
@@ -350,7 +350,7 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a href="#harms" id="tab-harms" title="Every citation in the past 12 months where a resident was harmed or at immediate risk">Recent harm citations</a>
         <a href="#owners" id="tab-owners" title="Homes grouped by the company or group that owns them">Owner groups</a>
         <a href="#about" id="tab-about" title="Where this data comes from and how to read it">About the data</a>
-        <a class="ext" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
+        <a class="ext first" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist.pdf" target="_blank" rel="noopener" title="Printable PDF: questions to ask and things to look for on a visit">Visit checklist <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist-large-print.pdf" target="_blank" rel="noopener" title="Same visit checklist in large print">Visit checklist (large print) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
       </nav>
@@ -1958,7 +1958,7 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","owners","about"].forEach(t => document.getElementById("tab-"+t).classList.toggle("on", hsh===t || (t==="home" && (hsh===""||hsh==="list"))));
+  ["home","harms","owners","about"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
   else if (hsh==="owners") viewOwners();
