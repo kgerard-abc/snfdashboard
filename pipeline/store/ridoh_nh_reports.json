@@ -552,7 +552,7 @@
      "date": "2023-12-07",
      "type": "Annual inspection",
      "no_findings": false,
-     "tier": "serious",
+     "tier": "most_serious",
      "headline": "Two residents lost weight; doctor and dietitian not told",
      "paragraphs": [
       "M710: Weight loss not reported / One resident with Alzheimer's disease lost 10 pounds between October 1 and December 1, 2023, and another lost 9.2 pounds in less than a month. Neither the doctor nor the dietitian was told. Inspectors saw one resident asleep at lunch three days in a row while staff took the tray away without helping, and the meal was charted as refused.",
