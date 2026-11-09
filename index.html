@@ -283,6 +283,7 @@ body.cmp-on{padding-bottom:84px}
 .ombuds{margin:20px 0 0;max-width:640px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;font-size:16px;line-height:1.5}
 .ombuds strong{display:block;margin-bottom:2px}
 .ombuds a{color:var(--ink);font-weight:700;white-space:nowrap}
+.ombuds a.ombuds-name{font-weight:600;white-space:normal}
 .care h2{margin-top:28px}
 .care .card h3{margin:0 0 6px}
 .care .card p{margin:0 0 10px;line-height:1.55}
@@ -1213,6 +1214,7 @@ function viewHome(){
         h("div",{class:"learn-more-body"},
           h("p",null,"Long-term care for adults in RI generally falls into three categories: skilled nursing facilities (SNFs, what this site covers), assisted living residences (ALRs, also called ALFs), and various supportive residences for people with developmental disabilities or other special needs."),
           h("p",null,"Nursing homes are appropriate for residents receiving most kinds of nursing care, or who can't transfer in and out of bed without help from two or more staff members. They're certified and rated by CMS, which is what this site tracks. Assisted living residences may be appropriate for residents who need help with daily activities like bathing, dressing, and medication management, but not skilled nursing care; they're regulated only by the state (RIDOH), not CMS, so they don't get star ratings."),
+          h("p",null,"Some assisted living residences have a special license for a secure dementia care (“memory care”) unit and/or limited health services (wound care, ostomy care, urinary catheter care), as well."),
           h("p",null,"Looking for an assisted living residence instead? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site."),
           h("p",null,"More, including who pays for each: ", h("a",{href:"#care",text:"Which kind of care?"}))
         )
@@ -2044,10 +2046,11 @@ function viewFacility(ccn){
 
 // The Long-Term Care Ombudsman Program's number, on the home page and the "Which kind of care?" page.
 // Source: RI Office of Healthy Aging, oha.ri.gov/what-we-do/protect/ombudsman-program (checked November 8, 2026).
+// The program's name links to risltcop.org, which forwards to the Alliance for Better Long Term Care's Ombudsman Program page.
 function ombudsBox(){
   return h("aside",{class:"ombuds","aria-label":"Long-Term Care Ombudsman Program"},
     h("strong",{text:"Have a concern about care?"}),
-    h("span",{text:"The Rhode Island Long-Term Care Ombudsman Program advocates for residents of nursing homes and assisted living residences. Residents and families can call"}), " ",
+    h("a",{class:"ombuds-name", href:"https://risltcop.org/", target:"_blank", rel:"noopener", text:"The Rhode Island Long-Term Care Ombudsman Program"}), " ", h("span",{text:"advocates for residents of nursing homes and assisted living residences. Residents and families can call"}), " ",
     h("a",{href:"tel:+14017853340",text:"401-785-3340"}), " ", h("span",{text:"(toll-free"}), " ", h("a",{href:"tel:+18883510808",text:"1-888-351-0808"}), ").");
 }
 
@@ -2067,7 +2070,8 @@ function viewCare(){
         h("p",null, h("a",{href:"#home",text:"Look up a nursing home on this site"}))),
       h("div",{class:"card"},
         h("h3",{text:"Assisted living residences"}),
-        P("Assisted living residences fit people who need help with daily activities like bathing and dressing, or with managing medications (including insulin). They also provide housekeeping, laundry, transportation, activities, and meals. Some have secure units with special care for residents living with dementia, and some hold a “limited health services” license that lets them provide some nursing care, such as simple wound care and urinary catheter care."),
+        P("Assisted living residences fit people who need help with daily activities like bathing and dressing, or with managing medications (including insulin). They also provide housekeeping, laundry, transportation, activities, and meals."),
+        P("Some have a special license for a secure dementia care (“memory care”) unit. Some hold a “limited health services” license, which allows them to provide certain kinds of nursing care beyond typical assisted living: stage I and II pressure ulcer prevention and treatment; simple wound care, including postoperative suture care/removal and stasis ulcer care; ostomy care for residents with an established stoma; and urinary catheter care. Our assisted living site shows whether each residence has a dementia care unit or limited health services."),
         P("They are regulated only by the state (RIDOH), not by CMS, so they don't get star ratings."),
         h("p",null, ext("https://alinspections.abc-ri.org/","Look up an assisted living residence on our assisted living site")))),
     h("h2",{text:"Who pays"}),
@@ -2078,7 +2082,7 @@ function viewCare(){
         h("p",null, h("span",{text:"Medicare does not pay for long-term care. For a long stay, residents pay privately or, if they qualify, through Medicaid."}), " ", ext("https://www.medicare.gov/coverage/long-term-care","Medicare's explanation"))),
       h("div",{class:"card"},
         h("h3",{text:"Assisted living residences"}),
-        P("Medicare does not pay for assisted living. Most residences are private pay only, but some take part in state waiver programs that let residents pay through Medicaid or SSI. Most residences that accept Medicaid require residents to pay privately for 2 to 3 years before they can switch to Medicaid. Policies differ, so call each residence and ask."))),
+        P("Medicare does not pay for assisted living. Most residences are private pay only, but some take part in state waiver programs that let residents pay through Medicaid or SSI. Some residences that accept Medicaid require residents to pay privately for 2 to 3 years before they can switch to Medicaid. Policies differ, so call each residence and ask. Our assisted living site shows which residences accept Medicaid."))),
     h("h2",{text:"What the data can tell you"}),
     h("div",{class:"grid g2"},
       h("div",{class:"card"},
