@@ -195,6 +195,9 @@ td.home{min-width:150px}
 .ttk ul{margin:0;padding-left:20px}
 .ttk li{margin:0 0 6px;line-height:1.45;font-size:14.5px}
 .ttk li:last-child{margin-bottom:0}
+.repeat-box{border-left-color:var(--orange)}
+.repeat-box li{margin-bottom:10px}
+.repeat-box .rp-dates span{white-space:nowrap}
 .sale-line{margin:0 0 6px}
 .fac-head{margin-top:12px;display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between}
 .fac-head .meta{color:var(--ink-2);font-size:14px;margin-top:6px}
@@ -947,6 +950,51 @@ FAC.forEach(f => {
     compl3: c.filter(r=>r[3]).length, fines3: p.filter(r=>r[1]==="Fine").reduce((a,r)=>a+(r[2]||0),0), nfines3: p.filter(r=>r[1]==="Fine").length
   };
 });
+// Repeat problems: the same kind of problem cited at 3 or more inspections (distinct survey dates) in
+// the 3 years counted above, using CMS's citation tags. The assisted living site has the same groups,
+// sorted by hand from RIDOH's findings. Every string here has a Spanish entry in i18n-es.js.
+const REPEAT_MIN = 3;
+const REPEAT_CATS = [
+  {k:"med", label:"Medication errors", tags:["F0759","F0760"],
+   ask:["How do nurses confirm a resident's identity before giving medications? What does your training around medication administration look like?"]},
+  {k:"acc", label:"Accidents and supervision (falls, wandering, elopement)", tags:["F0689"],
+   ask:["How are wander alarms checked, and are every exit, stairwell, and elevator covered?",
+        "If the care plan says two staff for a transfer, what happens when only one is free?"]},
+  {k:"care", label:"Assessments and care plans", tags:["F0636","F0637","F0641","F0655","F0656","F0657"],
+   ask:["How do you make sure a resident's care plan is updated when their needs change, and how is the family involved?"]},
+  {k:"abuse", label:"Abuse, neglect, and resident-to-resident harm", tags:["F0600","F0602","F0603","F0606","F0607","F0609","F0610"],
+   ask:["What do you do to protect residents from a resident who is aggressive or wanders into rooms?",
+        "How do you screen and supervise staff, and how quickly do you report suspected abuse?"]},
+  {k:"kitchen", label:"Kitchen and food safety", tags:["F0805","F0808","F0812","F0813","F0814"],
+   ask:["Who checks that the kitchen is clean and that each resident gets the diet the doctor ordered?"]},
+  {k:"infection", label:"Infection control", tags:["F0880"],
+   ask:["How do you check that staff wash their hands and use protective gear, and what do you do when an infection spreads?"]},
+  {k:"wounds", label:"Pressure sores and wound care", tags:["F0686"],
+   ask:["How often is each resident's skin checked, and who makes sure residents who can't move on their own are turned?"]}
+];
+const REPEAT_HOW = "How we count: a problem is listed when CMS inspectors cited it at 3 or more separate inspections in the last 3 years, counting citations Care Compare still lists. Citations from the same inspection date count once. The groups use CMS's citation tags: medication errors F759 and F760; accidents and supervision F689, which covers falls, wandering, and elopement; assessments and care plans F636, F637, F641, and F655 to F657; abuse, neglect, and resident-to-resident harm F600, F602, F603, F606, F607, F609, and F610, which include not reporting or investigating it; kitchen and food safety F805, F808, and F812 to F814, which include diets a doctor ordered; infection control F880; pressure sores F686. A citation can be at any severity level. The inspections are listed below.";
+const REPEATS = {};
+FAC.forEach(f => {
+  if (!f.ccn) return;
+  const c = (D.citations[f.ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7]);
+  REPEATS[f.ccn] = REPEAT_CATS.map(cat => {
+    const dates = [...new Set(c.filter(r => cat.tags.includes(r[1])).map(r => r[0]))].sort();
+    return dates.length >= REPEAT_MIN ? {c:cat, dates} : null;
+  }).filter(Boolean).sort((a,b) => b.dates.length - a.dates.length);
+});
+function repeatBox(ccn){
+  const reps = REPEATS[ccn] || [];
+  if (!reps.length) return null;
+  return h("div",{class:"ttk repeat-box"},
+    h("h2",{text:"Repeat problems: questions to ask"}),
+    h("p",{style:"margin:0 0 8px",text:"In the last 3 years, CMS inspectors cited this home for the same kind of problem at 3 or more inspections. You might ask the administrator what they are doing about it."}),
+    h("ul",null, reps.map(x => h("li",null,
+      h("div",null, h("strong",{text:x.c.label}), " ", h("span",{text:"(" + x.dates.length + " inspections)"})),
+      h("div",{class:"small rp-dates"}, x.dates.map((d,i) => [i ? " · " : null, h("span",{text:dlabel(d)})])),
+      x.c.ask.map(q => h("div",null, h("strong",{text:"Ask:"}), " ", h("span",{text:q})))
+    ))),
+    h("p",{class:"small",style:"margin:8px 0 0",text:REPEAT_HOW}));
+}
 // operator-name changes (likely ownership changes)
 function operatorChanges(ccn){
   const L = (D.names[ccn]||[]).filter(r=>r[0]==="L").sort((a,b)=>a[2]<b[2]?-1:1);
@@ -1304,6 +1352,7 @@ function cmpOpen(){
       row("Turnover", val("turnover",1,"%")),
       row("Harm citations (3 yrs)", f => st(f).harm3==null ? "–" : String(st(f).harm3)),
       row("Immediate jeopardy (3 yrs)", f => st(f).ij3==null ? "–" : String(st(f).ij3)),
+      row("Repeat problems (3+ inspections)", f => (REPEATS[f.ccn]||[]).length ? h("div",null, REPEATS[f.ccn].map((x,i) => [i ? h("br") : null, h("span",{text:x.c.label})])) : "–"),
       row("Fines (3 yrs)", f => st(f).fines3==null ? "–" : money(st(f).fines3)),
       row("Beds", f => f.beds==null ? "–" : String(Math.round(f.beds))),
       row("Phone", f => f.phone ? h("a",{href:"tel:+1"+String(f.phone).replace(/\D/g,"").slice(-10),text:phone(f.phone)}) : "–")));
@@ -1386,6 +1435,7 @@ function homesTable(){
       const flags = [];
       const sff = (ser(f.ccn,"sff"))[LI]; if (sff) flags.push(h("span",{class:"chip bad",title:sff==="SFF"?SFFTXT.SFF:SFFTXT.cand,text:sff==="SFF"?"Special Focus":"Special Focus candidate"}));
       if ((ser(f.ccn,"abuse"))[LI]) flags.push(h("span",{class:"chip bad",text:"Cited for abuse"}));
+      if ((REPEATS[f.ccn]||[]).length) flags.push(h("span",{class:"chip warn",text:"Repeat problems"}));
       if ((f.x||{}).not_in_cms) flags.push(h("span",{class:"chip plain",title:"Licensed by RIDOH but not certified by Medicare/Medicaid, so CMS publishes none of the usual ratings, staffing, or inspection data for it.",text:"Not Medicare-certified"}));
       else if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:"Closed"}));
       const pbj0 = pbjInfo(f.ccn);
@@ -1540,7 +1590,7 @@ function homesTable(){
     nearRow, searchBox, sortRow,
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
       h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
-        h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ",
+        h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ", h("strong",{text:"Repeat problems"}), ": cited for the same kind of problem, such as medication errors or kitchen and food safety, at 3 or more inspections in the last 3 years. The home's page lists them, with questions to ask. ",
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Adjusted nurse hrs, 12-month average"}), ": the same adjusted hours averaged over the last four quarters of payroll data, so one unusual quarter can't make a home look much better or worse than its usual staffing. Shown only when CMS has all four quarters. ",
@@ -1767,6 +1817,7 @@ function viewFacility(ccn){
     const ttk = thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOperator);
     const ttkList = h("ul",null, ttk.map(t=>h("li",{text:t})));
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Things to know"}), ttkList));
+    const rb = repeatBox(ccn); if (rb) app.append(rb);
     salesReady.then(() => {
       const dd = document.getElementById("sale-dd"), dt = document.getElementById("sale-dt");
       if (!dd || !dd.isConnected || location.hash !== "#f-" + ccn) return;
