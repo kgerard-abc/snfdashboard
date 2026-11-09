@@ -302,32 +302,34 @@ a[href^="tel:"]{white-space:nowrap}
   html.ps-on #print-root{display:block !important}
 }
 #print-root,#print-root *{color:#000 !important;background:transparent !important;font-family:Helvetica,Arial,sans-serif !important;box-shadow:none !important}
-#print-root{font-size:11pt;line-height:1.25}
+#print-root{font-size:11pt;line-height:1.4}
 html[data-print="lp"] #print-root{font-size:14pt}
 #print-root a{text-decoration:none}
-#print-root .ps-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12pt;border-bottom:1pt solid #000;padding-bottom:5pt;margin-bottom:8pt}
+#print-root .ps-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12pt;border-bottom:1pt solid #000;padding-bottom:6pt;margin-bottom:14pt}
 #print-root .ps-logo{height:0.6in;width:auto}
 #print-root .ps-site{display:flex;align-items:center;gap:8pt;text-align:right;font-size:0.9em}
 #print-root .ps-top .ps-qr svg{width:1.8cm;height:1.8cm}
 html[data-print="lp"] #print-root .ps-top .ps-qr svg{width:2.6cm;height:2.6cm}
 #print-root .ps-url{font-weight:700}
-#print-root h1{font-size:1.6em;line-height:1.2;margin:0 0 4pt}
-#print-root h2{font-size:1.15em;margin:9pt 0 3pt;break-after:avoid;page-break-after:avoid}
+#print-root h1{font-size:1.6em;line-height:1.2;margin:0 0 6pt}
+#print-root h2{font-size:1.15em;margin:16pt 0 5pt;break-after:avoid;page-break-after:avoid}
 #print-root h1,#print-root h2{break-inside:avoid}
 #print-root p,#print-root li{orphans:3;widows:3;text-wrap:pretty}
-#print-root p{margin:0 0 5pt}
-#print-root .ps-meta{margin:0 0 2pt}
-#print-root ul{margin:0 0 6pt;padding-left:1.2em}
-#print-root li{margin:0 0 3pt;break-inside:avoid}
-#print-root .ps-two{display:grid;grid-template-columns:1.25fr 1fr;gap:0 16pt;break-inside:avoid}
+#print-root p{margin:0 0 7pt}
+#print-root .ps-meta{margin:0 0 3pt}
+#print-root ul{margin:0 0 8pt;padding-left:1.2em}
+#print-root li{margin:0 0 5pt;break-inside:avoid}
+#print-root .ps-two{display:grid;grid-template-columns:1.25fr 1fr;gap:0 28pt;break-inside:avoid;margin-bottom:6pt}
 html[data-print="lp"] #print-root .ps-two{grid-template-columns:1fr}
 #print-root .ps-kv{margin:0}
 #print-root .ps-kv dt{display:inline;font-weight:700}
 #print-root .ps-kv dt::after{content:" "}
 #print-root .ps-kv dd{display:inline;margin:0}
-#print-root .ps-kv dd::after{content:"";display:block}
+#print-root .ps-kv dd::after{content:"";display:block;margin-bottom:3pt}
+#print-root .ps-lines>div{margin-bottom:3pt}
+#print-root .ps-nw{white-space:nowrap}
 #print-root .ps-k{font-weight:700}
-#print-root .ps-home{border-top:1pt solid #000;padding:5pt 0;break-inside:avoid}
+#print-root .ps-home{border-top:1pt solid #000;padding:8pt 0;break-inside:avoid}
 #print-root .ps-tbl{border-collapse:collapse;width:100%;margin:6pt 0}
 #print-root .ps-tbl th,#print-root .ps-tbl td{border:1pt solid #000;padding:3pt 5pt;text-align:left;vertical-align:top}
 #print-root .ps-tbl tr{break-inside:avoid}
@@ -339,7 +341,7 @@ html[data-print="lp"] #print-root .ps-qr svg{width:3cm;height:3cm}
 #print-root .ps-url{white-space:nowrap}
 #print-root .ps-qrs .ps-qr svg{width:2cm;height:2cm}
 #print-root .ps-src,#print-root .ps-foot{font-size:0.85em}
-#print-root .ps-foot{border-top:1pt solid #000;padding-top:4pt;margin-top:10pt}
+#print-root .ps-foot{border-top:1pt solid #000;padding-top:6pt;margin-top:18pt}
 
 .care p,.care li{text-wrap:pretty}
 .care h2{margin-top:28px}
@@ -2348,7 +2350,7 @@ async function printSheet(buildFor, large, qrUrl, qrNote){
   html.setAttribute("data-print", large ? "lp" : "std");
   // Standard print: try the full sheet, then shorter versions, until it fits on one letter page
   // (7.5 by 10 inches inside half-inch margins). Large print keeps everything and runs onto more pages.
-  for (let level = 0; level <= 3; level++){
+  for (let level = 0; level <= 4; level++){
     const root = fillSheet(buildFor(level), qrUrl, qrNote);
     if (large) break;
     root.style.cssText = "display:block;position:absolute;left:-10000px;top:0;width:7.5in;visibility:hidden";
@@ -2396,7 +2398,7 @@ const starsTxt = r => r == null ? "Not rated" : r + " of 5 stars";
 function rehabLines(ccn){   // the short-stay measures as plain lines (same wording as the hospital page)
   const q = (D.qrp||{})[ccn] || {}, plain = qrpPlain(q.dtc_cmp), out = [];
   const back = homeQM(ccn,"521"), er = homeQM(ccn,"522"), riB = riLast("521"), riE = riLast("522");
-  const line = (k, v, note) => h("div",null, h("span",{class:"ps-k",text:k}), " ", h("span",{text:v}), note ? [" ", h("span",{text:note})] : null);
+  const line = (k, v, note) => h("div",null, h("span",{class:"ps-k",text:k}), " ", h("span",{text:v}), note ? [" ", h("span",{class:"ps-nw",text:note})] : null);
   out.push(q.dtc != null ? line("Returned home:", fmt(q.dtc,1) + "%", plain ? "(" + plain + ")" : null)
     : line("Returned home:", plain ? plain[0].toUpperCase() + plain.slice(1) : "Not reported"));
   out.push(line("Back to the hospital:", back != null ? fmt(back,1) + "%" : "Not reported", back != null && riB ? "(RI average " + fmt(riB[1],1) + "%)" : null));
@@ -2410,8 +2412,8 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
   const li = f.status === "Open" ? LI : M.indexOf(f.last_month);
   const kv = (k, v) => v == null || v === "" ? null : [h("dt",{text:k}), h("dd",{text:v})];
   root.append(h("h1",{text:f.name}),
-    h("p",{class:"ps-meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ")}),
-    f.phone ? h("p",{class:"ps-meta"}, h("span",{text:"Phone:"}), " ", h("span",{text:phone(f.phone)})) : null);
+    h("p",{class:"ps-meta"}, h("span",{text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ")}),
+      f.phone ? [" \u00B7 ", h("span",{class:"ps-nw",text:phone(f.phone)})] : null));
   if (x.not_in_cms){
     root.append(h("p",{text:"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so CMS publishes no ratings, staffing, or inspection data for it. RIDOH's inspection reports for it are summarized on our website."}),
       null);
@@ -2428,28 +2430,27 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
       [h("dt",{text:"Star ratings"}), h("dd",null,
         [["Overall","overall"],["Inspections","health"],["Staffing","staffing"],["Quality","qm"]].map(([t,k], i) => { const r = at(ccn,k,li);
           return [i ? " \u00B7 " : null, h("span",{text:t}), " ", h("strong",{text: r == null ? "–" : String(r)})]; }),
-        " ", h("span",{text:"(out of 5 stars)"}))],
-      hp != null ? kv("Nurse staff hours per resident per day", fmt(hp) + (riH != null ? " (RI average " + fmt(riH) + ")" : "")) : null,
-      tv != null ? kv("Nursing staff turnover", fmt(tv,1) + "%" + (riT != null ? " (RI average " + fmt(riT,1) + "%)" : "")) : null,
+        " ", h("span",{class:"ps-nw",text:"(out of 5 stars)"}))],
+      hp != null ? [h("dt",{text:"Nurse staff hours per resident per day"}), h("dd",null, h("span",{text:fmt(hp)}), riH != null ? [" ", h("span",{class:"ps-nw",text:"(RI average " + fmt(riH) + ")"})] : null)] : null,
+      tv != null ? [h("dt",{text:"Nursing staff turnover"}), h("dd",null, h("span",{text:fmt(tv,1) + "%"}), riT != null ? [" ", h("span",{class:"ps-nw",text:"(RI average " + fmt(riT,1) + "%)"})] : null)] : null,
       kv("Owner group", x.owner_group),
-      kv("Operator (legal name)", f.legal_business_name),
       pending.length ? kv("Sale", "Pending sale to " + (pending[0].buyer || "a new owner")) : null)),
       h("div",null, h("h2",{text:"Short stays for rehab"}), h("div",{class:"ps-lines"}, rehabLines(ccn)))),
     h("h2",{text:"Things to know"}),
-    h("ul",null, thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOp).map(t => h("li",{text:t}))));
+    h("ul",null, thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOp).slice(0, level >= 4 ? 3 : 5).map(t => h("li",{text:t}))));
 
   // harm citations in the past 3 years, newest first, with ABC-RI's plain-language summary when there is one
   const harms = (D.citations[ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7] && "GHIJKL".includes(r[2])).sort((a,b) => a[0] < b[0] ? 1 : -1);
   root.append(h("h2",{text:"Harm citations in the past 3 years"}),
     h("p",null, h("span",{text:`Harm citations: ${st.harm3||0}. Immediate jeopardy: ${st.ij3||0}. Fines: ${money(st.fines3||0)}.`})));
   if (harms.length){
-    const nSum = [2,1,1,0][level];
+    const nSum = [2,1,1,0,0][level];
     if (nSum) root.append(h("ul",{class:"ps-harms"}, harms.slice(0,nSum).map(r => {
       const hs = harmSummary(ccn, r);
       return h("li",null, h("strong",{text:dlabel(r[0])}), " ", h("span",{text:"JKL".includes(r[2]) ? "(immediate jeopardy)" : "(harm)"}), " ",
         h("span",{text: hs || (D.tags[r[1]]||["",""])[1] || (D.tags[r[1]]||[""])[0]}));
     })));
-    if (harms.length > nSum) root.append(h("p",{text:`See all ${harms.length} on our website.`}));
+    if (harms.length > nSum) root.append(h("p",{text:`To read all ${harms.length}, scan the code at the top of this page or go to snfdashboard.abc-ri.org/#f-${ccn}.`}));
   }
 
   // questions built from this home's own record
@@ -2462,7 +2463,7 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
   if (sr != null && sr <= 2) qs.push("How many residents does each nurse and nursing assistant care for, on day, evening, and night shifts?");
   if (tv != null && riT != null && tv > riT) qs.push("How long have the director of nursing and the administrator worked here?");
   qs.push("May I see the home's most recent inspection report?");
-  root.append(h("h2",{text:"Questions to ask, from this home's record"}), h("ul",null, qs.slice(0, level >= 2 ? 3 : 5).map(q => h("li",{text:q}))));
+  root.append(h("h2",{text:"Questions to ask, from this home's record"}), h("ul",null, qs.slice(0, level >= 4 ? 2 : level >= 2 ? 3 : 5).map(q => h("li",{text:q}))));
 };}
 
 // the compare view, up to 3 homes side by side
