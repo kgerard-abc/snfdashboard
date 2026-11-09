@@ -2395,6 +2395,17 @@ function psQR(url, label){
   return h("div",{class:"ps-qrrow"}, box, h("div",null, h("div",{text:label}), h("div",{class:"ps-url",text:url.replace(/^https:\/\//,"")})));
 }
 const starsTxt = r => r == null ? "Not rated" : r + " of 5 stars";
+// The RI median (the middle home) for harm and immediate jeopardy citations in the past 3 years, from the
+// same counts as each home's (STATS), over the open, Medicare-certified homes. kg chose the median over the
+// average because a few homes with many citations pull the average up (November 2026: average 3.0 harm and
+// 1.5 immediate jeopardy, median 2 and 0.5).
+function riMedian(key){
+  const v = FAC.filter(f => f.status === "Open" && f.ccn && !(f.x||{}).not_in_cms && STATS[f.ccn]).map(f => STATS[f.ccn][key] || 0).sort((a,b) => a-b);
+  if (!v.length) return null;
+  const m = v.length >> 1, med = v.length % 2 ? v[m] : (v[m-1] + v[m]) / 2;
+  return Number.isInteger(med) ? String(med) : med.toFixed(1);
+}
+const medianLine = () => `RI median per home, past 3 years: ${riMedian("harm3")} harm citations, ${riMedian("ij3")} immediate jeopardy.`;
 function rehabLines(ccn){   // the short-stay measures as plain lines (same wording as the hospital page)
   const q = (D.qrp||{})[ccn] || {}, plain = qrpPlain(q.dtc_cmp), out = [];
   const back = homeQM(ccn,"521"), er = homeQM(ccn,"522"), riB = riLast("521"), riE = riLast("522");
@@ -2442,7 +2453,10 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
   // harm citations in the past 3 years, newest first, with ABC-RI's plain-language summary when there is one
   const harms = (D.citations[ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7] && "GHIJKL".includes(r[2])).sort((a,b) => a[0] < b[0] ? 1 : -1);
   root.append(h("h2",{text:"Harm citations in the past 3 years"}),
-    h("p",null, h("span",{text:`Harm citations: ${st.harm3||0}. Immediate jeopardy: ${st.ij3||0}. Fines: ${money(st.fines3||0)}.`})));
+    h("div",{class:"ps-lines"},
+      h("div",null, h("span",{class:"ps-k",text:"Harm citations:"}), " ", h("span",{text:String(st.harm3||0)}), " ", h("span",{class:"ps-nw",text:"(RI median " + riMedian("harm3") + ")"})),
+      h("div",null, h("span",{class:"ps-k",text:"Immediate jeopardy:"}), " ", h("span",{text:String(st.ij3||0)}), " ", h("span",{class:"ps-nw",text:"(RI median " + riMedian("ij3") + ")"})),
+      h("div",null, h("span",{class:"ps-k",text:"Fines:"}), " ", h("span",{text:money(st.fines3||0)}))));
   if (harms.length){
     const nSum = [2,1,1,0,0][level];
     if (nSum) root.append(h("ul",{class:"ps-harms"}, harms.slice(0,nSum).map(r => {
@@ -2472,6 +2486,7 @@ function compareSheet(homes){ return root => {
   const val = (k, dp, unit) => f => { const v = lastVal(ser(f.ccn,k))[0]; return v==null ? "–" : fmt(v,dp) + (unit||""); };
   const row = (label, cell) => h("tr",null, h("th",{scope:"row",text:label}), homes.map(f => { const v = cell(f); return typeof v === "string" ? h("td",{text:v}) : h("td",null,v); }));
   root.append(h("h1",{text:"Comparing nursing homes"}),
+    h("p",{class:"ps-meta",text:medianLine()}),
 
     h("table",{class:"ps-tbl"},
       h("thead",null, h("tr",null, h("td"), homes.map(f => h("th",{scope:"col",text:f.name})))),
@@ -2499,6 +2514,7 @@ function rehabSheet(reg, list, showAll){ return root => {
     h("h2",{text:reg.n}),
     h("p",{class:"ps-meta",text:reg.towns}),
     h("p",{class:"ps-meta",text: showAll ? "All nursing homes in this part of the state, highest rated first." : "Nursing homes rated 4 or 5 stars overall by Medicare, highest rated first."}),
+    h("p",{class:"ps-meta",text:medianLine()}),
     ...list.map(f => { const st = STATS[f.ccn] || {}, pend = (((SALES && SALES.homes) || {})[f.ccn] || []).some(e => e.pending), sff = ser(f.ccn,"sff")[LI];
       return h("div",{class:"ps-home"},
         h("div",null, h("strong",{text:f.name})),

@@ -1005,4 +1005,9 @@ window.RINH_ES = {
   "Also on this page:": "También en esta página:",
   "(RI average {n})": "(promedio de RI: {n})",
   "To read all {n}, scan the code at the top of this page or go to {*}.": "Para leer las {1}, escanee el código en la parte de arriba de esta página o vaya a {2}.",
+  "Harm citations:": "Citaciones por daño:",
+  "Immediate jeopardy:": "Peligro inmediato:",
+  "Fines:": "Multas:",
+  "(RI median {n})": "(mediana de RI: {n})",
+  "RI median per home, past 3 years: {n} harm citations, {n} immediate jeopardy.": "Mediana de RI por hogar, últimos 3 años: {1} citaciones por daño, {2} de peligro inmediato.",
 };
