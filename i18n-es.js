@@ -1003,4 +1003,6 @@ window.RINH_ES = {
   "Which kind of care?": "¿Qué tipo de cuidado?",
   "Paying with Medicaid": "Pagar con Medicaid",
   "Also on this page:": "También en esta página:",
+  "(RI average {n})": "(promedio de RI: {n})",
+  "To read all {n}, scan the code at the top of this page or go to {*}.": "Para leer las {1}, escanee el código en la parte de arriba de esta página o vaya a {2}.",
 };
