@@ -1,6 +1,7 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  "Nursing home vs assisted living": "Hogar de ancianos o vida asistida",
   "Some assisted living residences have a special license for a secure dementia care (“memory care”) unit and/or limited health services (wound care, ostomy care, urinary catheter care), as well.": "Algunas residencias de vida asistida también tienen una licencia especial para una unidad segura de cuidado de demencia (“cuidado de la memoria”), para servicios de salud limitados (cuidado de heridas, cuidado de ostomías y cuidado de sondas urinarias), o para ambos.",
   "The Rhode Island Long-Term Care Ombudsman Program": "El Programa del Defensor de Cuidados a Largo Plazo (Ombudsman) de Rhode Island",
   "advocates for residents of nursing homes and assisted living residences. Residents and families can call": "defiende a los residentes de hogares de ancianos y residencias de vida asistida. Los residentes y sus familias pueden llamar al",
