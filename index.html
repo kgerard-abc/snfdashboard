@@ -2405,11 +2405,11 @@ function riCounts(key){ return FAC.filter(f => f.status === "Open" && f.ccn && !
 function riCompare(key, n){
   const all = riCounts(key), N = all.length;
   if (!N) return "";
-  if (!n) return `${all.filter(v => !v).length} of ${N} RI homes had none.`;
+  if (!n) return `(${all.filter(v => !v).length} of ${N} RI homes had none)`;
   const fewer = all.filter(v => v < n).length, more = all.filter(v => v > n).length;
-  if (!more) return "No other RI home had more.";
-  if (more <= 5) return more === 1 ? "Only 1 RI home had more." : `Only ${more} RI homes had more.`;
-  return `${fewer} of the other ${N - 1} RI homes had fewer.`;
+  if (!more) return "(no other RI home had more)";
+  if (more <= 5) return more === 1 ? "(only 1 RI home had more)" : `(only ${more} RI homes had more)`;
+  return `(${fewer} of the other ${N - 1} RI homes had fewer)`;
 }
 const zeroLine = () => { const h = riCounts("harm3"), j = riCounts("ij3");
   return `Across all ${h.length} RI homes in the past 3 years, ${h.filter(v => !v).length} had no harm citations and ${j.filter(v => !v).length} had no immediate jeopardy.`; };
@@ -2461,8 +2461,8 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
   const harms = (D.citations[ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7] && "GHIJKL".includes(r[2])).sort((a,b) => a[0] < b[0] ? 1 : -1);
   root.append(h("h2",{text:"Harm citations in the past 3 years"}),
     h("div",{class:"ps-lines"},
-      h("div",null, h("span",{class:"ps-k",text:"Harm citations:"}), " ", h("span",{text:String(st.harm3||0) + "."}), " ", h("span",{text:riCompare("harm3", st.harm3||0)})),
-      h("div",null, h("span",{class:"ps-k",text:"Immediate jeopardy:"}), " ", h("span",{text:String(st.ij3||0) + "."}), " ", h("span",{text:riCompare("ij3", st.ij3||0)})),
+      h("div",null, h("span",{class:"ps-k",text:"Harm citations:"}), " ", h("span",{text:String(st.harm3||0)}), " ", h("span",{text:riCompare("harm3", st.harm3||0)})),
+      h("div",null, h("span",{class:"ps-k",text:"Immediate jeopardy:"}), " ", h("span",{text:String(st.ij3||0)}), " ", h("span",{text:riCompare("ij3", st.ij3||0)})),
       h("div",null, h("span",{class:"ps-k",text:"Fines:"}), " ", h("span",{text:money(st.fines3||0)}))));
   if (harms.length){
     const nSum = [2,1,1,0,0][level];
