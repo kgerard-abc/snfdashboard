@@ -290,6 +290,8 @@ body.cmp-on{padding-bottom:84px}
 .hc .hc-k{color:var(--ink-2)}
 .hc .hc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .hosp-src{margin-top:18px;max-width:75ch}
+.care-jump{margin:12px 0 0;font-size:15px}
+.care-jump a{font-weight:600}
 a[href^="tel:"]{white-space:nowrap}
 .care p,.care li{text-wrap:pretty}
 .care h2{margin-top:28px}
@@ -2277,6 +2279,7 @@ function viewCare(){
   app.append(h("section",{class:"care",style:"max-width:1000px"},
     h("h1",{text:"Nursing home or assisted living: which kind of care?"}),
     h("p",{class:"lede",text:"Long-term care for adults in Rhode Island generally falls into three categories: skilled nursing facilities (nursing homes), assisted living residences (also called ALRs or ALFs), and supportive residences for people with developmental disabilities or other special needs. Our sites cover the first two. This page explains the difference, who pays, and what the public data can and can't tell you."}),
+    h("p",{class:"care-jump"}, h("span",{text:"Also on this page:"}), " ", h("a",{href:"#costs",text:"What care costs, and paying with Medicaid"})),
     h("h2",{text:"Who each one fits"}),
     h("div",{class:"grid g2"},
       h("div",{class:"card"},
@@ -2302,22 +2305,26 @@ function viewCare(){
     // Costs: CareScout's 2025 Cost of Care Survey for Rhode Island (medians; press release of March 2, 2026),
     // The POINT (oha.ri.gov/get-help), and the RI Bar Association's Lawyer Referral Service (ribar.com staff
     // contacts page, which lists its Referral Service for the Elderly under the same number). Checked November 9, 2026.
-    h("div",{class:"card",id:"costs",style:"margin-top:14px"},
-      h("h3",{text:"What care costs, and paying with Medicaid"}),
+    h("h2",{id:"costs",text:"What care costs, and paying with Medicaid"}),
+    h("div",{class:"grid g2"},
+     h("div",{class:"card"},
+      h("h3",{text:"What care costs"}),
       P("Typical costs in Rhode Island in 2025:"),
       h("ul",null,
         h("li",{text:"Nursing home, shared room: $145,270 a year (about $12,100 a month)"}),
         h("li",{text:"Nursing home, private room: $160,600 a year (about $13,400 a month)"}),
         h("li",{text:"Assisted living, one-bedroom: $93,366 a year (about $7,800 a month)"})),
       h("p",{class:"small"}, h("span",{text:"These are medians: half of places charge more and half charge less. Source:"}), " ",
-        ext("https://www.businesswire.com/news/home/20260302310682/en/CareScout-Releases-2025-Cost-of-Care-Data-for-Rhode-Island","CareScout Cost of Care Survey, 2025")),
+        ext("https://www.businesswire.com/news/home/20260302310682/en/CareScout-Releases-2025-Cost-of-Care-Data-for-Rhode-Island","CareScout Cost of Care Survey, 2025"))),
+     h("div",{class:"card"},
+      h("h3",{text:"Paying with Medicaid"}),
       P("Medicaid can pay for long-term nursing home care, and for assisted living at residences that take part in the state's programs, for people whose income and savings are low enough to qualify. Many people pay privately until their savings are spent down, and then apply."),
       h("p",null, h("strong",{text:"Get free help."}), " ",
         h("span",{text:"The POINT, Rhode\u00A0Island's aging and disability resource center, can help you understand your options and apply for Medicaid and other programs. Call"}), " ",
         h("a",{href:"tel:+14014624444",text:"401-462-4444"}), "."),
       h("p",null, h("strong",{text:"Talk with an elder law attorney early."}), " ",
         h("span",{text:"Before you start spending savings on care, an elder law attorney can explain Medicaid's rules on income, savings, and gifts, and help you plan. Some mistakes can delay Medicaid coverage. The Rhode\u00A0Island Bar Association's lawyer referral service can help you find one:"}), " ",
-        h("a",{href:"tel:+14014217799",text:"401-421-7799"}), ".")),
+        h("a",{href:"tel:+14014217799",text:"401-421-7799"}), "."))),
     h("h2",{text:"What the data can tell you"}),
     h("div",{class:"grid g2"},
       h("div",{class:"card"},

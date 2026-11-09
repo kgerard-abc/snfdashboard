@@ -970,5 +970,7 @@ window.RINH_ES = {
   "Visit checklist (PDF)": "Lista para la visita (PDF)",
   "Large print (PDF)": "Letra grande (PDF)",
   "More, including who pays for each:": "Más información, incluido quién paga cada uno:",
-  "Which kind of care?": "¿Qué tipo de cuidado?"
+  "Which kind of care?": "¿Qué tipo de cuidado?",
+  "Paying with Medicaid": "Pagar con Medicaid",
+  "Also on this page:": "También en esta página:",
 };
