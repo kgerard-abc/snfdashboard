@@ -291,6 +291,54 @@ body.cmp-on{padding-bottom:84px}
 .hc .hc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .hosp-src{margin-top:18px;max-width:75ch}
 a[href^="tel:"]{white-space:nowrap}
+.print-btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#print-root{display:none}
+@media print{
+  @page{size:letter;margin:0.5in}
+  html.ps-on body>*:not(#print-root){display:none !important}
+  html.ps-on body{background:#fff !important;margin:0;padding:0}
+  html.ps-on #print-root{display:block !important}
+}
+#print-root,#print-root *{color:#000 !important;background:transparent !important;font-family:Helvetica,Arial,sans-serif !important;box-shadow:none !important}
+#print-root{font-size:11pt;line-height:1.25}
+html[data-print="lp"] #print-root{font-size:14pt}
+#print-root a{text-decoration:none}
+#print-root .ps-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12pt;border-bottom:1pt solid #000;padding-bottom:5pt;margin-bottom:8pt}
+#print-root .ps-logo{height:0.6in;width:auto}
+#print-root .ps-site{display:flex;align-items:center;gap:8pt;text-align:right;font-size:0.9em}
+#print-root .ps-top .ps-qr svg{width:1.8cm;height:1.8cm}
+html[data-print="lp"] #print-root .ps-top .ps-qr svg{width:2.6cm;height:2.6cm}
+#print-root .ps-url{font-weight:700}
+#print-root h1{font-size:1.6em;line-height:1.2;margin:0 0 4pt}
+#print-root h2{font-size:1.15em;margin:9pt 0 3pt;break-after:avoid;page-break-after:avoid}
+#print-root h1,#print-root h2{break-inside:avoid}
+#print-root p,#print-root li{orphans:3;widows:3;text-wrap:pretty}
+#print-root p{margin:0 0 5pt}
+#print-root .ps-meta{margin:0 0 2pt}
+#print-root ul{margin:0 0 6pt;padding-left:1.2em}
+#print-root li{margin:0 0 3pt;break-inside:avoid}
+#print-root .ps-two{display:grid;grid-template-columns:1.25fr 1fr;gap:0 16pt;break-inside:avoid}
+html[data-print="lp"] #print-root .ps-two{grid-template-columns:1fr}
+#print-root .ps-kv{margin:0}
+#print-root .ps-kv dt{display:inline;font-weight:700}
+#print-root .ps-kv dt::after{content:" "}
+#print-root .ps-kv dd{display:inline;margin:0}
+#print-root .ps-kv dd::after{content:"";display:block}
+#print-root .ps-k{font-weight:700}
+#print-root .ps-home{border-top:1pt solid #000;padding:5pt 0;break-inside:avoid}
+#print-root .ps-tbl{border-collapse:collapse;width:100%;margin:6pt 0}
+#print-root .ps-tbl th,#print-root .ps-tbl td{border:1pt solid #000;padding:3pt 5pt;text-align:left;vertical-align:top}
+#print-root .ps-tbl tr{break-inside:avoid}
+#print-root .ps-qrrow{display:flex;gap:10pt;align-items:center;margin:12pt 0 6pt;break-inside:avoid}
+#print-root .ps-qr svg{width:2.4cm;height:2.4cm;display:block}
+html[data-print="lp"] #print-root .ps-qr svg{width:3cm;height:3cm}
+#print-root .ps-qrs{display:block}
+#print-root .ps-qrs .ps-qrrow{margin:6pt 0}
+#print-root .ps-url{white-space:nowrap}
+#print-root .ps-qrs .ps-qr svg{width:2cm;height:2cm}
+#print-root .ps-src,#print-root .ps-foot{font-size:0.85em}
+#print-root .ps-foot{border-top:1pt solid #000;padding-top:4pt;margin-top:10pt}
+
 .care p,.care li{text-wrap:pretty}
 .care h2{margin-top:28px}
 .care .card h3{margin:0 0 6px}
@@ -1375,6 +1423,7 @@ function cmpOpen(){
   cmpOverlay = h("div",{class:"cmp-overlay",role:"dialog","aria-modal":"true","aria-label":"Comparing homes",onclick:e=>{ if (e.target===cmpOverlay) cmpClose(); }},
     h("div",{class:"cmp-panel"},
       h("div",{class:"cmp-head"}, h("h2",{text:"Comparing homes"}), h("button",{type:"button",class:"btn-quiet cmp-close",text:"Close",onclick:cmpClose})),
+      printButtons("Print", () => compareSheet(homes)),
       h("p",{class:"small",style:"margin:0 0 10px",text:`Ratings from the ${D.meta.latest_label} CMS release. Tap a home's name to see its full record.`}),
       h("div",{class:"cmp-scroll"}, tbl)));
   document.body.append(cmpOverlay);
@@ -1819,6 +1868,7 @@ function viewFacility(ccn){
     )
   );
 
+  app.append(printButtons("Print a summary", lv => homeSheet(ccn, lv), SITE_URL + "#f-" + ccn, "Scan for the full record:"));
   if (x.not_in_cms){
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Not Medicare-certified"}),
       h("p",null,"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so it isn't in CMS's Care Compare data. The star ratings, staffing hours, quality measures, and fines shown for other homes on this site all come from CMS and don't exist for this one."),
@@ -2162,6 +2212,28 @@ function rehabCard(f){
   );
 }
 
+// The rights and tips lists are shared by the Leaving the hospital page and its printed list.
+function rehabLIb(b, t){ return h("li",null, h("strong",{text:b}), " ", h("span",{text:t})); }
+function rehabRights(){
+  const LIb = rehabLIb, ext = (href, text) => h("a",{href, target:"_blank", rel:"noopener", text});
+  return h("ul",null,
+      LIb("You get a list.", "The hospital must give you a list of nursing homes that take Medicare and serve the area you ask about. Ask for it as early in the stay as you can."),
+      LIb("You choose.", "The hospital must tell you that you can choose among the homes, respect your choice when it can, and not limit which homes you can choose from. If you have a Medicare Advantage plan, ask the plan which homes are in its network."),
+      LIb("You get help comparing.", "The hospital must help you choose using information about each home's quality. Ask your case manager to go over these numbers with you."),
+      h("li",null, h("strong",{text:"You can appeal a discharge."}), " ",
+        h("span",{text:"You should get a notice called “An Important Message from Medicare About Your Rights.” If you think it's too soon to leave the hospital, call Acentra Health, Medicare's reviewer for Rhode Island, at"}), " ",
+        h("a",{href:"tel:+18883198452",text:"888-319-8452"}), " ",
+        h("span",{text:"no later than the day you're scheduled to leave. While you wait for the decision, you won't have to pay for the extra days, except for any coinsurance or deductible."}), " ",
+        ext("https://www.medicare.gov/claims-appeals/your-right-to-a-fast-appeal/getting-a-fast-appeal-in-a-hospital","Medicare's page on fast appeals")));
+}
+function rehabTips(){
+  const LIb = rehabLIb;
+  return h("ul",null,
+      LIb("Keep your own medication list.", "Medication lists can get mixed up when a patient moves from the hospital to a nursing home. Keep an up-to-date list of every medication and dose, bring a copy, and go over it with the nurse when you arrive."),
+      LIb("Label your belongings.", "Make a list of everything you bring, and label clothing, glasses, hearing aids, dentures, and other items with your name. Keep a copy of the list."),
+      LIb("Ask what's being sent.", "Ask the hospital to send your discharge summary and medication orders to the nursing home, and ask for your own copy."));
+}
+
 function viewHospital(key){
   const P = t => h("p",{text:t});
   const ext = (href, text) => h("a",{href, target:"_blank", rel:"noopener", text});
@@ -2191,6 +2263,8 @@ function viewHospital(key){
       h("p",{class:"small"}, h("strong",{text: showAll ? `All ${all.length} nursing homes in this part of the state, highest rated first.` : `${top.length} of ${all.length} nursing homes here are rated 4 or 5 stars overall.`})),
       h("div",{class:"hosp-list"}, ...list.map(rehabCard)));
     if (!showAll && all.length > top.length) out.append(h("p",null, h("button",{type:"button",class:"btn-quiet",text:"Show every home in this part of the state",onclick:()=>{ showAll = true; render(); }})));
+    const r0 = reg, l0 = list, a0 = showAll;
+    out.append(printButtons("Print this list", () => rehabSheet(r0, l0, a0), SITE_URL + "#hospital=" + r0.k, "Scan for this list online:"));
   }
   pick();
 
@@ -2201,24 +2275,13 @@ function viewHospital(key){
 
   app.append(h("section",{class:"care",style:"max-width:1000px"},
     h("h1",{text:"Leaving the hospital for rehab"}),
-    h("p",{class:"lede",text:"If someone you care for needs rehab or skilled nursing care after a hospital stay, the hospital will ask you to choose a nursing home, often with only a day or two to decide. This page explains your rights, gives tips for the move, and lists the highest-rated nursing homes in each part of the state."}),
+    h("p",{class:"lede",text:"If you or someone you care for needs rehab or skilled nursing care after a hospital stay, the hospital will ask you to choose a nursing home, often with only a day or two to decide. This page explains your rights, gives tips for the move, and lists the highest-rated nursing homes in each part of the state."}),
 
     h("h2",{text:"Your rights when you choose"}),
-    h("ul",null,
-      LIb("You get a list.", "The hospital must give you a list of nursing homes that take Medicare and serve the area you ask about. Ask for it as early in the stay as you can."),
-      LIb("You choose.", "The hospital must tell you that you can choose among the homes, respect your choice when it can, and not limit which homes you can choose from. If you have a Medicare Advantage plan, ask the plan which homes are in its network."),
-      LIb("You get help comparing.", "The hospital must help you choose using information about each home's quality. Ask your case manager to go over these numbers with you."),
-      h("li",null, h("strong",{text:"You can appeal a discharge."}), " ",
-        h("span",{text:"You should get a notice called “An Important Message from Medicare About Your Rights.” If you think it's too soon to leave the hospital, call Acentra Health, Medicare's reviewer for Rhode Island, at"}), " ",
-        h("a",{href:"tel:+18883198452",text:"888-319-8452"}), " ",
-        h("span",{text:"no later than the day you're scheduled to leave. While you wait for the decision, you won't have to pay for the extra days, except for any coinsurance or deductible."}), " ",
-        ext("https://www.medicare.gov/claims-appeals/your-right-to-a-fast-appeal/getting-a-fast-appeal-in-a-hospital","Medicare's page on fast appeals"))),
+    rehabRights(),
 
     h("h2",{text:"Tips for the move"}),
-    h("ul",null,
-      LIb("Keep your own medication list.", "Medication lists can get mixed up when a patient moves from the hospital to a nursing home. Keep an up-to-date list of every medication and dose, bring a copy, and go over it with the nurse when you arrive."),
-      LIb("Label your belongings.", "Make a list of everything you bring, and label clothing, glasses, hearing aids, dentures, and other items with your name. Keep a copy of the list."),
-      LIb("Ask what's being sent.", "Ask the hospital to send your discharge summary and medication orders to the nursing home, and ask for your own copy.")),
+    rehabTips(),
 
     h("h2",{text:"Who pays for rehab"}),
     h("ul",null,
@@ -2269,6 +2332,185 @@ function viewHospital(key){
       clSpan ? [" ", h("span",{text:`“Back to the hospital” and “ER visits” cover ${clSpan[0]} to ${clSpan[1]}.`})] : null)
   ));
 }
+
+// ---------- Printable sheets (November 2026). One sheet per home, the compare view, and the Leaving the
+// hospital list. kg's rules for printed pages: black text, Helvetica, 11 pt (14 pt for large print, the size of
+// the large-print visit checklist), no shaded or filled backgrounds, no stranded headings or lone lines at page
+// breaks. Each sheet has the ABC-RI logo and the site address at the top and a QR code (qr.js) to the page it
+// came from. No Ombudsman box on these (kg). The sheet is built into #print-root, which only shows when printing
+// from one of these buttons (html.ps-on); printing any other way prints the page as it looks.
+const SITE_URL = "https://snfdashboard.abc-ri.org/";
+const todayLabel = () => { const d = new Date(); return MON[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); };
+async function printSheet(buildFor, large, qrUrl, qrNote){
+  const html = document.documentElement;
+  html.setAttribute("data-print", large ? "lp" : "std");
+  // Standard print: try the full sheet, then shorter versions, until it fits on one letter page
+  // (7.5 by 10 inches inside half-inch margins). Large print keeps everything and runs onto more pages.
+  for (let level = 0; level <= 3; level++){
+    const root = fillSheet(buildFor(level), qrUrl, qrNote);
+    if (large) break;
+    root.style.cssText = "display:block;position:absolute;left:-10000px;top:0;width:7.5in;visibility:hidden";
+    // the Spanish translation (i18n.js) runs on the next animation frame, so measure after it
+    await new Promise(r => (window.requestAnimationFrame || setTimeout)(() => setTimeout(r, 0)));
+    const tall = root.getBoundingClientRect().height;
+    root.style.cssText = "";
+    if (tall <= 9.85 * 96) break;
+  }
+  html.classList.add("ps-on");
+  setTimeout(() => window.print(), 80);   // lets the Spanish translation and the logo finish first
+}
+function fillSheet(build, qrUrl, qrNote){
+  let root = document.getElementById("print-root");
+  if (!root){ root = h("div",{id:"print-root"}); document.body.append(root); }
+  root.textContent = "";
+  const logo = document.querySelector(".site-logo");
+  const qr = h("div",{class:"ps-qr"});
+  if (qrUrl) { try { qr.innerHTML = window.abcQR.svg(qrUrl); } catch(e){} }
+  root.append(h("div",{class:"ps-top"},
+    logo ? h("img",{class:"ps-logo",src:logo.src,alt:"Advocates for Better Care in Rhode Island (ABC-RI)"}) : null,
+    h("div",{class:"ps-site"},
+      qrUrl ? qr : null,
+      h("div",null,
+        qrNote ? h("div",{text:qrNote}) : null,
+        h("div",{class:"ps-url",text: qrUrl ? qrUrl.replace(/^https:\/\//,"") : "snfdashboard.abc-ri.org"}),
+        h("div",{text:`CMS data: ${D.meta.latest_label} release`}),
+        h("div",{text:"Printed " + todayLabel()})))));
+  build(root);
+  root.append(h("p",{class:"ps-foot",text:"Published by Advocates for Better Care in Rhode Island (ABC-RI). Not produced, reviewed, or endorsed by CMS, RIDOH, or any state agency, and not a substitute for their records."}));
+  return root;
+}
+window.addEventListener("afterprint", () => document.documentElement.classList.remove("ps-on"));
+function printButtons(label, build, qrUrl, qrNote){
+  return h("div",{class:"print-btns"},
+    h("button",{type:"button",class:"btn-quiet",text:label,onclick:()=>printSheet(build, false, qrUrl, qrNote)}),
+    h("button",{type:"button",class:"btn-quiet",text:"Large print",onclick:()=>printSheet(build, true, qrUrl, qrNote)}));
+}
+function psQR(url, label){
+  const box = h("div",{class:"ps-qr"});
+  try { box.innerHTML = window.abcQR.svg(url); } catch(e){}
+  return h("div",{class:"ps-qrrow"}, box, h("div",null, h("div",{text:label}), h("div",{class:"ps-url",text:url.replace(/^https:\/\//,"")})));
+}
+const starsTxt = r => r == null ? "Not rated" : r + " of 5 stars";
+function rehabLines(ccn){   // the short-stay measures as plain lines (same wording as the hospital page)
+  const q = (D.qrp||{})[ccn] || {}, plain = qrpPlain(q.dtc_cmp), out = [];
+  const back = homeQM(ccn,"521"), er = homeQM(ccn,"522"), riB = riLast("521"), riE = riLast("522");
+  const line = (k, v, note) => h("div",null, h("span",{class:"ps-k",text:k}), " ", h("span",{text:v}), note ? [" ", h("span",{text:note})] : null);
+  out.push(q.dtc != null ? line("Returned home:", fmt(q.dtc,1) + "%", plain ? "(" + plain + ")" : null)
+    : line("Returned home:", plain ? plain[0].toUpperCase() + plain.slice(1) : "Not reported"));
+  out.push(line("Back to the hospital:", back != null ? fmt(back,1) + "%" : "Not reported", back != null && riB ? "(RI average " + fmt(riB[1],1) + "%)" : null));
+  out.push(line("ER visits:", er != null ? fmt(er,1) + "%" : "Not reported", er != null && riE ? "(RI average " + fmt(riE[1],1) + "%)" : null));
+  return out;
+}
+
+// one home
+function homeSheet(ccn, level){ level = level || 0; return root => {
+  const f = byCCN[ccn], x = f.x || {}, st = STATS[ccn] || {};
+  const li = f.status === "Open" ? LI : M.indexOf(f.last_month);
+  const kv = (k, v) => v == null || v === "" ? null : [h("dt",{text:k}), h("dd",{text:v})];
+  root.append(h("h1",{text:f.name}),
+    h("p",{class:"ps-meta",text:[f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", ")}),
+    f.phone ? h("p",{class:"ps-meta"}, h("span",{text:"Phone:"}), " ", h("span",{text:phone(f.phone)})) : null);
+  if (x.not_in_cms){
+    root.append(h("p",{text:"This home is licensed by the Rhode Island Department of Health (RIDOH) but is not certified by Medicare or Medicaid, so CMS publishes no ratings, staffing, or inspection data for it. RIDOH's inspection reports for it are summarized on our website."}),
+      null);
+    return;
+  }
+  const sffNow = ser(ccn,"sff")[LI], abuseNow = ser(ccn,"abuse")[LI], pbj = pbjInfo(ccn);
+  const newOp = f.changed_ownership_flag_months && f.status==="Open" && operatorChanges(ccn).filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
+  const [hp] = lastVal(ser(ccn,"hprd")), [riH] = lastVal(riAvg("hprd")), [tv] = lastVal(ser(ccn,"turnover")), [riT] = lastVal(riAvg("turnover"));
+  const pending = (((SALES && SALES.homes) || {})[ccn] || []).filter(e => e.pending);
+  root.append(
+    h("div",{class:"ps-two"},
+      h("div",null, h("h2",{text:"Ratings and staffing"}),
+    h("dl",{class:"ps-kv"},
+      [h("dt",{text:"Star ratings"}), h("dd",null,
+        [["Overall","overall"],["Inspections","health"],["Staffing","staffing"],["Quality","qm"]].map(([t,k], i) => { const r = at(ccn,k,li);
+          return [i ? " \u00B7 " : null, h("span",{text:t}), " ", h("strong",{text: r == null ? "–" : String(r)})]; }),
+        " ", h("span",{text:"(out of 5 stars)"}))],
+      hp != null ? kv("Nurse staff hours per resident per day", fmt(hp) + (riH != null ? " (RI average " + fmt(riH) + ")" : "")) : null,
+      tv != null ? kv("Nursing staff turnover", fmt(tv,1) + "%" + (riT != null ? " (RI average " + fmt(riT,1) + "%)" : "")) : null,
+      kv("Owner group", x.owner_group),
+      kv("Operator (legal name)", f.legal_business_name),
+      pending.length ? kv("Sale", "Pending sale to " + (pending[0].buyer || "a new owner")) : null)),
+      h("div",null, h("h2",{text:"Short stays for rehab"}), h("div",{class:"ps-lines"}, rehabLines(ccn)))),
+    h("h2",{text:"Things to know"}),
+    h("ul",null, thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOp).map(t => h("li",{text:t}))));
+
+  // harm citations in the past 3 years, newest first, with ABC-RI's plain-language summary when there is one
+  const harms = (D.citations[ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7] && "GHIJKL".includes(r[2])).sort((a,b) => a[0] < b[0] ? 1 : -1);
+  root.append(h("h2",{text:"Harm citations in the past 3 years"}),
+    h("p",null, h("span",{text:`Harm citations: ${st.harm3||0}. Immediate jeopardy: ${st.ij3||0}. Fines: ${money(st.fines3||0)}.`})));
+  if (harms.length){
+    const nSum = [2,1,1,0][level];
+    if (nSum) root.append(h("ul",{class:"ps-harms"}, harms.slice(0,nSum).map(r => {
+      const hs = harmSummary(ccn, r);
+      return h("li",null, h("strong",{text:dlabel(r[0])}), " ", h("span",{text:"JKL".includes(r[2]) ? "(immediate jeopardy)" : "(harm)"}), " ",
+        h("span",{text: hs || (D.tags[r[1]]||["",""])[1] || (D.tags[r[1]]||[""])[0]}));
+    })));
+    if (harms.length > nSum) root.append(h("p",{text:`See all ${harms.length} on our website.`}));
+  }
+
+  // questions built from this home's own record
+  // most important first; one question per repeat problem (the website lists them all); at most five
+  const qs = [];
+  const ij = harms.find(r => "JKL".includes(r[2]));
+  if (ij) qs.push(`Inspectors found immediate jeopardy here on ${dlabel(ij[0])}. What did the home change afterward?`);
+  (REPEATS[ccn]||[]).forEach(rp => qs.push(rp.c.ask[0]));
+  const sr = at(ccn,"staffing",li);
+  if (sr != null && sr <= 2) qs.push("How many residents does each nurse and nursing assistant care for, on day, evening, and night shifts?");
+  if (tv != null && riT != null && tv > riT) qs.push("How long have the director of nursing and the administrator worked here?");
+  qs.push("May I see the home's most recent inspection report?");
+  root.append(h("h2",{text:"Questions to ask, from this home's record"}), h("ul",null, qs.slice(0, level >= 2 ? 3 : 5).map(q => h("li",{text:q}))));
+};}
+
+// the compare view, up to 3 homes side by side
+function compareSheet(homes){ return root => {
+  const st = f => STATS[f.ccn] || {};
+  const val = (k, dp, unit) => f => { const v = lastVal(ser(f.ccn,k))[0]; return v==null ? "–" : fmt(v,dp) + (unit||""); };
+  const row = (label, cell) => h("tr",null, h("th",{scope:"row",text:label}), homes.map(f => { const v = cell(f); return typeof v === "string" ? h("td",{text:v}) : h("td",null,v); }));
+  root.append(h("h1",{text:"Comparing nursing homes"}),
+
+    h("table",{class:"ps-tbl"},
+      h("thead",null, h("tr",null, h("td"), homes.map(f => h("th",{scope:"col",text:f.name})))),
+      h("tbody",null,
+        row("Town", f => f.place || f.town || f.city || ""),
+        row("Phone", f => f.phone ? phone(f.phone) : "–"),
+        row("Overall", f => starsTxt(at(f.ccn,"overall",LI))),
+        row("Inspections", f => starsTxt(at(f.ccn,"health",LI))),
+        row("Staffing", f => starsTxt(at(f.ccn,"staffing",LI))),
+        row("Quality", f => starsTxt(at(f.ccn,"qm",LI))),
+        row("Nurse hrs/res/day", val("hprd",2)),
+        row("Turnover", val("turnover",1,"%")),
+        row("Harm citations (3 yrs)", f => st(f).harm3==null ? "–" : String(st(f).harm3)),
+        row("Immediate jeopardy (3 yrs)", f => st(f).ij3==null ? "–" : String(st(f).ij3)),
+        row("Fines (3 yrs)", f => st(f).fines3==null ? "–" : money(st(f).fines3)),
+        row("Repeat problems (3+ inspections)", f => (REPEATS[f.ccn]||[]).length ? h("div",null, REPEATS[f.ccn].map((x,i) => [i ? h("br") : null, h("span",{text:x.c.label})])) : "–"),
+        row("Owner group", f => (f.x||{}).owner_group || "–"),
+        row("Beds", f => f.beds==null ? "–" : String(Math.round(f.beds))))),
+    h("div",{class:"ps-qrs"}, homes.map(f => psQR(SITE_URL + "#f-" + f.ccn, f.name))));
+};}
+
+// the Leaving the hospital list for one part of the state
+function rehabSheet(reg, list, showAll){ return root => {
+  root.append(h("h1",{text:"Leaving the hospital for rehab"}),
+    h("h2",{text:reg.n}),
+    h("p",{class:"ps-meta",text:reg.towns}),
+    h("p",{class:"ps-meta",text: showAll ? "All nursing homes in this part of the state, highest rated first." : "Nursing homes rated 4 or 5 stars overall by Medicare, highest rated first."}),
+    ...list.map(f => { const st = STATS[f.ccn] || {}, pend = (((SALES && SALES.homes) || {})[f.ccn] || []).some(e => e.pending), sff = ser(f.ccn,"sff")[LI];
+      return h("div",{class:"ps-home"},
+        h("div",null, h("strong",{text:f.name})),
+        h("div",null, h("span",{text:f.town || f.city}), f.phone ? [" · ", h("span",{text:phone(f.phone)})] : null),
+        h("div",null, h("span",{class:"ps-k",text:"Overall rating:"}), " ", h("span",{text:starsTxt(at(f.ccn,"overall",LI))}), " · ",
+          h("span",{class:"ps-k",text:"Staffing rating:"}), " ", h("span",{text:starsTxt(at(f.ccn,"staffing",LI))})),
+        rehabLines(f.ccn),
+        h("div",null, h("span",{class:"ps-k",text:"Harm citations (3 yrs)"}), " ", h("span",{text:String(st.harm3||0)}), " · ",
+          h("span",{class:"ps-k",text:"Immediate jeopardy (3 yrs)"}), " ", h("span",{text:String(st.ij3||0)})),
+        (sff || pend) ? h("div",null, sff === "SFF" ? h("span",{text:"Special Focus Facility"}) : sff ? h("span",{text:"Special Focus Facility candidate"}) : null,
+          sff && pend ? " · " : null, pend ? h("span",{text:"Sale pending"}) : null) : null); }),
+    h("h2",{text:"Your rights when you choose"}), rehabRights(),
+    h("h2",{text:"Tips for the move"}), rehabTips(),
+    h("p",{class:"ps-src",text:"Online, this list also explains who pays for rehab and what to ask the nursing home."}));
+};}
 
 // "Which kind of care?": kg's own text from the visit checklist and the two sites' "learn more" boxes, in one place.
 function viewCare(){
@@ -2355,6 +2597,7 @@ function footer(){
 }
 
 function route(){
+  document.documentElement.classList.remove("ps-on");
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
@@ -2388,6 +2631,7 @@ window.addEventListener("hashchange", route);
 route();
 })();
 </script>
+<script src="qr.js"></script>
 <script src="i18n-es.js"></script>
 <script src="i18n.js"></script>
 <script data-goatcounter="https://abc-ri-snf.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
