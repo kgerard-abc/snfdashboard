@@ -1798,6 +1798,9 @@ function viewAbout(){
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
     h("div",{class:"sev-key"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
     P("Within each group, a later letter means the problem affected more residents. Harm citations (G and above) are the most serious; immediate jeopardy (J and above) means residents faced serious injury or death."),
+    // kg's line (November 2026). Checked against the October 2026 CMS data: across the 70 open homes, the number of
+    // beds and harm citations in the past 3 years have a correlation of 0.49 (moderate).
+    P("Bigger homes tend to get more citations, because more beds means more residents and more chances for something to go wrong. In Rhode\u00A0Island, the link between a home's number of beds and its harm citations is moderate."),
     h("h2",{text:"Special Focus Facilities",style:"margin-top:20px"}),
     P("CMS names a small number of homes in each state Special Focus Facilities because they have a long record of serious problems. In CMS's words, they have \u201ca persistent record of noncompliance leading to poor quality of care.\u201d A Special Focus Facility is inspected at least every six months and faces tougher penalties. To leave the program, it must pass two standard inspections in a row with 12 or fewer citations, none more serious than E. A home that does not improve can lose its Medicare and Medicaid funding."),
     P("A Special Focus candidate is on CMS's monthly list of the homes with the worst inspection records in the state. The state picks new Special Focus Facilities from that list, so being a candidate does not mean a home has been chosen."),
@@ -2395,6 +2398,21 @@ function psQR(url, label){
   return h("div",{class:"ps-qrrow"}, box, h("div",null, h("div",{text:label}), h("div",{class:"ps-url",text:url.replace(/^https:\/\//,"")})));
 }
 const starsTxt = r => r == null ? "Not rated" : r + " of 5 stars";
+// How a home's harm and immediate jeopardy counts (past 3 years, STATS) compare with the other open,
+// Medicare-certified RI homes. kg chose this over a median or average (November 2026), because the counts are
+// lopsided: half the homes have no immediate jeopardy while a few have many. Recounted on the page each month.
+function riCounts(key){ return FAC.filter(f => f.status === "Open" && f.ccn && !(f.x||{}).not_in_cms && STATS[f.ccn]).map(f => STATS[f.ccn][key] || 0); }
+function riCompare(key, n){
+  const all = riCounts(key), N = all.length;
+  if (!N) return "";
+  if (!n) return `${all.filter(v => !v).length} of ${N} RI homes had none.`;
+  const fewer = all.filter(v => v < n).length, more = all.filter(v => v > n).length;
+  if (!more) return "No other RI home had more.";
+  if (more <= 5) return more === 1 ? "Only 1 RI home had more." : `Only ${more} RI homes had more.`;
+  return `${fewer} of the other ${N - 1} RI homes had fewer.`;
+}
+const zeroLine = () => { const h = riCounts("harm3"), j = riCounts("ij3");
+  return `Across all ${h.length} RI homes in the past 3 years, ${h.filter(v => !v).length} had no harm citations and ${j.filter(v => !v).length} had no immediate jeopardy.`; };
 function rehabLines(ccn){   // the short-stay measures as plain lines (same wording as the hospital page)
   const q = (D.qrp||{})[ccn] || {}, plain = qrpPlain(q.dtc_cmp), out = [];
   const back = homeQM(ccn,"521"), er = homeQM(ccn,"522"), riB = riLast("521"), riE = riLast("522");
@@ -2442,7 +2460,10 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
   // harm citations in the past 3 years, newest first, with ABC-RI's plain-language summary when there is one
   const harms = (D.citations[ccn]||[]).filter(r => r[0] >= CUT3 && r[5]==="H" && r[7] && "GHIJKL".includes(r[2])).sort((a,b) => a[0] < b[0] ? 1 : -1);
   root.append(h("h2",{text:"Harm citations in the past 3 years"}),
-    h("p",null, h("span",{text:`Harm citations: ${st.harm3||0}. Immediate jeopardy: ${st.ij3||0}. Fines: ${money(st.fines3||0)}.`})));
+    h("div",{class:"ps-lines"},
+      h("div",null, h("span",{class:"ps-k",text:"Harm citations:"}), " ", h("span",{text:String(st.harm3||0) + "."}), " ", h("span",{text:riCompare("harm3", st.harm3||0)})),
+      h("div",null, h("span",{class:"ps-k",text:"Immediate jeopardy:"}), " ", h("span",{text:String(st.ij3||0) + "."}), " ", h("span",{text:riCompare("ij3", st.ij3||0)})),
+      h("div",null, h("span",{class:"ps-k",text:"Fines:"}), " ", h("span",{text:money(st.fines3||0)}))));
   if (harms.length){
     const nSum = [2,1,1,0,0][level];
     if (nSum) root.append(h("ul",{class:"ps-harms"}, harms.slice(0,nSum).map(r => {
@@ -2472,6 +2493,7 @@ function compareSheet(homes){ return root => {
   const val = (k, dp, unit) => f => { const v = lastVal(ser(f.ccn,k))[0]; return v==null ? "–" : fmt(v,dp) + (unit||""); };
   const row = (label, cell) => h("tr",null, h("th",{scope:"row",text:label}), homes.map(f => { const v = cell(f); return typeof v === "string" ? h("td",{text:v}) : h("td",null,v); }));
   root.append(h("h1",{text:"Comparing nursing homes"}),
+    h("p",{class:"ps-meta",text:zeroLine()}),
 
     h("table",{class:"ps-tbl"},
       h("thead",null, h("tr",null, h("td"), homes.map(f => h("th",{scope:"col",text:f.name})))),
@@ -2499,6 +2521,7 @@ function rehabSheet(reg, list, showAll){ return root => {
     h("h2",{text:reg.n}),
     h("p",{class:"ps-meta",text:reg.towns}),
     h("p",{class:"ps-meta",text: showAll ? "All nursing homes in this part of the state, highest rated first." : "Nursing homes rated 4 or 5 stars overall by Medicare, highest rated first."}),
+    h("p",{class:"ps-meta",text:zeroLine()}),
     ...list.map(f => { const st = STATS[f.ccn] || {}, pend = (((SALES && SALES.homes) || {})[f.ccn] || []).some(e => e.pending), sff = ser(f.ccn,"sff")[LI];
       return h("div",{class:"ps-home"},
         h("div",null, h("strong",{text:f.name})),
