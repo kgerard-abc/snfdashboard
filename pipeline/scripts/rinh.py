@@ -31,6 +31,8 @@ CMS_FILES = {
     "SurveyDates": "surveydates",
     "StateUSAverages": "stateusaverages",
     "CitationDescriptions": "citationdescriptions",
+    "Skilled_Nursing_Facility_Quality_Reporting_Program_Provider_Data": "qrp",
+    "Skilled_Nursing_Facility_Quality_Reporting_Program_National_Data": "qrp_national",
 }
 
 # Old CMS column names -> current names (CMS renamed many columns over the years)
@@ -155,7 +157,7 @@ def filter_ri(tables):
             col = "state_or_nation" if "state_or_nation" in df.columns else "state"
             df = df[df[col].isin([STATE, "NATION", "Nation"])].copy()
             df["area"] = df[col].replace({"Nation": "NATION"})
-        elif t == "citationdescriptions":
+        elif t in ("citationdescriptions", "qrp_national"):
             pass
         else:
             if "state" in df.columns:
@@ -337,6 +339,33 @@ def shape_qm_claims(df, month):
     return out
 
 
+# SNF Quality Reporting Program measures kept for the "Leaving the hospital" page (short rehab stays).
+# S_005_02 is discharge to community: patients who went home after a rehab stay and had no unplanned
+# hospital stay and did not die in the 31 days after leaving. S_004_01 is potentially preventable
+# readmissions in the 30 days after leaving. Codes from CMS's Nursing Home Data Dictionary.
+QRP_KEEP = {
+    "S_005_02_DTC_RS_RATE", "S_005_02_DTC_RS_RATE_2_5", "S_005_02_DTC_RS_RATE_97_5", "S_005_02_DTC_COMP_PERF",
+    "S_005_02_DTC_VOLUME", "S_005_02_DTC_OBS_RATE", "S_005_02_DTC_NAT_OBS_RATE",
+    "S_004_01_PPR_PD_RSRR", "S_004_01_PPR_PD_COMP_PERF", "S_004_01_PPR_PD_VOLUME", "S_004_01_PPR_PD_NAT_UNADJUST_AVG",
+}
+
+
+def shape_qrp(df, month, national=False):
+    df = df.copy()
+    if national:
+        df["ccn"] = "NATION"
+    else:
+        df = _with_ccn(df)
+    for c in ["measure_code", "score", "footnote", "start_date", "end_date"]:
+        if c not in df.columns:
+            df[c] = pd.NA
+    out = df[["ccn", "measure_code", "score", "footnote", "start_date", "end_date"]].copy()
+    out["measure_code"] = out["measure_code"].astype(str).str.strip()
+    out = out[out["measure_code"].isin(QRP_KEEP)]
+    out["cms_month"] = month
+    return out
+
+
 def shape_measures(mds, claims):
     frames = []
     for df in (mds, claims):
@@ -419,6 +448,7 @@ STORE_FILES = {
     "ownership": ["ccn", "role", "owner_name"],
     "qm_mds": ["ccn", "measure_code", "quarter"],
     "qm_claims": ["ccn", "measure_code", "measure_period"],
+    "qrp": ["ccn", "measure_code", "end_date"],
     "measures": ["measure_code"],
     "state_us_averages": ["cms_month", "area"],
     "survey_dates": ["ccn", "survey_date", "type_of_survey"],
@@ -487,6 +517,9 @@ def add_release(store, tables, label=""):
         "ownership": shape_ownership(t["ownership"], month) if "ownership" in t else None,
         "qm_mds": shape_qm_mds(t["qualitymsr_mds"], month) if "qualitymsr_mds" in t else None,
         "qm_claims": shape_qm_claims(t["qualitymsr_claims"], month) if "qualitymsr_claims" in t else None,
+        "qrp": pd.concat([x for x in (shape_qrp(t["qrp"], month) if "qrp" in t else None,
+                                      shape_qrp(t["qrp_national"], month, national=True) if "qrp_national" in t else None)
+                          if x is not None], ignore_index=True) if ("qrp" in t or "qrp_national" in t) else None,
         "measures": shape_measures(t.get("qualitymsr_mds"), t.get("qualitymsr_claims")),
         "state_us_averages": shape_averages(t["stateusaverages"], month) if "stateusaverages" in t else None,
         "survey_dates": shape_surveydates(t["surveydates"], month) if "surveydates" in t else None,

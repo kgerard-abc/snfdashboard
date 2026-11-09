@@ -20,7 +20,11 @@ STORE = os.path.join(HERE, "store")
 # file name fragments the pipeline understands (same list as rinh.CMS_FILES)
 WANTED = ["ProviderInfo", "HealthCitations", "FireSafetyCitations", "Penalties", "Ownership",
           "MDS_QualityMeasures", "QualityMsr_MDS", "QualityMsrMDS", "ClaimsQualityMeasures",
-          "QualityMsr_Claims", "QualityMsrClaims", "SurveyDates", "StateUSAverages", "CitationDescriptions"]
+          "QualityMsr_Claims", "QualityMsrClaims", "SurveyDates", "StateUSAverages", "CitationDescriptions",
+          # SNF Quality Reporting Program (short rehab stays): "returned home" (discharge to community)
+          # and readmissions after leaving. CMS updates these files every three months.
+          "Skilled_Nursing_Facility_Quality_Reporting_Program_Provider_Data",
+          "Skilled_Nursing_Facility_Quality_Reporting_Program_National_Data"]
 MUST_HAVE = ["ProviderInfo", "HealthCitations", "Penalties", "Ownership", "SurveyDates"]
 
 

@@ -279,6 +279,17 @@ body.cmp-on{padding-bottom:84px}
 .ombuds strong{display:block;margin-bottom:2px}
 .ombuds a{color:var(--ink);font-weight:700;white-space:nowrap}
 .ombuds a.ombuds-name{font-weight:600;white-space:normal}
+.hosp-cta{margin:14px 0 0;font-size:15px}
+.hosp-cta a{font-weight:600}
+.reg-pick{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 8px}
+.reg-pick .reg-btn{font-size:15px;padding:8px 12px}
+.reg-pick .reg-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.hosp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin:10px 0 14px}
+.hc .hc-name{font-weight:700;font-size:16px;color:var(--ink)}
+.hc .hc-row{font-size:14px;margin-top:4px;line-height:1.45}
+.hc .hc-k{color:var(--ink-2)}
+.hc .hc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.hosp-src{margin-top:18px;max-width:75ch}
 .care h2{margin-top:28px}
 .care .card h3{margin:0 0 6px}
 .care .card p{margin:0 0 10px;line-height:1.55}
@@ -361,6 +372,7 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a href="#patterns" id="tab-patterns" title="What the harm citations of the past three years have in common">Patterns in harm citations</a>
         <a href="#owners" id="tab-owners" title="Homes grouped by the company or group that owns them">Owner groups</a>
         <a href="#about" id="tab-about" title="Where this data comes from and how to read it">About the data</a>
+        <a href="#hospital" id="tab-hospital">Leaving the hospital</a>
         <a href="#care" id="tab-care">Nursing home vs assisted living</a>
         <a class="ext first" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist.pdf" target="_blank" rel="noopener" title="Printable PDF: questions to ask and things to look for on a visit">Visit checklist <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
@@ -1250,6 +1262,7 @@ function viewHome(){
       h("h1",{text:"Rhode Island Nursing Home Records"}),
       h("p",{class:"lede",text:`Nursing homes in Rhode Island are inspected by the state for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars. This site brings together every home's ratings, staffing, inspections, fines, and owners, with monthly history back to 2019, so you can see how a home has changed over time. Each inspection links to the official report.`}),
       h("p",{class:"updated-line"}, "CMS data through the ", h("strong",{text:D.meta.latest_label}), " release. Updated each month when CMS posts new data."),
+      h("p",{class:"hosp-cta"}, h("strong",{text:"Leaving the hospital for rehab?"}), " ", h("a",{href:"#hospital",text:"Know your rights and find highly rated homes"})),
       ombudsBox()
     ),
     h("section",null, h("div",{class:"grid g4 tiles"},
@@ -2088,6 +2101,173 @@ function ombudsBox(){
     h("a",{href:"tel:+14017853340",text:"401-785-3340"}), " ", h("span",{text:"(toll-free"}), " ", h("a",{href:"tel:+18883510808",text:"1-888-351-0808"}), ").");
 }
 
+// "Leaving the hospital for rehab" (#hospital, or #hospital=<region> to open with a part of the state chosen,
+// for example #hospital=kent). Lists homes by CMS overall rating within a part of the state (by county),
+// with the short-stay measures beside each one, then the patient's rights and tips for the move.
+// Facts in the text were checked on November 9, 2026 against medicare.gov (skilled nursing facility care;
+// fast appeals), 42 CFR 482.43 (hospital discharge planning), CMS's patient status appeals page, and
+// Acentra Health's helpline list (Medicare's reviewer for Rhode Island, Region 1).
+const REGIONS = [
+  {k:"providence", n:"Providence County", towns:"Providence, Cranston, Pawtucket, East Providence, Woonsocket, and the northern towns", counties:["Providence"]},
+  {k:"kent", n:"Kent County", towns:"Warwick, Coventry, West Warwick, and East Greenwich", counties:["Kent"]},
+  {k:"south", n:"South County", towns:"Washington County: Westerly, South Kingstown, Narragansett, North Kingstown, and nearby towns", counties:["Washington"]},
+  {k:"eastbay", n:"East Bay and Newport", towns:"Bristol and Newport counties: Barrington, Bristol, Warren, Newport, Middletown, Portsmouth, and Tiverton", counties:["Bristol","Newport"]},
+];
+const REGION_BY = Object.fromEntries(REGIONS.map(x => [x.k, x]));
+function qrpPlain(c){
+  if (!c) return null;
+  if (/better/i.test(c)) return "better than the national rate";
+  if (/worse/i.test(c)) return "worse than the national rate";
+  if (/no different/i.test(c)) return "no different from the national rate";
+  if (/small|few/i.test(c)) return "too few patients for CMS to compare";
+  return null;
+}
+function usMonth(s){ const m = /^(\d{1,2})\/\d{1,2}\/(\d{4})$/.exec(String(s||"")); return m ? MON[+m[1]-1] + " " + m[2] : ""; }
+function quarterSpan(q){   // "2026Q1" -> ["Apr 2025", "Mar 2026"]: the 12 months ending with that quarter
+  const m = /^(\d{4})Q(\d)$/.exec(q||""); if (!m) return null;
+  const y = +m[1], endMo = +m[2]*3;
+  return [MON[endMo % 12] + " " + (endMo === 12 ? y : y-1), MON[endMo-1] + " " + y];
+}
+const riLast = c => { const a = D.qm_ri[c] || []; return a.length ? a[a.length-1] : null; };
+// a home's newest value for a CMS quality measure, only when it is for the same period as the RI average
+const homeQM = (ccn, c) => { const a = (D.qms[ccn]||{})[c] || [], r = riLast(c), v = a.length ? a[a.length-1] : null; return v && r && v[0] === r[0] ? v[1] : null; };
+
+function rehabCard(f){
+  const st = STATS[f.ccn] || {}, q = (D.qrp||{})[f.ccn] || {};
+  const sffNow = ser(f.ccn,"sff")[LI];
+  const pend = (((SALES && SALES.homes) || {})[f.ccn] || []).some(e => e.pending);
+  const row = (k, v, note) => h("div",{class:"hc-row"}, h("span",{class:"hc-k",text:k}), " ", v, note ? [" ", h("span",{class:"small",text:note})] : null);
+  const val = t => h("strong",{text:t});
+  const nr = () => h("span",{class:"small",text:"Not reported"});
+  const plain = qrpPlain(q.dtc_cmp);
+  const back = homeQM(f.ccn,"521"), er = homeQM(f.ccn,"522"), riB = riLast("521"), riE = riLast("522");
+  const digits = String(f.phone||"").replace(/\D/g,"");
+  return h("div",{class:"card hc"},
+    h("a",{class:"hc-name",href:"#f-"+f.ccn,text:f.name}),
+    h("div",{class:"small",text:f.town || f.city}),
+    row("Overall rating:", ratingEl(at(f.ccn,"overall",LI))),
+    row("Staffing rating:", ratingEl(at(f.ccn,"staffing",LI))),
+    q.dtc != null ? row("Returned home:", val(fmt(q.dtc,1) + "%"), plain ? "(" + plain + ")" : null)
+      : row("Returned home:", plain ? h("span",{class:"small",text:plain[0].toUpperCase() + plain.slice(1)}) : nr()),
+    row("Back to the hospital:", back != null ? val(fmt(back,1) + "%") : nr(), back != null && riB ? "(RI average " + fmt(riB[1],1) + "%)" : null),
+    row("ER visits:", er != null ? val(fmt(er,1) + "%") : nr(), er != null && riE ? "(RI average " + fmt(riE[1],1) + "%)" : null),
+    row("Harm citations (3 yrs)", val(st.harm3 == null ? "–" : String(st.harm3))),
+    row("Immediate jeopardy (3 yrs)", val(st.ij3 == null ? "–" : String(st.ij3))),
+    (sffNow || pend) ? h("div",{class:"hc-chips"},
+      sffNow === "SFF" ? h("span",{class:"chip bad",text:"Special Focus Facility"}) : sffNow ? h("span",{class:"chip",text:"Special Focus Facility candidate"}) : null,
+      pend ? h("span",{class:"chip",text:"Sale pending"}) : null) : null,
+    digits.length === 10 ? h("div",{class:"hc-row"}, h("a",{href:"tel:+1"+digits,text:phone(f.phone)})) : null
+  );
+}
+
+function viewHospital(key){
+  const P = t => h("p",{text:t});
+  const ext = (href, text) => h("a",{href, target:"_blank", rel:"noopener", text});
+  const LIb = (b, t) => h("li",null, h("strong",{text:b}), " ", h("span",{text:t}));
+  let reg = REGION_BY[key] || null;
+  if (!reg && !key){ try { reg = REGION_BY[localStorage.getItem("rinh-region")] || null; } catch(e){} }
+  let showAll = false;
+  const ovr = f => at(f.ccn,"overall",LI);
+  const rank = (a, b) => (ovr(b) ?? -1) - (ovr(a) ?? -1) || ((STATS[a.ccn]||{}).ij3||0) - ((STATS[b.ccn]||{}).ij3||0)
+    || ((STATS[a.ccn]||{}).harm3||0) - ((STATS[b.ccn]||{}).harm3||0) || a.name.localeCompare(b.name);
+
+  const btns = REGIONS.map(r => h("button",{type:"button",class:"btn-quiet reg-btn","aria-pressed":"false",text:r.n,onclick:()=>{ reg = r; showAll = false; pick(); }}));
+  const out = h("div",{class:"hosp-out","aria-live":"polite"});
+  function pick(){
+    btns.forEach((b,i) => b.setAttribute("aria-pressed", reg && REGIONS[i].k === reg.k ? "true" : "false"));
+    try { history.replaceState(null, "", reg ? "#hospital=" + reg.k : "#hospital"); } catch(e){}
+    try { if (reg) localStorage.setItem("rinh-region", reg.k); } catch(e){}
+    render();
+  }
+  function render(){
+    out.textContent = "";
+    if (!reg){ out.append(h("p",{class:"small",text:"Choose the part of the state where you'd like the nursing home to be."})); return; }
+    const all = FAC.filter(f => f.status === "Open" && f.ccn && reg.counties.includes(f.county)).sort(rank);
+    const top = all.filter(f => (ovr(f) || 0) >= 4);
+    const list = showAll ? all : top;
+    out.append(h("p",{class:"small",text:reg.towns}),
+      h("p",{class:"small"}, h("strong",{text: showAll ? `All ${all.length} nursing homes in this part of the state, highest rated first.` : `${top.length} of ${all.length} nursing homes here are rated 4 or 5 stars overall.`})),
+      h("div",{class:"hosp-list"}, ...list.map(rehabCard)));
+    if (!showAll && all.length > top.length) out.append(h("p",null, h("button",{type:"button",class:"btn-quiet",text:"Show every home in this part of the state",onclick:()=>{ showAll = true; render(); }})));
+  }
+  pick();
+
+  const nat = D.qrp_nat || {};
+  const anyQ = Object.keys(D.qrp || {}).length > 0;
+  const dtcSpan = nat.dtc_period ? [usMonth(nat.dtc_period[0]), usMonth(nat.dtc_period[1])] : null;
+  const rb = riLast("521"), clSpan = rb ? quarterSpan(rb[0]) : null;
+
+  app.append(h("section",{class:"care",style:"max-width:1000px"},
+    h("h1",{text:"Leaving the hospital for rehab"}),
+    h("p",{class:"lede",text:"If someone you care for needs rehab or skilled nursing care after a hospital stay, the hospital will ask you to choose a nursing home, often with only a day or two to decide. This page explains your rights, gives tips for the move, and lists the highest-rated nursing homes in each part of the state."}),
+
+    h("h2",{text:"Your rights when you choose"}),
+    h("ul",null,
+      LIb("You get a list.", "The hospital must give you a list of nursing homes that take Medicare and serve the area you ask about. Ask for it as early in the stay as you can."),
+      LIb("You choose.", "The hospital must tell you that you can choose among the homes, respect your choice when it can, and not limit which homes you can choose from. If you have a Medicare Advantage plan, ask the plan which homes are in its network."),
+      LIb("You get help comparing.", "The hospital must help you choose using information about each home's quality. Ask your case manager to go over these numbers with you."),
+      h("li",null, h("strong",{text:"You can appeal a discharge."}), " ",
+        h("span",{text:"You should get a notice called “An Important Message from Medicare About Your Rights.” If you think it's too soon to leave the hospital, call Acentra Health, Medicare's reviewer for Rhode Island, at"}), " ",
+        h("a",{href:"tel:+18883198452",text:"888-319-8452"}), " ",
+        h("span",{text:"no later than the day you're scheduled to leave. While you wait for the decision, you won't have to pay for the extra days, except for any coinsurance or deductible."}), " ",
+        ext("https://www.medicare.gov/claims-appeals/your-right-to-a-fast-appeal/getting-a-fast-appeal-in-a-hospital","Medicare's page on fast appeals"))),
+
+    h("h2",{text:"Tips for the move"}),
+    h("ul",null,
+      LIb("Keep your own medication list.", "Medication lists can get mixed up when a patient moves from the hospital to a nursing home. Keep an up-to-date list of every medication and dose, bring a copy, and go over it with the nurse when you arrive."),
+      LIb("Label your belongings.", "Make a list of everything you bring, and label clothing, glasses, hearing aids, dentures, and other items with your name. Keep a copy of the list."),
+      LIb("Ask what's being sent.", "Ask the hospital to send your discharge summary and medication orders to the nursing home, and ask for your own copy.")),
+
+    h("h2",{text:"Who pays for rehab"}),
+    h("ul",null,
+      LIb("The 3-day rule.", "Medicare Part A pays for rehab in a nursing home only after at least 3 days in a row as a hospital inpatient. The day you leave the hospital doesn't count, and time spent “under observation” or in the emergency room before you're admitted doesn't count either. Ask the hospital: am I an inpatient, or under observation?"),
+      LIb("When to go.", "You generally need to go into the nursing home within 30 days of leaving the hospital."),
+      LIb("How long.", "Medicare covers up to 100 days in each benefit period. In 2026, you pay nothing for days 1 to 20 (after the $1,736 Part A deductible), $217 a day for days 21 to 100, and all costs after day 100."),
+      LIb("Medicare Advantage.", "Plans can have different rules. Some don't require the 3-day hospital stay, and some charge copays during the first 20 days. Check with your plan."),
+      h("li",null, h("strong",{text:"If Medicare stops paying early."}), " ",
+        h("span",{text:"Medicare can stop paying before day 100. The nursing home should give you a “Notice of Medicare Non-Coverage” at least 2 days before. If you think it's too soon, call Acentra Health at"}), " ",
+        h("a",{href:"tel:+18883198452",text:"888-319-8452"}), " ",
+        h("span",{text:"for a fast appeal, no later than noon the day before the date on the notice."})),
+      h("li",null, h("strong",{text:"If you were moved to observation."}), " ",
+        h("span",{text:"If the hospital changed you from an inpatient to observation during your stay, you may be able to appeal."}), " ",
+        ext("https://www.cms.gov/medicare/appeals-grievances/original-medicare-appeals/hospital-appeals-change-inpatient-status-alexander-v-azar","Medicare's page on patient status appeals")),
+      h("li",null, h("strong",{text:"If you need to stay long term."}), " ",
+        h("span",{text:"Medicare doesn't pay for long-term care."}), " ",
+        h("a",{href:"#care",text:"Who pays for long-term care"}))),
+    h("p",null, ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules for nursing home care")),
+
+    h("h2",{text:"Highest-rated nursing homes by part of the state"}),
+    P("Choose the part of the state where you'd like the nursing home to be. Homes are listed by Medicare's overall star rating, highest first. A high rating is a good start, not the whole story: check each home's record, especially for harm and immediate jeopardy citations."),
+    h("div",{class:"reg-pick",role:"group","aria-label":"Part of the state"}, ...btns),
+    out,
+    h("h3",{text:"How to read this list"}),
+    h("ul",null,
+      LIb("Returned home.", "Of patients who came for rehab after a hospital stay, the share who went home and did not go back into a hospital or die in the 31 days after leaving. CMS adjusts it for how sick each home's patients were, and says whether the home is better than, no different from, or worse than the national rate. Higher is better."),
+      LIb("Back to the hospital.", "The share of short-stay patients who had to go back into the hospital after they arrived. CMS adjusts it for how sick the patients were. Lower is better."),
+      LIb("ER visits.", "The share of short-stay patients who went to an emergency room and came back without being admitted. Lower is better."),
+      LIb("Ratings.", "Medicare's overall and staffing ratings, from 1 to 5 stars."),
+      LIb("Harm and immediate jeopardy.", "Citations in the past 3 years where a resident was harmed, and how many of those were immediate jeopardy, CMS's most serious level: a resident was seriously harmed, or was likely to be."),
+      LIb("Not reported.", "CMS didn't publish a figure for this home for the newest period. Care Compare gives the reason.")),
+    nat.dtc != null ? h("p",{class:"small",text:`The national rate for “Returned home” is ${fmt(nat.dtc,1)}%.`}) : null,
+    P("Every home on this list is certified by Medicare. Tap a home's name for its full record."),
+
+    h("h2",{text:"Questions to ask the nursing home"}),
+    h("ul",null,
+      h("li",{text:"How many days a week will I get therapy? Is there therapy on weekends?"}),
+      h("li",{text:"Who will be my doctor here, and how soon will I be seen?"}),
+      h("li",{text:"How many residents does each nurse and nursing assistant care for, on day, evening, and night shifts?"}),
+      h("li",{text:"What happens if Medicare stops paying before I'm ready to go home?"}),
+      h("li",{text:"If I need to stay long term, can I stay here? Do you accept Medicaid?"}),
+      h("li",{text:"Who plans my discharge home, and who arranges home care and equipment?"})),
+    h("p",null, h("span",{text:"Bring our visit checklist with you:"}), " ", ext("visit-checklist.pdf","Visit checklist (PDF)"), " · ", ext("visit-checklist-large-print.pdf","Large print (PDF)")),
+    ombudsBox(),
+    h("p",{class:"small hosp-src"},
+      h("span",{text:`Sources: CMS Care Compare nursing home files, ${D.meta.latest_label} release.`}),
+      anyQ && dtcSpan ? [" ", h("span",{text:`“Returned home” covers stays that ended ${dtcSpan[0]} to ${dtcSpan[1]}.`})] : null,
+      clSpan ? [" ", h("span",{text:`“Back to the hospital” and “ER visits” cover ${clSpan[0]} to ${clSpan[1]}.`})] : null)
+  ));
+}
+
 // "Which kind of care?": kg's own text from the visit checklist and the two sites' "learn more" boxes, in one place.
 function viewCare(){
   const P = (t)=>h("p",{text:t});
@@ -2100,7 +2280,7 @@ function viewCare(){
       h("div",{class:"card"},
         h("h3",{text:"Nursing homes"}),
         P("Nursing homes fit people who need most kinds of nursing care, or who can't move in and out of bed without help from two or more staff members."),
-        P("They are inspected annually and when RIDOH receives complaints or incident reports by the state Department of Health (RIDOH) for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars."),
+        P("They are inspected annually and when RIDOH receives complaints or incident reports. The state Department of Health (RIDOH) inspects them for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars."),
         h("p",null, h("a",{href:"#home",text:"Look up a nursing home"}))),
       h("div",{class:"card"},
         h("h3",{text:"Assisted living residences"}),
@@ -2112,7 +2292,7 @@ function viewCare(){
     h("div",{class:"grid g2"},
       h("div",{class:"card"},
         h("h3",{text:"Nursing homes"}),
-        h("p",null, h("span",{text:"Medicare pays for a short stay for skilled nursing care or rehab after at least 3 days in a row as a hospital inpatient. It covers up to 100 days, and after day 20 the resident pays a daily share."}), " ", ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules")),
+        h("p",null, h("span",{text:"Medicare pays for a short stay for skilled nursing care or rehab after at least 3 days in a row as a hospital inpatient. It covers up to 100 days, and after day 20 the resident pays a daily share."}), " ", ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules"), " · ", h("a",{href:"#hospital",text:"Leaving the hospital for rehab"})),
         h("p",null, h("span",{text:"Medicare does not pay for long-term care. For a long stay, residents pay privately or, if they qualify, through Medicaid."}), " ", ext("https://www.medicare.gov/coverage/long-term-care","Medicare's explanation"))),
       h("div",{class:"card"},
         h("h3",{text:"Assisted living residences"}),
@@ -2157,18 +2337,19 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","patterns","owners","about","care"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  ["home","harms","patterns","owners","about","hospital","care"].forEach(t => { const on = hsh===t || (t==="hospital" && hsh.startsWith("hospital=")) || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
   else if (hsh==="patterns") viewPatterns();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
   else if (hsh==="care") viewCare();
+  else if (hsh==="hospital" || hsh.startsWith("hospital=")) viewHospital(hsh.slice(9));
   else viewHome();
   footer();
   if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
-  document.title = f ? f.name + " · Rhode Island Nursing Homes" : hsh==="care" ? "Which kind of care? · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : hsh==="care" ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
   if (f) gcEvent(f.name);
 }
 // GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is
