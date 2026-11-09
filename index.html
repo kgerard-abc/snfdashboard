@@ -280,6 +280,14 @@ body.cmp-on{padding-bottom:84px}
   .homes-tbl td.c-adj,.homes-tbl td.c-adj12,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
   .homes-tbl.sort-adj12 td.c-adj12{display:block}
 }
+.ombuds{margin:20px 0 0;max-width:640px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;font-size:16px;line-height:1.5}
+.ombuds strong{display:block;margin-bottom:2px}
+.ombuds a{color:var(--ink);font-weight:700;white-space:nowrap}
+.care h2{margin-top:28px}
+.care .card h3{margin:0 0 6px}
+.care .card p{margin:0 0 10px;line-height:1.55}
+.care ul{padding-left:20px;margin:6px 0 0}
+.care li{margin:0 0 8px;line-height:1.5}
 footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
 footer p{max-width:90ch;margin:0 0 10px}
 @media (max-width:560px){
@@ -1205,9 +1213,11 @@ function viewHome(){
         h("div",{class:"learn-more-body"},
           h("p",null,"Long-term care for adults in RI generally falls into three categories: skilled nursing facilities (SNFs, what this site covers), assisted living residences (ALRs, also called ALFs), and various supportive residences for people with developmental disabilities or other special needs."),
           h("p",null,"Nursing homes are appropriate for residents receiving most kinds of nursing care, or who can't transfer in and out of bed without help from two or more staff members. They're certified and rated by CMS, which is what this site tracks. Assisted living residences may be appropriate for residents who need help with daily activities like bathing, dressing, and medication management, but not skilled nursing care; they're regulated only by the state (RIDOH), not CMS, so they don't get star ratings."),
-          h("p",null,"Looking for an assisted living residence instead? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site.")
+          h("p",null,"Looking for an assisted living residence instead? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site."),
+          h("p",null,"More, including who pays for each: ", h("a",{href:"#care",text:"Which kind of care?"}))
         )
-      )
+      ),
+      ombudsBox()
     ),
     h("section",null, h("div",{class:"grid g4 tiles"},
       tile("Homes open now", String(open.length), `${Math.round(beds).toLocaleString()} certified beds, about ${Math.round(res).toLocaleString()} residents a day`),
@@ -2032,10 +2042,73 @@ function viewFacility(ccn){
     h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})])))));
 }
 
+// The Long-Term Care Ombudsman Program's number, on the home page and the "Which kind of care?" page.
+// Source: RI Office of Healthy Aging, oha.ri.gov/what-we-do/protect/ombudsman-program (checked November 8, 2026).
+function ombudsBox(){
+  return h("aside",{class:"ombuds","aria-label":"Long-Term Care Ombudsman Program"},
+    h("strong",{text:"Have a concern about care?"}),
+    h("span",{text:"The Rhode Island Long-Term Care Ombudsman Program advocates for residents of nursing homes and assisted living residences. Residents and families can call"}), " ",
+    h("a",{href:"tel:+14017853340",text:"401-785-3340"}), " ", h("span",{text:"(toll-free"}), " ", h("a",{href:"tel:+18883510808",text:"1-888-351-0808"}), ").");
+}
+
+// "Which kind of care?": kg's own text from the visit checklist and the two sites' "learn more" boxes, in one place.
+function viewCare(){
+  const P = (t)=>h("p",{text:t});
+  const ext = (href, text)=>h("a",{href, target:"_blank", rel:"noopener", text});
+  app.append(h("section",{class:"care",style:"max-width:1000px"},
+    h("h1",{text:"Nursing home or assisted living: which kind of care?"}),
+    h("p",{class:"lede",text:"Long-term care for adults in Rhode Island generally falls into three categories: skilled nursing facilities (nursing homes), assisted living residences (also called ALRs or ALFs), and supportive residences for people with developmental disabilities or other special needs. Our sites cover the first two. This page explains the difference, who pays, and what the public data can and can't tell you."}),
+    h("h2",{text:"Who each one fits"}),
+    h("div",{class:"grid g2"},
+      h("div",{class:"card"},
+        h("h3",{text:"Nursing homes"}),
+        P("Nursing homes fit people who need most kinds of nursing care, or who can't move in and out of bed without help from two or more staff members."),
+        P("They are inspected by the state Department of Health (RIDOH) for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars."),
+        h("p",null, h("a",{href:"#home",text:"Look up a nursing home on this site"}))),
+      h("div",{class:"card"},
+        h("h3",{text:"Assisted living residences"}),
+        P("Assisted living residences fit people who need help with daily activities like bathing and dressing, or with managing medications (including insulin). They also provide housekeeping, laundry, transportation, activities, and meals. Some have secure units with special care for residents living with dementia, and some hold a “limited health services” license that lets them provide some nursing care, such as simple wound care and urinary catheter care."),
+        P("They are regulated only by the state (RIDOH), not by CMS, so they don't get star ratings."),
+        h("p",null, ext("https://alinspections.abc-ri.org/","Look up an assisted living residence on our assisted living site")))),
+    h("h2",{text:"Who pays"}),
+    h("div",{class:"grid g2"},
+      h("div",{class:"card"},
+        h("h3",{text:"Nursing homes"}),
+        h("p",null, h("span",{text:"Medicare pays for a short stay for skilled nursing care or rehab after at least 3 days in a row as a hospital inpatient. It covers up to 100 days, and after day 20 the resident pays a daily share."}), " ", ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules")),
+        h("p",null, h("span",{text:"Medicare does not pay for long-term care. For a long stay, residents pay privately or, if they qualify, through Medicaid."}), " ", ext("https://www.medicare.gov/coverage/long-term-care","Medicare's explanation"))),
+      h("div",{class:"card"},
+        h("h3",{text:"Assisted living residences"}),
+        P("Medicare does not pay for assisted living. Most residences are private pay only, but some take part in state waiver programs that let residents pay through Medicaid or SSI. Most residences that accept Medicaid require residents to pay privately for 2 to 3 years before they can switch to Medicaid. Policies differ, so call each residence and ask."))),
+    h("h2",{text:"What the data can tell you"}),
+    h("div",{class:"grid g2"},
+      h("div",{class:"card"},
+        h("h3",{text:"Reading nursing home data"}),
+        h("ul",null,
+          h("li",null, h("strong",{text:"Inspections."}), " ", h("span",{text:"Inspectors cite problems on a scale of A to L for how widespread and how harmful they were. G to I means actual harm. J, K, and L are “immediate jeopardy,” the most serious. Look for fewer and less severe citations, and fewer substantiated complaints."})),
+          h("li",null, h("strong",{text:"Star ratings."}), " ", h("span",{text:"Medicare gives each home 1 to 5 stars overall, plus separate stars for inspections, staffing, and quality measures. They're complicated and imperfect, but a good place to start. Many problems go uncited."})),
+          h("li",null, h("strong",{text:"Staffing."}), " ", h("span",{text:"Look at total nursing hours per resident per day (nurses and nursing assistants combined). Higher means more hands on direct care. Residents with higher needs require more."})),
+          h("li",null, h("strong",{text:"Turnover."}), " ", h("span",{text:"The share of nursing staff who leave each year. Lower turnover means more consistent care and usually happier staff."})),
+          h("li",null, h("strong",{text:"Ownership."}), " ", ext("https://medicareadvocacy.org/non-profit-vs-for-profit-nursing-homes-is-there-a-difference-in-care/","Studies"), " ", h("span",{text:"find that the type of ownership affects quality of care."}))
+        )),
+      h("div",{class:"card"},
+        h("h3",{text:"Reading assisted living data"}),
+        h("ul",null,
+          h("li",null, h("strong",{text:"Inspections."}), " ", h("span",{text:"RIDOH inspects each residence every two years, and more often when it receives a complaint. There is no scale of severity, the rules are fewer, and although RIDOH has the legal authority to fine assisted living residences, representatives have said its policy is not to use it. Look for fewer problems, fewer complaint investigations, and less severe findings."})),
+          h("li",null, h("strong",{text:"No star ratings."}), " ", h("span",{text:"Assisted living is regulated by the state only, not by Medicare. The inspection reports are the only data available."})),
+          h("li",null, h("strong",{text:"Staffing."}), " ", h("span",{text:"RIDOH does not track staffing ratios or turnover. The law requires only “sufficient” staff to meet residents' needs. Ask for the numbers yourself."})),
+          h("li",null, h("strong",{text:"Bottom line."}), " ", h("span",{text:"Use the inspection data as a starting point, then spend as much time as you can visiting and asking around."}))
+        ))),
+    h("h2",{text:"Before you decide"}),
+    P("Choosing a residence for yourself or a loved one is never easy. Visit more than once, at different times of day and on weekends. Talk with residents and families, and ask friends about their own experiences. Then check the public data."),
+    h("p",null, h("span",{text:"Bring our visit checklist with you:"}), " ", ext("visit-checklist.pdf","Visit checklist (PDF)"), " · ", ext("visit-checklist-large-print.pdf","Large print (PDF)")),
+    ombudsBox()
+  ));
+}
+
 function footer(){
   app.append(h("footer",null,
     h("p",null, h("strong",null, h("a",{href:"https://www.abc-ri.org/",text:"Advocates for Better Care in\u00A0Rhode\u00A0Island (ABC-RI)"})), " ", h("span",{text:"is an independent advocacy organization dedicated to protecting the rights and improving the care of long-term care residents in\u00A0Rhode\u00A0Island."})),
-    h("p",null, h("span",{text:"Our public data sites:"}), " ", h("strong",{text:"Nursing home dashboard (this site)"}), " \u00B7 ", h("a",{href:"https://snfsales.abc-ri.org/",text:"Nursing home sales"}), " \u00B7 ", h("a",{href:"https://alinspections.abc-ri.org/",text:"Assisted living inspections"})),
+    h("p",null, h("span",{text:"Our public data sites:"}), " ", h("strong",{text:"Nursing home dashboard (this site)"}), " \u00B7 ", h("a",{href:"https://snfsales.abc-ri.org/",text:"Nursing home sales"}), " \u00B7 ", h("a",{href:"https://alinspections.abc-ri.org/",text:"Assisted living inspections"}), " \u00B7 ", h("a",{href:"#care",text:"Which kind of care?"})),
     h("p",null, h("strong",{text:"About this page."}), " This page is published by Advocates for Better Care in Rhode Island (ABC-RI), an independent advocacy organization. It is not produced, reviewed, or endorsed by CMS, the Rhode Island Department of Health (RIDOH), or any state agency, and it is not a substitute for their records."),
     h("p",{text:`Ratings, staffing, inspections, fines, and ownership come from the CMS Care Compare nursing home files, monthly releases January 2019 to ${D.meta.latest_label}. Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from the sources named on each home's page. The linked CMS inspection report is the official record; if anything here conflicts with it, the report governs. Updated ${D.meta.built}.`}),
     h("p",null, "Spotted an error? Email ", h("strong",{text:"corrections@abc-ri.org"}), ".")));
@@ -2051,11 +2124,12 @@ function route(){
   else if (hsh==="patterns") viewPatterns();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
+  else if (hsh==="care") viewCare();
   else viewHome();
   footer();
   if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
-  document.title = f ? f.name + " · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : hsh==="care" ? "Which kind of care? · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
   if (f) gcEvent(f.name);
 }
 // GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is
