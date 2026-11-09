@@ -290,6 +290,8 @@ body.cmp-on{padding-bottom:84px}
 .hc .hc-k{color:var(--ink-2)}
 .hc .hc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .hosp-src{margin-top:18px;max-width:75ch}
+a[href^="tel:"]{white-space:nowrap}
+.care p,.care li{text-wrap:pretty}
 .care h2{margin-top:28px}
 .care .card h3{margin:0 0 6px}
 .care .card p{margin:0 0 10px;line-height:1.55}
@@ -2233,7 +2235,7 @@ function viewHospital(key){
         ext("https://www.cms.gov/medicare/appeals-grievances/original-medicare-appeals/hospital-appeals-change-inpatient-status-alexander-v-azar","Medicare's page on patient status appeals")),
       h("li",null, h("strong",{text:"If you need to stay long term."}), " ",
         h("span",{text:"Medicare doesn't pay for long-term care."}), " ",
-        h("a",{href:"#care",text:"Who pays for long-term care"}))),
+        h("a",{href:"#costs",text:"What long-term care costs, and who pays"}))),
     h("p",null, ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules for nursing home care")),
 
     h("h2",{text:"Highest-rated nursing homes by part of the state"}),
@@ -2293,10 +2295,29 @@ function viewCare(){
       h("div",{class:"card"},
         h("h3",{text:"Nursing homes"}),
         h("p",null, h("span",{text:"Medicare pays for a short stay for skilled nursing care or rehab after at least 3 days in a row as a hospital inpatient. It covers up to 100 days, and after day 20 the resident pays a daily share."}), " ", ext("https://www.medicare.gov/coverage/skilled-nursing-facility-care","Medicare's rules"), " · ", h("a",{href:"#hospital",text:"Leaving the hospital for rehab"})),
-        h("p",null, h("span",{text:"Medicare does not pay for long-term care. For a long stay, residents pay privately or, if they qualify, through Medicaid."}), " ", ext("https://www.medicare.gov/coverage/long-term-care","Medicare's explanation"))),
+        h("p",null, h("span",{text:"Medicare does not pay for long-term care. For a long stay, residents pay privately or, if they qualify, through Medicaid."}), " ", ext("https://www.medicare.gov/coverage/long-term-care","Medicare's explanation"), " · ", h("a",{href:"#costs",text:"What care costs"}))),
       h("div",{class:"card"},
         h("h3",{text:"Assisted living residences"}),
         P("Medicare does not pay for assisted living. Most residences are private pay only, but some take part in state waiver programs that let residents pay through Medicaid or SSI. Some residences that accept Medicaid require residents to pay privately for 2 to 3 years before they can switch to Medicaid. Policies differ, so call each residence and ask. Our assisted living site shows which residences accept Medicaid."))),
+    // Costs: CareScout's 2025 Cost of Care Survey for Rhode Island (medians; press release of March 2, 2026),
+    // The POINT (oha.ri.gov/get-help), and the RI Bar Association's Lawyer Referral Service (ribar.com staff
+    // contacts page, which lists its Referral Service for the Elderly under the same number). Checked November 9, 2026.
+    h("div",{class:"card",id:"costs",style:"margin-top:14px"},
+      h("h3",{text:"What care costs, and paying with Medicaid"}),
+      P("Typical costs in Rhode Island in 2025:"),
+      h("ul",null,
+        h("li",{text:"Nursing home, shared room: $145,270 a year (about $12,100 a month)"}),
+        h("li",{text:"Nursing home, private room: $160,600 a year (about $13,400 a month)"}),
+        h("li",{text:"Assisted living, one-bedroom: $93,366 a year (about $7,800 a month)"})),
+      h("p",{class:"small"}, h("span",{text:"These are medians: half of places charge more and half charge less. Source:"}), " ",
+        ext("https://www.businesswire.com/news/home/20260302310682/en/CareScout-Releases-2025-Cost-of-Care-Data-for-Rhode-Island","CareScout Cost of Care Survey, 2025")),
+      P("Medicaid can pay for long-term nursing home care, and for assisted living at residences that take part in the state's programs, for people whose income and savings are low enough to qualify. Many people pay privately until their savings are spent down, and then apply."),
+      h("p",null, h("strong",{text:"Get free help."}), " ",
+        h("span",{text:"The POINT, Rhode\u00A0Island's aging and disability resource center, can help you understand your options and apply for Medicaid and other programs. Call"}), " ",
+        h("a",{href:"tel:+14014624444",text:"401-462-4444"}), "."),
+      h("p",null, h("strong",{text:"Talk with an elder law attorney early."}), " ",
+        h("span",{text:"Before you start spending savings on care, an elder law attorney can explain Medicaid's rules on income, savings, and gifts, and help you plan. Some mistakes can delay Medicaid coverage. The Rhode\u00A0Island Bar Association's lawyer referral service can help you find one:"}), " ",
+        h("a",{href:"tel:+14014217799",text:"401-421-7799"}), ".")),
     h("h2",{text:"What the data can tell you"}),
     h("div",{class:"grid g2"},
       h("div",{class:"card"},
@@ -2337,19 +2358,20 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","patterns","owners","about","hospital","care"].forEach(t => { const on = hsh===t || (t==="hospital" && hsh.startsWith("hospital=")) || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  ["home","harms","patterns","owners","about","hospital","care"].forEach(t => { const on = hsh===t || (t==="hospital" && hsh.startsWith("hospital=")) || (t==="care" && hsh==="costs") || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
   else if (hsh==="patterns") viewPatterns();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
-  else if (hsh==="care") viewCare();
+  else if (hsh==="care" || hsh==="costs") viewCare();
   else if (hsh==="hospital" || hsh.startsWith("hospital=")) viewHospital(hsh.slice(9));
   else viewHome();
   footer();
-  if (hsh !== "list") window.scrollTo(0,0);
+  if (hsh === "costs") { const c = document.getElementById("costs"); if (c) c.scrollIntoView(); }
+  else if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
-  document.title = f ? f.name + " · Rhode Island Nursing Homes" : hsh==="care" ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
   if (f) gcEvent(f.name);
 }
 // GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is

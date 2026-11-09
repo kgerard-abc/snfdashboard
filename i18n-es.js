@@ -1,6 +1,20 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  "What care costs, and paying with Medicaid": "Lo que cuesta el cuidado y cómo pagar con Medicaid",
+  "Typical costs in Rhode Island in 2025:": "Costos típicos en Rhode Island en 2025:",
+  "Nursing home, shared room: $145,270 a year (about $12,100 a month)": "Hogar de ancianos, habitación compartida: $145,270 al año (unos $12,100 al mes)",
+  "Nursing home, private room: $160,600 a year (about $13,400 a month)": "Hogar de ancianos, habitación privada: $160,600 al año (unos $13,400 al mes)",
+  "Assisted living, one-bedroom: $93,366 a year (about $7,800 a month)": "Vida asistida, apartamento de un dormitorio: $93,366 al año (unos $7,800 al mes)",
+  "These are medians: half of places charge more and half charge less. Source:": "Son medianas: la mitad de los lugares cobra más y la otra mitad cobra menos. Fuente:",
+  "CareScout Cost of Care Survey, 2025": "Encuesta de Costos de Cuidado de CareScout, 2025 (en inglés)",
+  "Medicaid can pay for long-term nursing home care, and for assisted living at residences that take part in the state's programs, for people whose income and savings are low enough to qualify. Many people pay privately until their savings are spent down, and then apply.": "Medicaid puede pagar los cuidados a largo plazo en un hogar de ancianos, y la vida asistida en las residencias que participan en los programas del estado, para las personas cuyos ingresos y ahorros son lo bastante bajos para calificar. Muchas personas pagan por su cuenta hasta gastar sus ahorros, y luego presentan la solicitud.",
+  "Get free help.": "Reciba ayuda gratuita.",
+  "The POINT, Rhode Island's aging and disability resource center, can help you understand your options and apply for Medicaid and other programs. Call": "The POINT, el centro de recursos para personas mayores y con discapacidades de Rhode Island, puede ayudarle a entender sus opciones y a solicitar Medicaid y otros programas. Llame al",
+  "Talk with an elder law attorney early.": "Hable pronto con un abogado especializado en derecho de personas mayores.",
+  "Before you start spending savings on care, an elder law attorney can explain Medicaid's rules on income, savings, and gifts, and help you plan. Some mistakes can delay Medicaid coverage. The Rhode Island Bar Association's lawyer referral service can help you find one:": "Antes de empezar a gastar sus ahorros en cuidados, un abogado especializado en derecho de personas mayores puede explicarle las reglas de Medicaid sobre ingresos, ahorros y regalos, y ayudarle a planificar. Algunos errores pueden retrasar la cobertura de Medicaid. El servicio de referencia de abogados del Colegio de Abogados de Rhode Island puede ayudarle a encontrar uno:",
+  "What long-term care costs, and who pays": "Lo que cuestan los cuidados a largo plazo y quién paga",
+  "What care costs": "Lo que cuesta el cuidado",
   "If someone you care for needs rehab or skilled nursing care after a hospital stay, the hospital will ask you to choose a nursing home, often with only a day or two to decide. This page explains your rights, gives tips for the move, and lists the highest-rated nursing homes in each part of the state.": "Si una persona a quien usted cuida necesita rehabilitación o cuidados de enfermería especializada después de una estadía en el hospital, el hospital le pedirá que elija un hogar de ancianos, muchas veces con solo uno o dos días para decidir. Esta página explica sus derechos, da consejos para el traslado y muestra los hogares de ancianos mejor calificados en cada zona del estado.",
   "Know your rights and find highly rated homes": "Conozca sus derechos y encuentre hogares bien calificados",
   "Tips for the move": "Consejos para el traslado",
@@ -82,7 +96,6 @@ window.RINH_ES = {
   "Medicare's page on patient status appeals": "Página de Medicare sobre apelaciones por cambio de estado del paciente (en inglés)",
   "If you need to stay long term.": "Si necesita quedarse a largo plazo.",
   "Medicare doesn't pay for long-term care.": "Medicare no paga los cuidados a largo plazo.",
-  "Who pays for long-term care": "Quién paga los cuidados a largo plazo",
   "Medicare's rules for nursing home care": "Reglas de Medicare para el cuidado en hogares de ancianos (en inglés)",
   "Questions to ask the nursing home": "Preguntas para el hogar de ancianos",
   "How many days a week will I get therapy? Is there therapy on weekends?": "¿Cuántos días a la semana recibiré terapia? ¿Hay terapia los fines de semana?",
