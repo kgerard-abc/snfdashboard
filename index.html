@@ -223,14 +223,6 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .morebtn{margin-top:10px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink-2);text-decoration:underline;font-size:13.5px}
 .morebtn:hover{color:var(--ink)}
 .sev-key{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--ink-2);margin:8px 0 12px}
-.learn-more{border:1px solid var(--line);border-radius:var(--r);margin:16px 0 0;max-width:640px}
-.learn-more summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px;color:var(--ink-2);list-style:none}
-.learn-more summary::-webkit-details-marker{display:none}
-.learn-more summary::before{content:"▸";display:inline-block;margin-right:8px;transition:transform .15s}
-.learn-more[open] summary::before{transform:rotate(90deg)}
-.learn-more-body{padding:0 14px 14px;font-size:14px;color:var(--ink-2);line-height:1.55}
-.learn-more-body p{margin:0 0 10px}
-.learn-more-body a{color:var(--accent)}
 .sev-key span{display:inline-flex;gap:8px;align-items:center}
 .sev-key .sev{width:34px}
 .list-key{max-width:100ch;margin:0 0 10px;color:var(--ink-2)}
@@ -366,6 +358,7 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a href="#patterns" id="tab-patterns" title="What the harm citations of the past three years have in common">Patterns in harm citations</a>
         <a href="#owners" id="tab-owners" title="Homes grouped by the company or group that owns them">Owner groups</a>
         <a href="#about" id="tab-about" title="Where this data comes from and how to read it">About the data</a>
+        <a href="#care" id="tab-care">Nursing home vs assisted living</a>
         <a class="ext first" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist.pdf" target="_blank" rel="noopener" title="Printable PDF: questions to ask and things to look for on a visit">Visit checklist <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
         <a class="ext" href="visit-checklist-large-print.pdf" target="_blank" rel="noopener" title="Same visit checklist in large print">Visit checklist (large print) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
@@ -1209,16 +1202,6 @@ function viewHome(){
       h("h1",{text:"Rhode Island Nursing Home Records"}),
       h("p",{class:"lede",text:`Nursing homes in Rhode Island are inspected by the state for the federal Centers for Medicare & Medicaid Services (CMS), which rates each home from 1 to 5 stars. This site brings together every home's ratings, staffing, inspections, fines, and owners, with monthly history back to 2019, so you can see how a home has changed over time. Each inspection links to the official report.`}),
       h("p",{class:"updated-line"}, "CMS data through the ", h("strong",{text:D.meta.latest_label}), " release. Updated each month when CMS posts new data."),
-      h("details",{class:"learn-more"},
-        h("summary",{text:"What's the difference between a nursing home and assisted living?"}),
-        h("div",{class:"learn-more-body"},
-          h("p",null,"Long-term care for adults in RI generally falls into three categories: skilled nursing facilities (SNFs, what this site covers), assisted living residences (ALRs, also called ALFs), and various supportive residences for people with developmental disabilities or other special needs."),
-          h("p",null,"Nursing homes are appropriate for residents receiving most kinds of nursing care, or who can't transfer in and out of bed without help from two or more staff members. They're certified and rated by CMS, which is what this site tracks. Assisted living residences may be appropriate for residents who need help with daily activities like bathing, dressing, and medication management, but not skilled nursing care; they're regulated only by the state (RIDOH), not CMS, so they don't get star ratings."),
-          h("p",null,"Some assisted living residences have a special license for a secure dementia care (“memory care”) unit and/or limited health services (wound care, ostomy care, urinary catheter care), as well."),
-          h("p",null,"Looking for an assisted living residence instead? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site."),
-          h("p",null,"More, including who pays for each: ", h("a",{href:"#care",text:"Which kind of care?"}))
-        )
-      ),
       ombudsBox()
     ),
     h("section",null, h("div",{class:"grid g4 tiles"},
@@ -2122,7 +2105,7 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","patterns","owners","about"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  ["home","harms","patterns","owners","about","care"].forEach(t => { const on = hsh===t || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
   else if (hsh==="patterns") viewPatterns();
