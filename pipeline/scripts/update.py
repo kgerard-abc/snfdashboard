@@ -22,12 +22,13 @@ ROOT = os.path.dirname(HERE)
 STORE = os.path.join(ROOT, "store")
 
 
-def main(paths):
+def main(paths, force=False):
     store = rinh.load_store(STORE)
     if not paths:
         # no files named: use every zip in the new_cms_zips folder that hasn't been loaded yet
+        # (with --force, reload them anyway: a forced download of a month already loaded has the same file name)
         folder = os.path.join(ROOT, "new_cms_zips")
-        done = set(store["releases_loaded"]["source"]) if store.get("releases_loaded") is not None else set()
+        done = set(store["releases_loaded"]["source"]) if store.get("releases_loaded") is not None and not force else set()
         paths = sorted(os.path.join(folder, f) for f in os.listdir(folder) if f.lower().endswith(".zip") and f not in done) \
             if os.path.isdir(folder) else []
         if not paths:
@@ -42,4 +43,5 @@ def main(paths):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    args = [a for a in sys.argv[1:] if a != "--force"]
+    main(args, force="--force" in sys.argv[1:])

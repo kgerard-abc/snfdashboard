@@ -76,6 +76,7 @@ KEY_QMS = {  # MDS and claims measures shown on the dashboard
     "551": "Hospitalizations per 1,000 long-stay resident days",
     "552": "ER visits per 1,000 long-stay resident days",
     "521": "Short-stay residents rehospitalized (%)",
+    "522": "Short-stay residents with an outpatient ER visit (%)",
 }
 
 
@@ -120,6 +121,8 @@ def load(root):
     d = {n: rd(n) for n in ["provider_monthly", "health_citations", "fire_citations", "penalties", "ownership",
                             "qm_mds", "qm_claims", "measures", "state_us_averages", "survey_dates", "tags",
                             "releases_loaded"]}
+    qrp_p = os.path.join(st, "qrp.csv")   # SNF Quality Reporting Program (added November 2026; absent until the first run that downloads it)
+    d["qrp"] = rd("qrp") if os.path.exists(qrp_p) else None
     hist_p = os.path.join(st, "kg_2017_2018_ratings.csv")
     d["hist"] = pd.read_csv(hist_p, dtype=str) if os.path.exists(hist_p) else None
     d["extras"] = pd.read_excel(os.path.join(root, "facility_extras.xlsx"), sheet_name="Extras", dtype=str).fillna("")
@@ -383,7 +386,7 @@ def derive(d):
         qc[c] = num(qc[c])
 
     return dict(pm=pm, months=months, all_months=all_months, latest=latest, fac=fac, names=names, cit=cit, cy=cy,
-                pen=pen, py=py, own=own, current=current, og=og, avg=avg, qm=qm, qc=qc, meas=meas, name_of=name_of,
+                pen=pen, py=py, own=own, current=current, og=og, avg=avg, qm=qm, qc=qc, meas=meas, name_of=name_of, qrp=d.get("qrp"),
                 releases=d["releases_loaded"], tags=d["tags"], surveys=d["survey_dates"])
 
 
@@ -773,6 +776,37 @@ def write_dashboard_data(D, path):
                 rows.setdefault(q, []).append(s)
         qm_ri[code] = [[q, round(sum(v) / len(v), 2)] for q, v in sorted(rows.items())]
 
+    # Short rehab stays ("Leaving the hospital" page): CMS's discharge to community and readmission measures,
+    # newest period only. Scores stay as CMS gives them (risk-standardized percentages); the comparison
+    # category ("Better than the National Rate" and so on) is CMS's own, not ABC-RI's.
+    qrp_out, qrp_nat = {}, {}
+    if D.get("qrp") is not None and len(D["qrp"]):
+        q = D["qrp"].copy()
+        q["_end"] = pd.to_datetime(q["end_date"], errors="coerce")   # CMS writes MM/DD/YYYY, so compare real dates
+        q = q[q["_end"].notna() & (q["_end"] == q.groupby("measure_code")["_end"].transform("max"))]
+        short = {"S_005_02_DTC_RS_RATE": "dtc", "S_005_02_DTC_RS_RATE_2_5": "dtc_lo", "S_005_02_DTC_RS_RATE_97_5": "dtc_hi",
+                 "S_005_02_DTC_COMP_PERF": "dtc_cmp", "S_005_02_DTC_VOLUME": "dtc_n", "S_004_01_PPR_PD_RSRR": "ppr",
+                 "S_004_01_PPR_PD_COMP_PERF": "ppr_cmp", "S_004_01_PPR_PD_VOLUME": "ppr_n",
+                 "S_005_02_DTC_NAT_OBS_RATE": "dtc", "S_004_01_PPR_PD_NAT_UNADJUST_AVG": "ppr"}
+        for _, r in q.iterrows():
+            k = short.get(r["measure_code"])
+            if not k:
+                continue
+            v = r["score"]
+            if k.endswith("_cmp"):
+                v = None if pd.isna(v) or str(v).strip() in ("", "Not Available") else str(v).strip()
+            else:
+                v = pd.to_numeric(v, errors="coerce")
+                v = None if pd.isna(v) else round(float(v), 2)
+            if r["ccn"] == "NATION":
+                qrp_nat[k] = v
+                qrp_nat[k + "_period"] = [r["start_date"], r["end_date"]]
+            else:
+                e = qrp_out.setdefault(r["ccn"], {})
+                e[k] = v
+                if k == "dtc":
+                    e["period"] = [r["start_date"], r["end_date"]]
+
     data = {
         "meta": {"latest": D["latest"], "latest_label": month_label(D["latest"]), "built": datetime.now().strftime("%Y-%m-%d"),
                  "first": months[0], "cms_first": D["months"][0]},
@@ -780,7 +814,7 @@ def write_dashboard_data(D, path):
         "metrics": [{"key": k, "label": lbl, "better": b} for k, _, lbl, b in METRICS],
         "facilities": fac, "series": series, "avg": avg, "statewide": statewide,
         "citations": cits, "tags": tags, "penalties": pens, "owners": owners, "names": names,
-        "qm_labels": KEY_QMS, "qms": qms, "qm_ri": qm_ri, "surveys": surveys,
+        "qm_labels": KEY_QMS, "qms": qms, "qm_ri": qm_ri, "surveys": surveys, "qrp": qrp_out, "qrp_nat": qrp_nat,
         "links": {"pdf": CC_PDF, "cc": CC_PAGE, "pp": PROPUBLICA, "pbj320": PBJ320},
         "harm_summaries": D.get("harm_summaries", {}),
     }

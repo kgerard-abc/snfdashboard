@@ -66,7 +66,7 @@ jobs:
         run: |
           cd pipeline
           cp ../data.js ../data.previous.js
-          python3 scripts/update.py
+          if [ "${{ inputs.force }}" = "true" ]; then python3 scripts/update.py --force; else python3 scripts/update.py; fi
           cp out/dashboard/data.js ../data.js
 
       - name: Safety checks before anything is published
