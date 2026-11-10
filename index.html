@@ -410,6 +410,9 @@ footer p{max-width:90ch;margin:0 0 10px}
 .tm-popup-close{position:absolute;right:2px;top:2px;width:32px;height:32px;font-size:22px;line-height:1;color:var(--muted);background:none;border:none;cursor:pointer}
 .pop-name{font-weight:700;font-size:15px;margin:0 24px 4px 0}
 .pop-line{color:var(--muted);font-size:13px;margin:0 0 3px}
+.tm-tip{position:absolute;left:0;top:0;z-index:7;max-width:min(260px,calc(100% - 8px));background:var(--ink);color:var(--bg);font-size:13px;line-height:1.4;padding:6px 10px;border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.35);pointer-events:none}
+.tm-tip .tm-tip-name{font-weight:700}
+.tm-tip .tm-tip-note{font-size:12px;opacity:.85}
 .pop-btn{display:block;width:100%;margin-top:10px;font-family:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:none;border-radius:3px;padding:9px 12px;cursor:pointer}
   ul.patterns { padding-left: 22px; }
   ul.patterns li { margin: 0 0 10px; }
@@ -531,6 +534,46 @@ function makeMap(root, cb){
   const hint = mk("div","tm-hint"); hint.textContent="Use Ctrl + scroll to zoom the map"; hint.setAttribute("aria-hidden","true");
   const popupEl = mk("div","tm-popup"); popupEl.hidden=true; popupEl.setAttribute("role","group");
   [tilePane, markerPane, ctl, attr, hint, popupEl].forEach(e => root.appendChild(e));
+  /* Hover label: a pin's name and rating when a mouse points to it or the keyboard focuses it.
+     The same facts are in the box that opens when a pin is clicked or tapped, so touch screens get them too. */
+  var tipEl = mk("div","tm-tip"); tipEl.hidden = true; tipEl.setAttribute("aria-hidden","true"); root.appendChild(tipEl);
+  var tipFor = null;
+  function tipLines(s){
+    if (s.item) return s.item.tip || [];
+    var m = s.members, out = [{t: m.length + " homes close together", c: "tm-tip-name"}];
+    m.slice(0, 6).forEach(function(it){
+      var t = it.tip || [];
+      out.push({t: t.length > 1 ? t[0].t + " \u00b7 " + t[1].t : it.label});
+    });
+    if (m.length > 6) out.push({t: "and " + (m.length - 6) + " more"});
+    out.push({t: view.z >= MAX_Z ? "Click to see the list." : "Click to zoom in.", c: "tm-tip-note"});
+    return out;
+  }
+  function hideTip(){ tipFor = null; tipEl.hidden = true; }
+  function positionTip(){
+    if (!tipFor || tipEl.hidden) return;
+    var o = origin(), sx = tipFor.wx - o.x, sy = tipFor.wy - o.y;
+    var pw = tipEl.offsetWidth, ph = tipEl.offsetHeight, r = tipFor.members ? 19 : 12;
+    var left = Math.max(4, Math.min(w - pw - 4, sx - pw / 2));
+    var top = sy - r - 8 - ph; if (top < 4) top = sy + r + 8;
+    tipEl.style.transform = "translate(" + Math.round(left) + "px," + Math.round(top) + "px)";
+  }
+  function showTip(s){
+    if (s.item && s.item.key === activeKey && !popupEl.hidden){ hideTip(); return; }
+    var lines = tipLines(s); if (!lines.length){ hideTip(); return; }
+    tipEl.innerHTML = lines.map(function(l){ return '<div' + (l.c ? ' class="' + l.c + '"' : '') + '>' + escapeHtml(l.t) + '</div>'; }).join("");
+    tipFor = s; tipEl.hidden = false; positionTip();
+  }
+  function tipTarget(e){ var b = e.target && e.target.closest ? e.target.closest("button") : null; return b && b._s ? b : null; }
+  markerPane.addEventListener("pointerover", function(e){ if (e.pointerType === "touch") return; var b = tipTarget(e); if (b) showTip(b._s); });
+  markerPane.addEventListener("pointerout", function(e){ var b = tipTarget(e); if (b && !(e.relatedTarget && b.contains(e.relatedTarget))) hideTip(); });
+  markerPane.addEventListener("focusin", function(e){
+    var b = tipTarget(e); if (!b) return;
+    var kb = true; try { kb = b.matches(":focus-visible"); } catch (err) {}
+    if (kb) showTip(b._s);
+  });
+  markerPane.addEventListener("focusout", hideTip);
+
 
   function projX(lng,z){ return (lng+180)/360*TILE*Math.pow(2,z); }
   function projY(lat,z){ const s=Math.sin(lat*Math.PI/180); return (0.5 - Math.log((1+s)/(1-s))/(4*Math.PI))*TILE*Math.pow(2,z); }
@@ -561,7 +604,7 @@ function makeMap(root, cb){
     for (const k in tiles){ if (!need[k]){ tilePane.removeChild(tiles[k]); delete tiles[k]; } }
     for (let i=0;i<shown.length;i++){ shown[i].el.style.transform = "translate("+(shown[i].wx-o.x)+"px,"+(shown[i].wy-o.y)+"px)"; }
     if (meEl && me){ meEl.style.transform = "translate("+(Math.round(projX(me.lng,z))-o.x)+"px,"+(Math.round(projY(me.lat,z))-o.y)+"px)"; }
-    positionPopup();
+    positionPopup(); positionTip();
   }
 
   function addShown(g,z){
@@ -584,7 +627,7 @@ function makeMap(root, cb){
   }
 
   function rebuildMarkers(){
-    markerPane.innerHTML=""; if (meEl) markerPane.appendChild(meEl);
+    markerPane.innerHTML=""; if (meEl) markerPane.appendChild(meEl); hideTip();
     shown=[]; const z=view.z;
     const pts = items.map(it => ({it, x:projX(it.lng,z), y:projY(it.lat,z), used:false}));
     for (let i=0;i<pts.length;i++){
@@ -659,7 +702,7 @@ function makeMap(root, cb){
       if (pin) pin.focus(); else root.focus();
     }
   }
-  function showPopup(html,lat,lng,key,label){
+  function showPopup(html,lat,lng,key,label){ hideTip();
     const prev = markerPane.querySelector(".tm-pin.active"); if (prev) prev.classList.remove("active");
     activeKey = key||null; popupAnchor = {lat,lng,key:key||null};
     popupEl.innerHTML = '<button type="button" class="tm-popup-close" aria-label="Close">×</button>' + html;
@@ -716,7 +759,7 @@ function makeMap(root, cb){
   function ignoreTarget(t){ return t.closest && t.closest(".tm-ctl, .tm-popup, .tm-pin, .tm-cluster, .tm-attr"); }
   root.addEventListener("pointerdown", e => {
     if (ignoreTarget(e.target)) return;
-    if (e.pointerType==="mouse" && e.button!==0) return;
+    if (e.pointerType==="mouse" && e.button!==0) return; hideTip();
     try { root.setPointerCapture(e.pointerId); } catch(err){}
     pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
     const n = pointerCount();
@@ -1540,9 +1583,17 @@ function homesTable(){
     hm += '<div class="pop-line">'+escapeHtml(f.address||"")+', '+escapeHtml(f.city||"")+', RI '+escapeHtml(f.zip||"")+'</div>';
     if (nearLoc && f._dist!=null) hm += '<div class="pop-line">'+fmtMiles(f._dist)+' from '+escapeHtml(nearLoc.label)+' (straight line)</div>';
     const ov = at(f.ccn,"overall",LI);
-    hm += '<div class="pop-line">'+(ov==null?'<span title="'+escapeHtml(notRatedReason(f,LI))+'">Not rated</span>':ov+" of 5 stars overall")+(f.status!=="Open"?" · "+f.status:"")+'</div>';
+    hm += '<div class="pop-line">'+(ov==null?'Not rated':ov+" of 5 stars overall")+(f.status!=="Open"?" · "+f.status:"")+'</div>';
+    if (ov==null) hm += '<div class="pop-line">'+escapeHtml(notRatedReason(f,LI))+'</div>';
     hm += '<button type="button" class="pop-btn" data-open-facility="'+escapeHtml(f.ccn)+'">See full record</button>';
     return hm;
+  }
+  // what the hover label on a pin says: the home's name and its overall star rating
+  function pinTip(f){
+    const ov = at(f.ccn,"overall",LI);
+    const out = [{t:f.name, c:"tm-tip-name"}, {t: ov==null ? "Not rated" : ov+" of 5 stars overall"}];
+    if (ov==null) out.push({t:notRatedReason(f,LI), c:"tm-tip-note"});
+    return out;
   }
   function buildMap(){
     if (tmap) return;
@@ -1556,7 +1607,7 @@ function homesTable(){
     buildMap(); if (!tmap) return;
     tmap.resize();
     const mappable = lastFiltered.filter(hasCoords);
-    tmap.setMarkers(mappable.map(f => ({key:f.ccn, lat:f.lat, lng:f.lon, label:f.name+", "+f.place})));
+    tmap.setMarkers(mappable.map(f => ({key:f.ccn, lat:f.lat, lng:f.lon, label:f.name+", "+f.place, tip:pinTip(f)})));
     tmap.setMe(nearLoc ? {lat:nearLoc.lat, lng:nearLoc.lng} : null);
     const missing = lastFiltered.length - mappable.length;
     const st = document.getElementById("mapStatus");
@@ -1641,7 +1692,7 @@ function homesTable(){
   const mapToList = h("button",{type:"button",id:"mapToList",text:"Switch to list view"});
   mapToList.addEventListener("click", () => { setViewMode("list"); viewListBtn.focus(); });
   const mapPanel = h("div",{id:"mapPanel",hidden:true}, mapStatus, mapDiv,
-    h("p",{class:"map-note"}, "Pins show where each home is located. They don't indicate quality; use ", h("strong",{text:"See full record"}), " on a pin for that. Prefer a list? ", mapToList, ", which shows the same homes and distances. Map tiles come from OpenStreetMap, which can see your IP address and the area of the map you are viewing."));
+    h("p",{class:"map-note"}, "Pins show where each home is located; their color doesn't indicate quality. Point to a pin, or tap it, to see the home's name and overall star rating, then use ", h("strong",{text:"See full record"}), " for more. Prefer a list? ", mapToList, ", which shows the same homes and distances. Map tiles come from OpenStreetMap, which can see your IP address and the area of the map you are viewing."));
   const tblWrap = h("div",{class:"tbl-wrap"}, h("table",{class:"homes-tbl"}, thead, tbody));
   // Phones hide the column headings, so they get a sort menu instead.
   const SORTS = [["name",1,"Name"],["overall",-1,"Overall rating, highest first"],["overall",1,"Overall rating, lowest first"],
