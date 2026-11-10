@@ -1,6 +1,12 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  "Pins show where each home is located; their color doesn't indicate quality. Point to a pin, or tap it, to see the home's name and overall star rating, then use": "Los marcadores muestran dónde está cada hogar; su color no indica la calidad. Señale un marcador, o tóquelo, para ver el nombre del hogar y su calificación general de estrellas. Luego use",
+  "for more. Prefer a list?": "para ver más. ¿Prefiere una lista?",
+  "{n} homes close together": "{n} hogares muy juntos",
+  "and {n} more": "y {n} más",
+  "Click to zoom in.": "Haga clic para acercar.",
+  "Click to see the list.": "Haga clic para ver la lista.",
   "Print a summary": "Imprimir un resumen",
   "Large print": "Letra grande",
   "Print this list": "Imprimir esta lista",
