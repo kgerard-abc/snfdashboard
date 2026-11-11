@@ -209,6 +209,12 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .survey{border-top:1px solid var(--line);padding:14px 0}
 .survey:first-child{border-top:0;padding-top:0}
 .survey-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.survey-h h4{margin:0;font-family:var(--f-head);font-size:16px;font-weight:600}
+.era-h{border-top:2px solid var(--ink);padding:16px 0 4px;margin-top:4px}
+.era-h:first-child{border-top:0;padding-top:0;margin-top:0}
+.era-h h3{font-size:17px}
+.era-h p{margin:3px 0 0;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.era-h + .survey{border-top:0;padding-top:10px}
 .survey-h a{color:var(--ink-2)}
 .survey ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
 .survey li{display:grid;grid-template-columns:54px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
@@ -891,6 +897,59 @@ function saleLines(ccn){
       e.mgmt_start ? h("div",{class:"small",text:"Buyer managing the home since " + dlabel(e.mgmt_start)}) : null);
   });
 }
+// Who was running the home when, from sales.json. Used for the owner headers in the Inspections list
+// and the change-of-owner lines on the charts. Same rule as the sales site: an owner's time starts on
+// the date it took over management when that came before the sale, otherwise on the sale date. A
+// pending sale counts only once the buyer is managing the home, and a sale decided after the newest CMS
+// file (with no management date) is not counted yet. Newest first; empty until sales.json loads.
+const dayBefore = d => { const [y,m,da] = d.split("-").map(Number); return new Date(Date.UTC(y, m-1, da-1)).toISOString().slice(0,10); };
+function ownerEras(ccn){
+  const all = ((SALES && SALES.homes) || {})[ccn] || [];
+  const starts = [];
+  all.forEach(e => {
+    if (!e.date) return;
+    if (e.pending && !e.mgmt_start) return;
+    if (!e.pending && !e.mgmt_start && e.date > LATEST + "-31") return;
+    const start = e.pending ? e.mgmt_start : (e.mgmt_start && e.mgmt_start < e.date ? e.mgmt_start : e.date);
+    starts.push({buyer: e.buyer || "A new owner", start, e});
+  });
+  starts.sort((a,b) => a.start < b.start ? 1 : a.start > b.start ? -1 : 0);
+  const eras = [];
+  starts.forEach(s => {   // two applications for one deal (operations and real estate) are one owner's time
+    const prev = eras[eras.length-1];
+    if (prev && prev.buyer === s.buyer){ prev.start = s.start; prev.sales.push(s.e); }
+    else eras.push({buyer:s.buyer, start:s.start, sales:[s.e]});
+  });
+  eras.forEach((er,i) => {
+    er.end = i ? dayBefore(eras[i-1].start) : null;
+    er.approx = er.sales.some(e => e.date_note === "Approximate date" && e.date === er.start);
+  });
+  return eras;
+}
+function eraTitle(er){
+  if (er.approx) return `${er.buyer}, since about ${mlabel(er.start.slice(0,7))}`;
+  return er.end ? `${er.buyer}, ${dlabel(er.start)} to ${dlabel(er.end)}` : `${er.buyer}, since ${dlabel(er.start)}`;
+}
+function eraNotes(er){
+  const out = [];
+  const mg = er.sales.map(e => e.mgmt_start).filter(Boolean).sort()[0];
+  const sale = er.sales.filter(e => !e.pending).slice(-1)[0];
+  const pend = er.sales.some(e => e.pending);
+  if (mg && (pend || !sale || mg < sale.date)) out.push(`Took over management ${dlabel(mg)}.`);
+  if (sale){
+    if (sale.date_note === "RIDOH decision date") out.push(`Sale approved by the state ${dlabel(sale.date)}.`);
+    else if (sale.date_note === "Approximate date") out.push(`Took over ownership about ${mlabel(sale.date.slice(0,7))}.`);
+    else out.push(`Took over ownership ${dlabel(sale.date)}.`);
+  }
+  if (pend) out.push("Its purchase is pending with the state.");
+  return out;
+}
+// Lines on the "Over time" chart: the owner changes above when sales.json has loaded, otherwise CMS operator name changes.
+function ownerMarkers(ccn){
+  const eras = ownerEras(ccn);
+  if (!eras.length) return null;
+  return eras.slice().reverse().map(er => ({month: er.start.slice(0,7), label: er.buyer + " took over"}));
+}
 const mi = m => +m.slice(0,4)*12 + (+m.slice(5,7)-1);
 const monthsAgo = (ym, n) => { let y = +ym.slice(0,4), mo = +ym.slice(5,7)-1-n; y += Math.floor(mo/12); mo = ((mo%12)+12)%12; return y + "-" + String(mo+1).padStart(2,"0") + "-01"; };
 const phone = p => { p = String(p||"").replace(/\D/g,""); return p.length===10 ? `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}` : p; };
@@ -1128,12 +1187,12 @@ function chartTable(caption, heads, rowsFn){
   return d;
 }
 function lineChart(opts){
-  // opts: {series:[{name,color,values,width,dash}], dp, height, yMin, yMax, markers:[{month,label}], fromIdx, unit}
+  // opts: {series:[{name,color,values,width,dash}], dp, height, yMin, yMax, markers:[{month,label}], markerName, fromIdx, unit}
   const box = h("div",{class:"chart"});
   const legend = h("div",{class:"legend"});
   if (opts.series.length > 1 || (opts.markers||[]).length){
     opts.series.forEach(sr => legend.append(h("span",null, h("i",{class:"ln", style:`background:${sr.color}`}), sr.name)));
-    if ((opts.markers||[]).length) legend.append(h("span",null, h("i",{class:"mk"}), "New operator name"));
+    if ((opts.markers||[]).length) legend.append(h("span",null, h("i",{class:"mk"}), opts.markerName || "New operator name"));
   }
   const lineRows = () => {
     let a = opts.fromIdx != null ? opts.fromIdx : M.length;
@@ -1862,7 +1921,8 @@ function viewAbout(){
     h("ul",null,
       h("li",{text:`CMS skipped or the archive lacks a few months: ${gaps.join(", ")}.`}),
       h("li",{text:"Citations and fines from before about 2016 are incomplete, because the oldest releases here only reached back about three years."}),
-      h("li",{text:"\"New operator name\" marks on the charts show when the legal business name on file with CMS changed. That usually means a change of ownership or a new operating company, but sometimes it is only a rename. New owners often start managing a home before the sale is approved."}),
+      h("li",{text:"\"Change of owner\" lines on a home's \"Over time\" chart, and the owner headings in its list of inspections, come from ABC-RI's sales records. Each owner's time starts on the date it took over management, when that is known, or else on the sale date. New owners often start managing a home months before the sale is approved, and management agreements are not public, so a change may have started earlier than shown."}),
+      h("li",{text:"If the sales records can't be loaded, the chart shows \"New operator name\" lines instead. Those mark when the legal business name on file with CMS changed. That usually means a change of ownership or a new operating company, but sometimes it is only a rename."}),
       h("li",{text:"Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from other sources noted on each home's page."}),
       h("li",{text:"A few Rhode Island nursing homes are not in CMS data at all (they are not certified for Medicare or Medicaid), so they aren't rated here."})
     ),
@@ -2036,11 +2096,12 @@ function viewFacility(ccn){
     const ra = riAvg(tk); if (ra.some(v=>v!=null)) series.push({name:"RI average", color:"var(--s2)", values:ra, endDot:false});
     const ua = usAvg(tk); if (!isStar && ua.some(v=>v!=null)) series.push({name:"US average", color:"var(--ref)", values:ua, endDot:false});
     holder.append(h("div",{class:"small",text:m.label}),
-      lineChart({series, markers:changes, dp: isStar||tk==="residents" ? (isStar?0:1) : (tk.includes("turnover")?1:2), unit: tk.includes("turnover")?"%":"", yMin: isStar?1:undefined, yMax: isStar?5:undefined, height:240, aria:m.label+" over time"}));
+      lineChart({series, markers: ownerMarkers(ccn) || changes, markerName: ownerMarkers(ccn) ? "Change of owner" : "New operator name", dp: isStar||tk==="residents" ? (isStar?0:1) : (tk.includes("turnover")?1:2), unit: tk.includes("turnover")?"%":"", yMin: isStar?1:undefined, yMax: isStar?5:undefined, height:240, aria:m.label+" over time"}));
   };
   ctl.addEventListener("change", ()=>{ tk = ctl.value; drawTrend(); });
   app.append(h("section",null, h("div",{class:"sec-head"}, h("h2",{text:"Over time"}), ctl), h("div",{class:"card"}, holder)));
   drawTrend();
+  if (!SALES) salesReady.then(() => { if (holder.isConnected && ownerMarkers(ccn)) drawTrend(); });
 
   // PBJ staffing detail (newest quarter, one quarter, not a running series like the metrics above)
   if (!pbj && PBJ_KEY && f.status==="Open" && !(f.x||{}).not_in_cms){
@@ -2078,6 +2139,15 @@ function viewFacility(ccn){
   const hc = cits.filter(r=>r[5]==="H");
   const years = [...new Set(hc.map(r=>r[0].slice(0,4)))].sort();
   const yrsShown = []; if (years.length) for (let y = Math.max(2017, +years[0]); y <= +LATEST.slice(0,4); y++) yrsShown.push(String(y));
+  const barEraNote = h("div",{class:"note",hidden:true});   // owner changes in the years charted, in words (filled once sales.json loads)
+  const fillBarEraNote = () => {
+    const ch = ownerEras(ccn).filter(er => yrsShown.length && er.start.slice(0,4) >= yrsShown[0]).reverse();
+    barEraNote.textContent = "";
+    barEraNote.hidden = !ch.length;
+    if (!ch.length) return;
+    barEraNote.append(h("span",{text:"Changes of owner:"}), " ",
+      ...ch.flatMap((er,i) => [i ? " \u00b7 " : "", h("span",{text:`${er.buyer} took over in ${mlabel(er.start.slice(0,7))}`})]));
+  };
   const insSec = h("section",null,
     h("div",{class:"sec-head"}, h("h2",{text:"Inspections"})),
     h("p",{class:"small",style:"margin:0 0 12px",text:`${st.cit3||0} health citations in the last three years, ${st.harm3||0} involving actual harm or immediate jeopardy, ${st.compl3||0} from complaint investigations.`}),
@@ -2087,7 +2157,7 @@ function viewFacility(ccn){
           series:[{name:"No actual harm",color:"var(--bar1)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && !"GHIJKL".includes(r[2])).length)},
                   {name:"Actual harm or immediate jeopardy",color:"var(--bar2)",values:yrsShown.map(y=>hc.filter(r=>r[0].startsWith(y) && "GHIJKL".includes(r[2])).length)}],
           extra:i=>`${hc.filter(r=>r[0].startsWith(yrsShown[i]) && r[3]).length} from complaints`, aria:"Citations by year"}),
-        h("div",{class:"note",text:"* Partial year. Years before 2019 may be incomplete."})),
+        h("div",{class:"note",text:"* Partial year. Years before 2019 may be incomplete."}), barEraNote),
       h("div",{class:"card"}, h("div",{class:"chart-title",text:"Severity key"}),
         h("div",{class:"sev-key",style:"flex-direction:column;align-items:flex-start"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
         h("p",{class:"small",text:"Each letter also says how widespread the problem was: isolated (one or a few residents), a pattern, or widespread. The full inspection reports, linked with each inspection below, describe what happened to residents. Care Compare keeps reports for about the last three years."}))
@@ -2098,10 +2168,44 @@ function viewFacility(ccn){
   (D.surveys[ccn]||[]).forEach(x => { if (!surveys[x[0]] && ["S","C","I"].includes(x[1])) surveys[x[0]] = []; });
   const dates = Object.keys(surveys).sort().reverse();
   const list = h("div",{class:"card"});
-  let shown = 0; const PAGE = 6;
+  let shown = 0, pages = 0, items = [], pos = 0, eras = []; const PAGE = 6;
   const more = h("button",{class:"morebtn",type:"button"});
+  // Owner headers: each inspection sits under whoever was running the home that day (see ownerEras).
+  // An owner whose time had no inspections still gets a header, so no change of owner is skipped.
+  const planItems = () => {
+    eras = ownerEras(ccn);
+    items = [];
+    if (!eras.length){ dates.forEach(d => items.push({d})); return; }
+    const eraOf = d => eras.findIndex(er => d >= er.start);   // -1: before the earliest owner change on record
+    let last = null;
+    dates.forEach(d => {
+      const k = eraOf(d);
+      if (k !== last){
+        const from = last === null ? 0 : last + 1, to = k === -1 ? eras.length : k;
+        for (let j = from; j < to; j++) items.push({era:j, empty:true});
+        items.push({era:k});
+        last = k;
+      }
+      items.push({d});
+    });
+  };
+  const eraHead = it => {
+    if (it.era === -1) return h("div",{class:"era-h"}, h("h3",{text:"Before " + eras[eras.length-1].buyer}));
+    const er = eras[it.era];
+    return h("div",{class:"era-h"}, h("h3",{text:eraTitle(er)}),
+      h("p",null, eraNotes(er).flatMap((t,i) => i ? [" ", h("span",{text:t})] : [h("span",{text:t})])),
+      it.empty ? h("p",{text: it.era === 0 ? "No inspections since then." : "No inspections during this time."}) : null);
+  };
   const addSurveys = () => {
-    dates.slice(shown, shown+PAGE).forEach(d => {
+    pages++;
+    const page = [];
+    let n = 0;
+    while (pos < items.length && n < PAGE){
+      const it = items[pos++];
+      if (it.d){ page.push(it.d); n++; } else page.push(it);
+    }
+    page.forEach(d => {
+      if (typeof d !== "string"){ list.append(eraHead(d)); return; }
       const rs = surveys[d].slice().sort((a,b)=> b[2].localeCompare(a[2]));
       const sv = (D.surveys[ccn]||[]).filter(x=>x[0]===d).map(x=>x[1]);
       const anyC = rs.some(r=>r[3]) || sv.includes("C"), allC = rs.length ? rs.filter(r=>r[5]==="H").every(r=>r[3]) : (sv.includes("C") && !sv.includes("S"));
@@ -2110,21 +2214,31 @@ function viewFacility(ccn){
       const rl = fire ? [] : reportLinks(ccn, d, rs);
       const worst = rs.reduce((a,r)=> r[2] > a ? r[2] : a, "A");
       list.append(h("div",{class:"survey"},
-        h("div",{class:"survey-h"}, h("h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length ? rs.length + " citation" + (rs.length===1?"":"s") : "no citations"}`}),
+        h("div",{class:"survey-h"}, h(eras.length ? "h4" : "h3",{class:"num",text:dlabel(d)}), h("span",{class:"small",text:`${kind} · ${rs.length ? rs.length + " citation" + (rs.length===1?"":"s") : "no citations"}`}),
           "GHIJKL".includes(worst) ? h("span",{class:"chip bad",text: "JKL".includes(worst) ? "Immediate jeopardy" : "Actual harm"}) : null,
           rl.length ? h("span",{class:"small",style:"display:inline-flex;gap:12px"}, rl) : null),
         h("ul",null, rs.map(r => { const hs = harmSummary(ccn, r); return h("li",null, h("span",{class:"sev "+sevClass(r[2]), title:SEVTXT[sevClass(r[2])], text:r[2]||"–"}),
           h("div",null, h("div",{text:(D.tags[r[1]]||[r[1]])[0]}), h("div",{class:"small"}, [SEVTXT[sevClass(r[2])] + ", " + scopeTxt(r[2]), r[1], r[5]==="F"?"fire safety":null, r[3]?"from a complaint":null, r[4]?"infection control":null, (!r[7] && r[0] >= CUT3) ? "no longer listed by CMS" : null].filter(Boolean).join(" · "), citationLink(ccn, r)), hs ? h("p",{class:"harm-note",text:hs}) : null)); }))
       ));
     });
-    shown += PAGE;
+    shown += n;
     more.hidden = shown >= dates.length;
     more.textContent = `Show more inspections (${dates.length - shown} more)`;
+    eraNote.hidden = !eras.length;
+  };
+  const eraNote = h("p",{class:"note",hidden:true,style:"max-width:70ch"},
+    "Owner dates come from ABC-RI's sales records. Each owner's time starts on the date it took over management, when that is known, or else on the sale date. New owners often start managing a home months before the sale is approved, and management agreements are not public, so a change may have started earlier than shown.");
+  const fillList = () => {
+    list.textContent = ""; shown = 0; pos = 0;
+    const p = Math.max(pages, 1); pages = 0;
+    planItems(); fillBarEraNote();
+    if (!dates.length){ list.append(h("p",{class:"small",text:"No citations on record."})); more.hidden = true; return; }
+    for (let i = 0; i < p && pos < items.length; i++) addSurveys();
   };
   more.addEventListener("click", addSurveys);
-  if (!dates.length) list.append(h("p",{class:"small",text:"No citations on record."}));
-  addSurveys();
-  insSec.append(h("div",{style:"margin-top:16px"}, list, more));
+  fillList();
+  if (!SALES) salesReady.then(() => { if (list.isConnected && SALES && ownerEras(ccn).length) fillList(); });
+  insSec.append(h("div",{style:"margin-top:16px"}, list, more, eraNote));
   app.append(insSec);
 
   // fines
