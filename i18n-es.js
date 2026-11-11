@@ -1,6 +1,10 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  "New owner or manager in the past year": "Nuevo dueño o administrador en el último año",
+  "New owner or manager in the past year: {*}.": "Nuevo dueño o administrador en el último año: {1}.",
+  ": the home was sold, or a new company took over managing it, in the last 12 months, from ABC-RI's sales records.": ": el hogar se vendió, o una nueva empresa asumió su administración, en los últimos 12 meses, según los registros de ventas de ABC-RI.",
+  "This home has had a new owner or manager since {D}, so its record under current management is short.": "Este hogar tiene un nuevo dueño o administrador desde el {D}, así que su historial bajo la administración actual es corto.",
   "{*}, {D} to {D}": "{1}, del {2} al {3}",
   "{*}, since {D}": "{1}, desde el {2}",
   "{*}, since about {D}": "{1}, desde aproximadamente {2}",
