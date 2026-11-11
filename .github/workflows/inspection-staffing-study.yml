@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   download:
@@ -20,8 +20,12 @@ jobs:
       - run: pip install -r pipeline/requirements.txt
       - name: Download every quarter of Rhode Island daily staffing data from CMS
         run: python3 pipeline/study/download_daily_pbj.py pbj_daily_ri.csv.gz
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pbj-daily-ri
-          path: pbj_daily_ri.csv.gz
-          retention-days: 14
+      - name: Run the inspection-timing analysis
+        run: python3 pipeline/study/insp_study.py pbj_daily_ri.csv.gz pipeline/store/survey_dates.csv
+      - name: Save the downloaded file on this study branch only
+        run: |
+          mkdir -p pipeline/study/data && mv pbj_daily_ri.csv.gz pipeline/study/data/
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pipeline/study/data/pbj_daily_ri.csv.gz
+          git commit -m "Study data: RI daily staffing, all CMS quarters [skip ci]" || echo "no change"
+          git push
