@@ -950,6 +950,20 @@ function ownerMarkers(ccn){
   if (!eras.length) return null;
   return eras.slice().reverse().map(er => ({month: er.start.slice(0,7), label: er.buyer + " took over"}));
 }
+// "New owner or manager in the past year": the newest owner change in the sales records, if it began in
+// the last 12 months. Counts from the management date when that came first, like the inspection headings.
+// (CMS's own records missed most of these: Crystal Lake kept its operating company's name when it sold.)
+function recentOwnerChange(ccn){
+  const f = byCCN[ccn]; if (!f || f.status !== "Open") return null;
+  const er = ownerEras(ccn)[0]; if (!er) return null;
+  const cut = new Date(); cut.setFullYear(cut.getFullYear() - 1);
+  return er.start >= cut.toISOString().slice(0,10) ? er : null;
+}
+const NEWOWNER_TAG = "New owner or manager in the past year";
+function newOwnerText(er){
+  return h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"},
+    h("span",{text:`${NEWOWNER_TAG}: ${er.buyer}${/\.$/.test(er.buyer) ? "" : "."}`}), ...eraNotes(er).flatMap(t => [" ", h("span",{text:t})]));
+}
 const mi = m => +m.slice(0,4)*12 + (+m.slice(5,7)-1);
 const monthsAgo = (ym, n) => { let y = +ym.slice(0,4), mo = +ym.slice(5,7)-1-n; y += Math.floor(mo/12); mo = ((mo%12)+12)%12; return y + "-" + String(mo+1).padStart(2,"0") + "-01"; };
 const phone = p => { p = String(p||"").replace(/\D/g,""); return p.length===10 ? `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}` : p; };
@@ -1060,6 +1074,7 @@ function ridohReports(lic){
 function harmSummary(ccn, r){ return (D.harm_summaries||{})[ccn+"|"+r[0]+"|"+r[1]] || null; }
 function pbjInfo(ccn){ return (D[PBJ_KEY]||{})[ccn] || null; }
 
+function newOwnerBullet(er){ return `This home has had a new owner or manager since ${dlabel(er.start)}, so its record under current management is short.`; }
 function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   const bullets = [];
   if (sffNow==="SFF") bullets.push("This is a Special Focus Facility. CMS has flagged it as one of the worst-performing nursing homes in the country, with a track record of serious problems.");
@@ -1072,7 +1087,7 @@ function thingsToKnow(f, ccn, overall, st, sffNow, abuseNow, pbj, newOperator){
   else if (!st.ij3 && st.harm3) bullets.push(`Inspectors found ${st.harm3} citation${st.harm3===1?"":"s"} where a resident was actually harmed in the past 3 years.`);
   if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) bullets.push(`${fmt(pbj.contract_pct,0)}% of nurse staff hours this quarter came from contract or agency staff rather than the home's own employees, a higher share than most RI homes.`);
   if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) bullets.push(`Staffing drops sharply on weekends here, about ${fmt(pbj.weekend_drop_pct,0)}% lower than weekdays this quarter.`);
-  if (newOperator) bullets.push("This home changed operators within the past year, so its history under current management may be short.");
+  if (newOperator) bullets.push(newOwnerBullet(newOperator));
   if (st.fines3) bullets.push(`CMS fined this home ${money(st.fines3)} in the past 3 years.`);
   if (!bullets.length){
     bullets.push(overall!=null && overall>=4 ? `Rated ${overall} of 5 stars overall, with no major red flags in the data on this page.` : "No major red flags turned up in the data on this page. See the sections below for the full picture.");
@@ -1611,6 +1626,7 @@ function homesTable(){
       const pbj0 = pbjInfo(f.ccn);
       if (pbj0 && pbj0.contract_pct!=null && pbj0.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
       if (pbj0 && pbj0.weekend_drop_pct!=null && pbj0.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
+      if (recentOwnerChange(f.ccn)) flags.push(h("span",{class:"chip warn",text:NEWOWNER_TAG}));
       tbody.append(h("tr",{class:"click", onclick:()=>location.hash="f-"+f.ccn},
         h("td",{class:"home"}, h("div",{class:"nm"}, cmpBox(f), h("a",{href:"#f-"+f.ccn,text:f.name,onclick:e=>e.stopPropagation()})),
           h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
@@ -1769,7 +1785,7 @@ function homesTable(){
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
       h("p",{style:"margin:6px 0 0"}, h("strong",{text:"Special Focus"}), ": one of the few homes CMS has singled out for a long record of serious problems. ",
         h("strong",{text:"Special Focus candidate"}), ": on CMS's shortlist for that program. ", h("strong",{text:"Cited for abuse"}), ": the home carries CMS's abuse icon, its warning that the home was cited for abuse. ", h("strong",{text:"Repeat problems"}), ": cited for the same kind of problem, such as medication errors or kitchen and food safety, at 3 or more inspections in the last 3 years. The home's page lists them, with questions to ask. ",
-        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
+        h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:NEWOWNER_TAG}), ": the home was sold, or a new company took over managing it, in the last 12 months, from ABC-RI's sales records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Adjusted nurse hrs, 12-month average"}), ": the same adjusted hours averaged over the last four quarters of payroll data, so one unusual quarter can't make a home look much better or worse than its usual staffing. Shown only when CMS has all four quarters. ",
         h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
@@ -1780,6 +1796,7 @@ function homesTable(){
   const keyEl = sec.querySelector("#list-key");
   if (window.matchMedia && matchMedia("(min-width:701px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
   render(); syncSort();
+  if (!SALES) salesReady.then(() => { if (tbody.isConnected && SALES) render(); });
   return sec;
 }
 
@@ -1947,10 +1964,6 @@ function viewFacility(ccn){
   if (f.status!=="Open") flags.push(h("span",{class:"chip plain",text:f.status}));
   if (sffNow) flags.push(h("span",{class:"chip bad",text: sffNow==="SFF" ? "Special Focus Facility (one of the worst-performing homes in the country)" : "Special Focus Facility candidate"}));
   if (abuseNow) flags.push(h("span",{class:"chip bad",text:"CMS abuse icon: cited for abuse"}));
-  if (f.changed_ownership_flag_months && f.status==="Open" && (D.series[ccn] && true)){
-    const recent = changes.filter(c => mi(c.month) >= mi(LATEST)-12);
-    if (recent.length) flags.push(h("span",{class:"chip warn",text:"New operator in the past year"}));
-  }
   const pbj = pbjInfo(ccn);
   if (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) flags.push(h("span",{class:"chip warn",title:"Share of nurse staff hours from contract/agency staff, "+PBJ_Q,text:"High contract staffing"}));
   if (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) flags.push(h("span",{class:"chip warn",title:"How much lower weekend nurse staffing was than weekday, "+PBJ_Q,text:"Weekend staffing drop"}));
@@ -1964,10 +1977,11 @@ function viewFacility(ccn){
         h("div",{class:"meta"}, [f.address, f.city ? f.city + ", RI " + (f.zip||"") : ""].filter(Boolean).join(", "),
           f.phone ? [" · ", h("a",{href:"tel:+1"+String(f.phone).replace(/\D/g,"").slice(-10),text:phone(f.phone)})] : null),
         h("div",{class:"meta"}, [num(f.beds)!=null ? Math.round(f.beds)+(x.not_in_cms?" licensed beds":" certified beds") : null, num(f.residents)!=null ? "about " + Math.round(f.residents) + " residents a day" : null, f.ownership_type].filter(Boolean).join(" · ")),
-        flags.length ? h("div",{class:"flags"}, flags) : null,
+        h("div",{class:"flags",id:"fac-flags",hidden:!flags.length}, flags),
         sffNow ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch"}, (sffNow==="SFF"?SFFTXT.SFF:SFFTXT.cand) + " ", h("a",{href:"#about",text:"What this means"})) : null,
         (pbj && pbj.contract_pct!=null && pbj.contract_pct>=10) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:CONTRACT_TXT}) : null,
         (pbj && pbj.weekend_drop_pct!=null && pbj.weekend_drop_pct>=20) ? h("p",{class:"small",style:"margin:6px 0 0;max-width:70ch",text:WEEKEND_TXT}) : null,
+        h("div",{id:"fac-newowner"}),
         f.status==="Open" ? h("div",{class:"meta",style:"display:flex;gap:16px;flex-wrap:wrap"},
           h("a",{href:(L.cc||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"Medicare Care Compare page"}),
           h("a",{href:(L.pp||"").replace("{ccn}",ccn),target:"_blank",rel:"noopener",text:"ProPublica Nursing Home Inspect"}),
@@ -1996,14 +2010,20 @@ function viewFacility(ccn){
   }
 
   {
-    const newOperator = f.changed_ownership_flag_months && f.status==="Open" && changes.filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
-    const ttk = thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, newOperator);
+    const ttk = thingsToKnow(f, ccn, at(ccn,"overall",li), st, sffNow, abuseNow, pbj, null);
     const ttkList = h("ul",null, ttk.map(t=>h("li",{text:t})));
     app.append(h("div",{class:"ttk"}, h("h2",{text:"Things to know"}), ttkList));
     const rb = repeatBox(ccn); if (rb) app.append(rb);
     salesReady.then(() => {
       const dd = document.getElementById("sale-dd"), dt = document.getElementById("sale-dt");
       if (!dd || !dd.isConnected || location.hash !== "#f-" + ccn) return;
+      const rc = recentOwnerChange(ccn);
+      if (rc){
+        const fl = document.getElementById("fac-flags"), nt = document.getElementById("fac-newowner");
+        if (fl){ fl.append(h("span",{class:"chip warn",text:NEWOWNER_TAG})); fl.hidden = false; }
+        if (nt) nt.append(newOwnerText(rc));
+        ttkList.prepend(h("li",{text:newOwnerBullet(rc)}));
+      }
       const lines = saleLines(ccn);
       if (!lines.length) return;
       dd.append(...lines, h("a",{href:SALES_URL + "#home=" + encodeURIComponent(ccn),target:"_blank",rel:"noopener",text:"Sale record and before-and-after details"}));
@@ -2603,7 +2623,7 @@ function homeSheet(ccn, level){ level = level || 0; return root => {
     return;
   }
   const sffNow = ser(ccn,"sff")[LI], abuseNow = ser(ccn,"abuse")[LI], pbj = pbjInfo(ccn);
-  const newOp = f.changed_ownership_flag_months && f.status==="Open" && operatorChanges(ccn).filter(c => mi(c.month) >= mi(LATEST)-12).length > 0;
+  const newOp = recentOwnerChange(ccn);
   const [hp] = lastVal(ser(ccn,"hprd")), [riH] = lastVal(riAvg("hprd")), [tv] = lastVal(ser(ccn,"turnover")), [riT] = lastVal(riAvg("turnover"));
   const pending = (((SALES && SALES.homes) || {})[ccn] || []).filter(e => e.pending);
   root.append(
