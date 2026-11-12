@@ -353,6 +353,7 @@ html[data-print="lp"] #print-root .ps-qr svg{width:3cm;height:3cm}
 .care h2{margin-top:28px}
 .care .card h3{margin:0 0 6px}
 .care .card p{margin:0 0 10px;line-height:1.55}
+.care .why-list li{margin:0 0 10px;line-height:1.55}
 .care ul{padding-left:20px;margin:6px 0 0}
 .care li{margin:0 0 8px;line-height:1.5}
 footer{margin-top:60px;border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted);line-height:1.6}
@@ -1913,6 +1914,64 @@ function viewPatterns(){
   ));
 }
 
+// Staffing and quality explainer (kg, November 2026). Every study cited below was opened and checked
+// November 12, 2026. The Rhode Island findings are ABC-RI's own analysis: harm citations vs 3-year average
+// staffing at 68 open homes (Oct 2023 to Oct 2026), and RI daily payroll records 2017 to 2026 around 576
+// standard inspections. The weekend figure is the average home's weekend drop in the April to June 2026 payroll data.
+function viewStaffing(){
+  const P = (t)=>h("p",{text:t});
+  const ext = (href, text)=>h("a",{href, target:"_blank", rel:"noopener", text});
+  const RI = "Rhode Island";
+  const card = (title, ...kids)=>h("div",{class:"card"}, h("h3",{text:title}), ...kids);
+  const src = (t, href, label)=>h("p",{class:"small"}, h("span",{text:t}), " ", ext(href, label));
+  const item = (b, t)=>h("li",null, h("strong",{text:b}), " ", h("span",{text:t}));
+  app.append(h("section",{class:"care",style:"max-width:1000px"},
+    h("h1",{text:"Staffing and quality: what matters most, and why the numbers don't always match"}),
+    h("p",{class:"lede",text:"The people who care for residents matter more than anything else a nursing home reports. Research points to a few signs of good care: enough nursing time for how much care the residents need, enough registered nurses (RNs), and a stable, well-trained staff that doesn't lean on temporary agency workers. But on this site you will sometimes see a home with plenty of staff and poor results, or the reverse. This page explains both, for people choosing a nursing home for themselves, for families, and for professionals helping someone choose."}),
+    h("h2",{text:"What the research shows"}),
+    h("div",{class:"grid g2"},
+      card("Enough nursing time for how much care residents need",
+        P("Residents who need more help need more staff. CMS adjusts each home's nurse hours for how much care its residents need. This “case-mix adjusted” figure is the one CMS uses for the staffing star, and each home's page shows it next to the hours the home reports."),
+        P("A 2001 CMS study found that about 4.1 hours of nursing care per resident per day, including 0.75 hours from RNs, was needed to prevent avoidable harm."),
+        P("Hours alone are not the whole story. A national study found that staffing levels by themselves were only weakly linked to quality, but the link was clear once agency use, staff stability, and the mix of RNs, LPNs, and aides were taken into account."),
+        src("Sources:", "https://medicareadvocacy.org/?p=23099", "Center for Medicare Advocacy on the 2001 CMS study"), src("", "https://www.rand.org/pubs/external_publications/EP20080020.html", "Castle and Engberg, The Gerontologist, 2008")),
+      card("Registered nurses",
+        P("RNs assess residents, notice changes in their condition, and supervise other staff. A review of studies from 2008 to 2014 concluded that RN staffing and leadership are likely to improve resident safety, on measures such as pressure ulcers and falls."),
+        P("Early in the COVID-19 pandemic, Connecticut nursing homes with more RN time had fewer cases and deaths. Each extra 20 minutes of RN time per resident per day went with 22% fewer cases and 26% fewer deaths."),
+        src("Sources:", "https://psnet.ahrq.gov/issue/relationship-between-registered-nurses-and-nursing-home-quality-integrative-review-2008-2014", "Dellefield and others, Nursing Economics, 2015"), src("", "https://doi.org/10.1111/jgs.16689", "Li and others, Journal of the American Geriatrics Society, 2020")),
+      card("A stable staff",
+        P("Staff who stay get to know each resident's needs and habits. A study of nursing homes in four states found that higher turnover among aides, LPNs, and RNs went with lower quality."),
+        P("Turnover is very high nationally. Using CMS payroll records for 2017 and 2018, researchers found that a typical nursing home's nursing staff turnover was 94% a year. It was 135% at typical 1-star homes and 77% at typical 5-star homes."),
+        src("Sources:", "https://www.rand.org/pubs/external_publications/EP20050623.html", "Castle and Engberg, Medical Care, 2005"), src("", "https://doi.org/10.1377/hlthaff.2020.00957", "Gandhi, Yu, and Grabowski, Health Affairs, 2021")),
+      card("The home's own staff, not agency staff",
+        P("Agency (contract) workers fill gaps, but they may not know the residents or the home's routines. Homes that relied more on contract RNs and LPNs had more inspection citations."),
+        P("Another national study found that adding agency aides improved quality less than adding the same number of the home's own aides. Agency RNs were not linked to worse quality."),
+        src("Sources:", "https://doi.org/10.1177/1077558705283128", "Bourbonniere and others, Medical Care Research and Review, 2006"), src("", "https://www.rand.org/pubs/external_publications/EP20080021.html", "Castle and Engberg, Journal of Aging and Social Policy, 2008")),
+      card("Training",
+        P("Nurse aides give most of the hands-on care. Homes in states that require more hands-on (clinical) training for aides than the federal minimum of 16 hours had better results for pain, falls with injury, and depression."),
+        src("Source:", "https://doi.org/10.1093/geront/gnw049", "Trinkoff and others, The Gerontologist, 2017")),
+      card("What these studies can and can't show",
+        P("These studies show links, not proof that one thing causes another. But they point the same way across decades of research and different kinds of data."))),
+    h("h2",{text:"What we found in " + RI}),
+    P("We compared staffing with harm citations at 68 " + RI + " nursing homes from October 2023 to October 2026. Staff turnover tracked most closely: homes with more turnover had more harm citations, whatever their size. Total nurse hours on their own did not predict harm. That fits the research: hours matter, but so do who works them and whether they stay."),
+    h("h2",{text:"Why staffing and ratings don't always line up"}),
+    h("ul",{class:"why-list"},
+      item("They cover different times.", "Staffing figures are 3-month averages from payroll records, and CMS posts them about four months after the quarter ends. The October release, for example, covers April to June. Health inspection ratings look back over several years of inspections, and since July 2025 the most recent standard inspection counts for 75% of the score. A home may hire after a bad inspection, or lose staff after a good one. For a while, its staffing and its ratings describe different periods."),
+      item("Staffing goes up and down.", "An average hides bad days. In April to June 2026, weekend nurse staffing at the average " + RI + " home was about 15% lower than on weekdays. Our review of " + RI + "'s daily payroll records from 2017 to 2026 found that nursing time rose by about 6 minutes per resident per day on the four days ending with the inspection date CMS lists, then went back to normal the next day. Inspectors may see a better-staffed home than residents usually get."),
+      item("Hours don't show who is working.", "Two homes with the same hours can give very different care. The hours count an agency worker or a new hire the same as someone who has known the residents for years."),
+      item("Sicker residents need more.", "A home that cares for many very sick residents can report high hours and still fall short of what those residents need. Compare case-mix adjusted hours, not only reported hours."),
+      item("Fewer residents raise the numbers.", "Hours are counted per resident. If a home loses residents but keeps the same staff, its hours per resident go up without any new hiring."),
+      item("Payroll records have gaps and errors.", "Missing or late payroll records can make a home's hours look too low or too high. CMS gives a home 1 staffing star automatically when its payroll records are late, when it reports 4 or more days in a quarter with no RN hours, or when it fails a staffing audit. A change of more than about 1 hour in a single update is rare and worth checking against the next update."),
+      item("Ratings have limits too.", "Health inspection stars compare each home with other homes in the same state. Quality measures come partly from resident assessments the home fills out itself.")),
+    h("p",{class:"small"}, h("span",{text:"Sources:"}), " ", ext("https://www.hansonbridgett.com/publication/250620-5000-cms-five-star-impacts","Hanson Bridgett on the July 2025 rating changes"), " · ", ext("https://www.cms.gov/files/document/five-star-users-guide-september-2026.pdf","CMS Five-Star Technical Users' Guide, September 2026"), " · ", ext("https://CMS.gov/medicare/provider-enrollment-and-certification/certificationandcomplianc/downloads/consumerfactsheet.pdf","CMS Five-Star consumer fact sheet")),
+    h("h2",{text:"What to look for"}),
+    h("ul",null,
+      h("li",{text:"Case-mix adjusted hours and RN hours over time, not just this quarter. Each home's page has charts going back to 2019."}),
+      h("li",{text:"Staff turnover, and whether the home is tagged for high contract staffing or a weekend staffing drop."}),
+      h("li",{text:"Inspection reports, especially harm citations."}),
+      h("li",null, h("span",{text:"Visits at different times, including evenings and weekends. Ask how long staff have worked there, how often the home uses agency staff, and how new aides are trained. Our"}), " ", h("a",{href:"visit-checklist.pdf",target:"_blank",rel:"noopener",text:"printable visit checklist"}), " ", h("span",{text:"has more questions."}))),
+    h("p",null, h("a",{href:"#home",text:"Look up a nursing home"}), " · ", h("a",{href:"#about",text:"About the data"}))));
+}
 function viewAbout(){
   const gaps = []; for (let t = mi("2019-01"); t <= mi(LATEST); t++){ const m = Math.floor(t/12)+"-"+String(t%12+1).padStart(2,"0"); if (!M.includes(m)) gaps.push(mlabel(m)); }
   const P = (t)=>h("p",{text:t});
@@ -1922,6 +1981,7 @@ function viewAbout(){
     P(`A few Rhode Island nursing homes are licensed by the state (RIDOH) but not certified by Medicare or Medicaid, so CMS publishes no data on them at all: no star ratings, staffing, inspections, or fines. They're marked "Not Medicare-certified" and still listed here, with the basic facility information RIDOH publishes, so the directory is complete, but none of the comparisons on this site apply to them. RIDOH still inspects them, so each one's page lists RIDOH's inspection reports with plain-language summaries.`),
     h("h2",{text:"What the ratings mean",style:"margin-top:20px"}),
     P("CMS rates each home from 1 to 5 stars. The overall rating starts from the health inspection rating, then moves up or down based on staffing and quality measures. Inspection ratings are based on the last few years of inspections, so a home's rating can lag behind recent changes."),
+    h("p",null, h("span",{text:"What staffing tells you about care, and why it doesn't always match a home's ratings:"}), " ", h("a",{href:"#staffing",text:"Staffing and quality"})),
     h("h2",{text:"Inspection severity",style:"margin-top:20px"}),
     h("div",{class:"sev-key"}, ["s1","s2","s3","s4"].map((c,i)=>h("span",null,h("span",{class:"sev "+c,text:["A-C","D-F","G-I","J-L"][i]}), SEVTXT[c]))),
     P("Within each group, a later letter means the problem affected more residents. Harm citations (G and above) are the most serious; immediate jeopardy (J and above) means residents faced serious injury or death."),
@@ -2096,7 +2156,7 @@ function viewFacility(ccn){
       facts.map(t => h("p",{class:"small",style:"margin:0 0 6px",text:t})),
       h("p",{class:"small",style:"margin:0",text:"So the 1 star may come from missing records rather than from how many staff were actually working. The hours below may not be reliable either."}));
   })();
-  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), " ", newestQ && f.status === "Open" ? h("span",{text:`The newest figures cover ${newestQ}.`}) : null), staffNote,
+  app.append(h("section",null, h("h2",{text:"Staffing"}), h("p",{class:"small",style:"margin:0 0 10px"}, h("span",{text:"Hours of nursing care per resident per day (RNs, LPNs, and aides), from payroll records."}), " ", newestQ && f.status === "Open" ? h("span",{text:`The newest figures cover ${newestQ}.`}) : null, " ", h("a",{href:"#staffing",text:"Why staffing and ratings don't always match"})), staffNote,
     h("div",{class:"grid g4"}, kn("hprd","Total nurse hours per resident per day",2,"","up"), kn("rn_hprd","RN hours per resident per day",2,"","up"),
       kn("wkend_hprd","Weekend nurse hours per resident per day",2,"","up"), kn("turnover","Nursing staff turnover",1,"%","down"), kn("adj_hprd","Case-mix adjusted nurse hours per resident per day",2,"","up"), adj12Tile, cmiTile),
     cmiTile ? h("p",{class:"note",style:"max-width:70ch"},"The case-mix index reflects the average clinical complexity, severity of illness, and resource intensity of residents. A higher number means residents need more nursing care on average, reflecting higher clinical complexity and resource intensity.") : null,
@@ -2823,6 +2883,7 @@ function route(){
   else if (hsh==="patterns") viewPatterns();
   else if (hsh==="owners") viewOwners();
   else if (hsh==="about") viewAbout();
+  else if (hsh==="staffing") viewStaffing();
   else if (hsh==="care" || hsh==="costs") viewCare();
   else if (hsh==="hospital" || hsh.startsWith("hospital=")) viewHospital(hsh.slice(9));
   else viewHome();
@@ -2830,7 +2891,7 @@ function route(){
   if (hsh === "costs") { const c = document.getElementById("costs"); if (c) c.scrollIntoView(); }
   else if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
-  document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh==="staffing" ? "Staffing and quality · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
   if (f) gcEvent(f.name);
 }
 // GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is
