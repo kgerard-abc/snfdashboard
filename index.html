@@ -177,6 +177,10 @@ td.home{min-width:150px}
 .chart-table summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .chart-table .ct-wrap{max-height:320px;overflow:auto;border-top:1px solid var(--line)}
 .chart-table table{font-size:13px}
+/* LTCFocus 2023 table ("More about this home"): a stacked layout on phones, with the column names shown in each row */
+.ltcf-tbl td{vertical-align:top}
+.ltcf-lab{display:none}
+@media (max-width:600px){.ltcf-tbl thead{display:none}.ltcf-tbl tr{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--grid)}.ltcf-tbl td{border:0;padding:0}.ltcf-tbl td:first-child{grid-column:1/-1}.ltcf-tbl td.r{text-align:left}.ltcf-lab{display:block;font-size:11px;color:var(--muted)}}
 .chart-table th,.chart-table td{padding:5px 8px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:4px 0 6px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -2319,11 +2323,9 @@ function viewFacility(ccn){
       h("div",{class:"grid g3"}, codes.map(qchart))));
   }
 
-  // ABC-RI extras
+  // ABC-RI extras. The 2021 LTCFocus figures that used to be here (dementia, Medicaid, schizophrenia or bipolar)
+  // were replaced in November 2026 by the 2023 LTCFocus table below (pipeline/store/ltcfocus_2023.json).
   const ex = [
-    ["% of residents with dementia (2021, Brown LTCFocus)", x.pct_dementia_2021_ltcfocus, "%"],
-    ["% of residents on Medicaid (2021, Brown LTCFocus)", x.pct_medicaid_2021_ltcfocus, "%"],
-    ["% with schizophrenia or bipolar disorder (2021, Brown LTCFocus)", x.pct_smi_2021_ltcfocus, "%"],
     ["Special care unit beds (RIDOH, 2025)", x.scu_beds_ridoh_2025 || x.ridoh_alz_scu_beds, ""],
     ["Dementia care unit (RIHCA, 2025)", x.dementia_unit_rihca_2025 ? (x.dementia_unit_rihca_2025.toLowerCase().startsWith("y") ? "Yes" : x.dementia_unit_rihca_2025) : null, ""],
     ["Direct care spending per resident day (2022, EOHHS)", x.direct_care_per_diem_2022_eohhs ? "$"+(+x.direct_care_per_diem_2022_eohhs).toFixed(2) : null, ""],
@@ -2331,9 +2333,31 @@ function viewFacility(ccn){
     ["RIDOH licensed beds", x.ridoh_licensed_beds, ""],
     ["Notes", x.notes, ""],
   ].filter(r => r[1] != null && r[1] !== "" && r[1] !== "0");
-  if (ex.length) app.append(h("section",null, h("h2",{text:"More about this home"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Collected by ABC-RI from the sources named."}),
-    h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})])),
-      ex.some(r => /LTCFocus/.test(r[0])) ? h("p",{class:"small",style:"margin:10px 0 0",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."}) : null)));
+  // Brown University LTCFocus, 2023: this home next to the Rhode Island and U.S. averages.
+  // Every explanation is visible text (no hover-only notes), so phone users can read it.
+  const lf = D.ltcfocus, lh = lf && lf.homes ? lf.homes[ccn] : null;
+  const lfFmt = (v, kind, avg) => {
+    if (v == null || v === "") return "Not reported";
+    if (v === "too few") return "Too few to show";
+    if (kind === "yn") return avg ? Math.round(+v) + "% of homes" : v;
+    return (+v).toFixed(1) + (kind === "pct" ? "%" : "");
+  };
+  const ltcCard = lh ? h("div",{class:"card",style:ex.length ? "margin-top:12px" : null},
+    h("h3",{text:"From Brown University's LTCFocus, 2023"}),
+    h("p",{class:"small",style:"margin:0 0 8px",text:"Resident figures describe the people living in the home on the first Thursday in April 2023. Occupancy and who pays come from the home's 2023 inspection."}),
+    h("div",{class:"tbl-wrap"}, h("table",{class:"ltcf-tbl"},
+      h("thead",null, h("tr",null, h("th",{text:"Measure"}), h("th",{class:"r",text:"This home"}), h("th",{class:"r",text:"Rhode Island average"}), h("th",{class:"r",text:"U.S. average"}))),
+      h("tbody",null, lf.measures.map(m => h("tr",null,
+        h("td",null, h("div",{text:m.label}), h("div",{class:"small",style:"color:var(--muted);margin-top:2px",text:m.explain})),
+        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"This home"}), lfFmt(lh[m.key], m.kind, false)),
+        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"Rhode Island average"}), lfFmt(m.ri, m.kind, true)),
+        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"U.S. average"}), lfFmt(m.us, m.kind, true))))))),
+    h("p",{class:"small",style:"margin:10px 0 0",text:"“Too few to show” means 10 or fewer residents, so LTCFocus does not publish the number. “Not reported” means LTCFocus has no figure. The Rhode Island acuity average leaves out homes that LTCFocus lists as 0, which cannot be right."}),
+    h("p",{class:"small",style:"margin:6px 0 0"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
+    h("p",{class:"small",style:"margin:6px 0 0",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."})) : null;
+  if (ex.length || ltcCard) app.append(h("section",null, h("h2",{text:"More about this home"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Collected by ABC-RI from the sources named."}),
+    ex.length ? h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})]))) : null,
+    ltcCard));
 }
 
 // The Long-Term Care Ombudsman Program's number, on the home page and the "Which kind of care?" page.
