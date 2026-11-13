@@ -2332,7 +2332,6 @@ function viewFacility(ccn){
     ["Dementia care unit (RIHCA, 2025)", x.dementia_unit_rihca_2025 ? (x.dementia_unit_rihca_2025.toLowerCase().startsWith("y") ? "Yes" : x.dementia_unit_rihca_2025) : null, ""],
     ["Direct care spending per resident day (2022, EOHHS)", x.direct_care_per_diem_2022_eohhs ? "$"+(+x.direct_care_per_diem_2022_eohhs).toFixed(2) : null, ""],
     ["Union", x.union, ""],
-    ["RIDOH licensed beds", x.ridoh_licensed_beds, ""],
     ["Notes", x.notes, ""],
   ].filter(r => r[1] != null && r[1] !== "" && r[1] !== "0");
   // Brown University LTCFocus, 2023: this home next to the Rhode Island and U.S. averages.
