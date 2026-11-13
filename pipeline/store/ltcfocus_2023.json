@@ -11,7 +11,7 @@
    "key": "occpct",
    "label": "Occupancy",
    "kind": "pct",
-   "explain": "Share of beds filled at the home's inspection in LTCFocus's 2023 file (late 2022 or 2023).",
+   "explain": "Share of beds filled when the home was inspected (late 2022 or 2023).",
    "ri": 81.94,
    "us": 74.49
   },
@@ -19,7 +19,7 @@
    "key": "paymcaid",
    "label": "Medicaid pays",
    "kind": "pct",
-   "explain": "Residents whose care was mainly paid for by Medicaid at that inspection.",
+   "explain": "Residents whose care was mainly paid for by Medicaid when the home was inspected (late 2022 or 2023).",
    "ri": 62.43,
    "us": 62.6
   },
@@ -27,7 +27,7 @@
    "key": "paymcare",
    "label": "Medicare pays",
    "kind": "pct",
-   "explain": "Residents whose care was mainly paid for by Medicare at that inspection. Medicare pays for short stays after a hospital stay, not long-term care.",
+   "explain": "Residents whose care was mainly paid for by Medicare when the home was inspected (late 2022 or 2023). Medicare pays for short stays after a hospital stay, not long-term care.",
    "ri": 6.9,
    "us": 12.48
   },
