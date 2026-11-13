@@ -2350,8 +2350,8 @@ function viewFacility(ccn){
       h("tbody",null, lf.measures.map(m => h("tr",null,
         h("td",null, h("div",{text:m.label}), h("div",{class:"small",style:"color:var(--muted);margin-top:2px",text:m.explain})),
         h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"This home"}), lfFmt(lh[m.key], m.kind, false)),
-        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"Rhode Island average"}), lfFmt(m.ri, m.kind, true)),
-        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"U.S. average"}), lfFmt(m.us, m.kind, true))))))),
+        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"Rhode Island"}), lfFmt(m.ri, m.kind, true)),
+        h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"U.S."}), lfFmt(m.us, m.kind, true))))))),
     h("p",{class:"small",style:"margin:10px 0 0",text:"“Too few to show” means between 1 and 10 residents had this, so LTCFocus does not publish the number. “No figure” means LTCFocus has no number for it. The Rhode Island and U.S. averages are LTCFocus's own state and national figures, except the Rhode Island acuity average, which leaves out homes that LTCFocus lists as 0 (a number that cannot be right)."}),
     h("p",{class:"small",style:"margin:6px 0 0"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
     h("p",{class:"small",style:"margin:6px 0 0",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."})) : null;
