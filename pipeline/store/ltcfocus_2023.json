@@ -2,16 +2,16 @@
  "year": 2023,
  "source": "LTCFocus, Brown University School of Public Health, facility, state, and national files for 2023 (ltcfocus.org).",
  "notes": [
-  "Resident figures are for residents in the home on the first Thursday in April 2023. Occupancy and payer figures are from the home's 2023 inspection. Staffing figures come from payroll records.",
-  "The Rhode Island acuity average (11.7) leaves out 23 homes that LTCFocus lists as 0, which cannot be right; LTCFocus's own state figure (8.33) counts the zeros.",
-  "\"too few\" means 10 or fewer residents, so LTCFocus does not show the number."
+  "Resident figures are for residents in the home on the first Thursday in April 2023. Occupancy, payer, and acuity figures are from the home's inspection in LTCFocus's 2023 file (late 2022 or 2023). Nurse practitioner or physician assistant hours cover all of 2023. Pressure ulcers are CMS figures for the second quarter of 2023.",
+  "Rhode Island and U.S. averages are LTCFocus's own state and national figures, except the Rhode Island acuity average (11.7), which leaves out 23 homes that LTCFocus lists as 0; LTCFocus's own state figure (8.33) counts the zeros.",
+  "\"too few\" means between 1 and 10 residents had this, so LTCFocus does not publish the number."
  ],
  "measures": [
   {
    "key": "occpct",
    "label": "Occupancy",
    "kind": "pct",
-   "explain": "Share of beds filled at the home's 2023 inspection.",
+   "explain": "Share of beds filled at the home's inspection in LTCFocus's 2023 file (late 2022 or 2023).",
    "ri": 81.94,
    "us": 74.49
   },
@@ -19,7 +19,7 @@
    "key": "paymcaid",
    "label": "Medicaid pays",
    "kind": "pct",
-   "explain": "Residents whose care was mainly paid for by Medicaid at the 2023 inspection.",
+   "explain": "Residents whose care was mainly paid for by Medicaid at that inspection.",
    "ri": 62.43,
    "us": 62.6
   },
@@ -27,7 +27,7 @@
    "key": "paymcare",
    "label": "Medicare pays",
    "kind": "pct",
-   "explain": "Residents whose care was mainly paid for by Medicare at the 2023 inspection. Medicare pays for short stays after a hospital stay, not long-term care.",
+   "explain": "Residents whose care was mainly paid for by Medicare at that inspection. Medicare pays for short stays after a hospital stay, not long-term care.",
    "ri": 6.9,
    "us": 12.48
   },
@@ -35,7 +35,7 @@
    "key": "anymdex_pbj",
    "label": "Nurse practitioner or physician assistant",
    "kind": "yn",
-   "explain": "Whether the home paid a nurse practitioner or physician assistant at any time in 2023. The Rhode Island and U.S. figures are the share of homes that did.",
+   "explain": "Whether the home's payroll records show any nurse practitioner or physician assistant hours in 2023. Those who work for an outside medical practice are not counted, so “No” does not mean residents never see one. The Rhode Island and U.S. figures are the share of homes with hours.",
    "ri": 24.0,
    "us": null
   },
@@ -43,7 +43,7 @@
    "key": "acuindex2",
    "label": "Acuity index",
    "kind": "num",
-   "explain": "How much care residents need, from how many need help eating, using the toilet, and moving, are bedfast, or get special treatments. Higher means more care needed. Rhode Island homes range from about 9 to 13.",
+   "explain": "A score from the home's inspection for how much care residents need. It counts residents who need help eating, using the toilet, or moving; residents who are bedfast; residents who get treatments such as breathing care, IV therapy, tube feeding, or physical therapy; and residents with dementia or a psychiatric diagnosis. Higher means more care needed. Rhode Island homes range from about 9 to 13.",
    "ri": 11.7,
    "us": null
   },
@@ -59,7 +59,7 @@
    "key": "avgadl_mds3",
    "label": "Help needed with daily activities",
    "kind": "num",
-   "explain": "Average score for 7 daily activities: moving in bed, getting in and out of bed, walking, dressing, eating, using the toilet, and washing. 0 means fully independent and 28 means fully dependent on staff.",
+   "explain": "Average score for 7 daily activities: moving in bed, getting in and out of bed, walking on the unit, dressing, eating, using the toilet, and personal hygiene. 0 means fully independent and 28 means fully dependent on staff.",
    "ri": 15.08,
    "us": 16.27
   },
@@ -89,7 +89,7 @@
   },
   {
    "key": "pctobese",
-   "label": "Residents with obesity",
+   "label": "Residents with severe obesity",
    "kind": "pct",
    "explain": "Residents with a body mass index (BMI) of 35 or higher.",
    "ri": 28.0,
@@ -97,9 +97,9 @@
   },
   {
    "key": "pctbedft_mds3",
-   "label": "Bedfast residents",
+   "label": "Residents who need total help getting out of bed",
    "kind": "pct",
-   "explain": "Residents who depend completely on staff to move between bed and chair.",
+   "explain": "Residents who depend completely on staff to move between bed and chair, or who did not get out of bed.",
    "ri": 13.55,
    "us": 17.3
   },
@@ -121,9 +121,9 @@
   },
   {
    "key": "nhcpu_mds3",
-   "label": "Pressure ulcers (bed sores)",
+   "label": "Pressure ulcers (bed sores), second quarter of 2023",
    "kind": "pct",
-   "explain": "Long-stay residents at high risk of pressure ulcers who had one. A CMS quality measure; lower is better.",
+   "explain": "Long-stay residents at high risk of pressure ulcers who had one, from CMS's quality measures for the second quarter of 2023. For CMS's current figures, see Resident outcomes above.",
    "ri": 7.06,
    "us": null
   }

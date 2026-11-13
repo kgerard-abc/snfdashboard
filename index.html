@@ -2337,14 +2337,14 @@ function viewFacility(ccn){
   // Every explanation is visible text (no hover-only notes), so phone users can read it.
   const lf = D.ltcfocus, lh = lf && lf.homes ? lf.homes[ccn] : null;
   const lfFmt = (v, kind, avg) => {
-    if (v == null || v === "") return "Not reported";
+    if (v == null || v === "") return "No figure";
     if (v === "too few") return "Too few to show";
     if (kind === "yn") return avg ? Math.round(+v) + "% of homes" : v;
     return (+v).toFixed(1) + (kind === "pct" ? "%" : "");
   };
   const ltcCard = lh ? h("div",{class:"card",style:ex.length ? "margin-top:12px" : null},
     h("h3",{text:"From Brown University's LTCFocus, 2023"}),
-    h("p",{class:"small",style:"margin:0 0 8px",text:"Resident figures describe the people living in the home on the first Thursday in April 2023. Occupancy and who pays come from the home's 2023 inspection."}),
+    h("p",{class:"small",style:"margin:0 0 8px",text:"Resident figures describe the people living in the home on the first Thursday in April 2023. Occupancy, who pays, and the acuity index come from the home's inspection in LTCFocus's 2023 file (late 2022 or 2023). Nurse practitioner and physician assistant hours cover all of 2023."}),
     h("div",{class:"tbl-wrap"}, h("table",{class:"ltcf-tbl"},
       h("thead",null, h("tr",null, h("th",{text:"Measure"}), h("th",{class:"r",text:"This home"}), h("th",{class:"r",text:"Rhode Island average"}), h("th",{class:"r",text:"U.S. average"}))),
       h("tbody",null, lf.measures.map(m => h("tr",null,
@@ -2352,7 +2352,7 @@ function viewFacility(ccn){
         h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"This home"}), lfFmt(lh[m.key], m.kind, false)),
         h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"Rhode Island average"}), lfFmt(m.ri, m.kind, true)),
         h("td",{class:"r num"}, h("span",{class:"ltcf-lab",text:"U.S. average"}), lfFmt(m.us, m.kind, true))))))),
-    h("p",{class:"small",style:"margin:10px 0 0",text:"“Too few to show” means 10 or fewer residents, so LTCFocus does not publish the number. “Not reported” means LTCFocus has no figure. The Rhode Island acuity average leaves out homes that LTCFocus lists as 0, which cannot be right."}),
+    h("p",{class:"small",style:"margin:10px 0 0",text:"“Too few to show” means between 1 and 10 residents had this, so LTCFocus does not publish the number. “No figure” means LTCFocus has no number for it. The Rhode Island and U.S. averages are LTCFocus's own state and national figures, except the Rhode Island acuity average, which leaves out homes that LTCFocus lists as 0 (a number that cannot be right)."}),
     h("p",{class:"small",style:"margin:6px 0 0"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
     h("p",{class:"small",style:"margin:6px 0 0",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."})) : null;
   if (ex.length || ltcCard) app.append(h("section",null, h("h2",{text:"More about this home"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Collected by ABC-RI from the sources named."}),
