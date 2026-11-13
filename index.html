@@ -2332,7 +2332,8 @@ function viewFacility(ccn){
     ["Notes", x.notes, ""],
   ].filter(r => r[1] != null && r[1] !== "" && r[1] !== "0");
   if (ex.length) app.append(h("section",null, h("h2",{text:"More about this home"}), h("p",{class:"small",style:"margin:0 0 10px",text:"Collected by ABC-RI from the sources named."}),
-    h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})])))));
+    h("div",{class:"card"}, h("dl",{class:"kv"}, ex.map(r => [h("dt",{text:r[0]}), h("dd",{class:"num",text: (isNaN(+r[1]) ? r[1] : (+r[1]).toLocaleString("en-US",{maximumFractionDigits:1})) + (r[2] && !isNaN(+r[1]) ? r[2] : "")})])),
+      ex.some(r => /LTCFocus/.test(r[0])) ? h("p",{class:"small",style:"margin:10px 0 0",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."}) : null)));
 }
 
 // The Long-Term Care Ombudsman Program's number, on the home page and the "Which kind of care?" page.

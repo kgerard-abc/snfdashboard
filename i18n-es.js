@@ -607,6 +607,7 @@ window.RINH_ES = {
   "More about severity levels": "Más sobre los niveles de gravedad",
   "More about these terms": "Más sobre estos términos",
   "More about this home": "Más sobre este hogar",
+  "LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health.": "LTCFocus cuenta con el patrocinio del Instituto Nacional sobre el Envejecimiento (1P01AG027296) mediante un acuerdo de cooperación con la Escuela de Salud Pública de la Universidad de Brown.",
   "Name and operator history": "Historial de nombres y operadores",
   "New operator in the past year": "Nuevo operador en el último año",
   "New operator name": "Nuevo nombre del operador",
