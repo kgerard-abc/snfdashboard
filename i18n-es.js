@@ -1,13 +1,13 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
-  "Rhode Island": "Rhode Island",
   // LTCFocus 2023 table in "More about this home" and the #ltcfocus page (November 2026)
   "From Brown University's LTCFocus, 2023": "De LTCFocus de la Universidad de Brown, 2023",
   "What these figures mean and where they come from": "Qué significan estas cifras y de dónde vienen",
   "Measure": "Medida",
   "This home": "Este hogar",
   "Rhode Island average": "Promedio de Rhode Island",
+  "Rhode Island": "Rhode Island",
   "U.S. average": "Promedio de EE. UU.",
   "U.S.": "EE. UU.",
   "Too few to show": "Muy pocos para mostrar",
