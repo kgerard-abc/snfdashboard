@@ -822,6 +822,11 @@ def write_dashboard_data(D, path):
     import glob
     for pth in sorted(glob.glob(os.path.join(STORE_DIR, "pbj_*.json"))):
         data[os.path.basename(pth)[:-5]] = json.load(open(pth, encoding="utf-8"))
+    # Brown University LTCFocus figures for each home ("More about this home"), stored as store/ltcfocus_<year>.json.
+    # Only the newest year is published. Made from the LTCFocus facility, state, and national files (November 2026).
+    lf = sorted(glob.glob(os.path.join(STORE_DIR, "ltcfocus_*.json")))
+    if lf:
+        data["ltcfocus"] = json.load(open(lf[-1], encoding="utf-8"))
     txt = json.dumps(data, separators=(",", ":"), default=lambda o: None if (isinstance(o, float) and np.isnan(o)) else str(o))
     txt = txt.replace("NaN", "null")
     os.makedirs(os.path.dirname(path), exist_ok=True)
