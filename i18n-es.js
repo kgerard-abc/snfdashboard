@@ -1,6 +1,11 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  // LTCFocus chain flag note (November 2026)
+  "Part of a chain (as the home reported)": "Parte de una cadena (según el hogar)",
+  "Chain (as the home reported)": "Cadena (según el hogar)",
+  "Whether the home said it is part of a chain on its inspection form. For a group of homes, the share of homes. This often disagrees with CMS: in 2023, 14 Rhode Island homes said no while CMS listed them in a chain that June. Our owner groups are a better guide.": "Si el hogar dijo en su formulario de inspección que es parte de una cadena. Para un grupo de hogares, el porcentaje de hogares. Esto a menudo no coincide con CMS: en 2023, 14 hogares de Rhode Island dijeron que no, mientras CMS los incluía en una cadena ese junio. Nuestros grupos propietarios son una mejor guía.",
+  "We group homes by owner group, not by LTCFocus's chain flag. That flag is each home's own answer on its inspection form, and it is often wrong. In 2023 it marked 14 Rhode Island homes as not part of a chain, including 5 Marquis Health Services homes, even though CMS listed all 14 in a chain that June. It also switched between yes and no 73 times from 2011 to 2023, usually with no change in owner. The chain filter is offered for comparison only.": "Agrupamos los hogares por grupo propietario, no por el indicador de cadena de LTCFocus. Ese indicador es la respuesta del propio hogar en su formulario de inspección, y a menudo está equivocado. En 2023 marcó 14 hogares de Rhode Island como no parte de una cadena, incluidos 5 hogares de Marquis Health Services, aunque CMS incluía a los 14 en una cadena ese junio. También cambió entre sí y no 73 veces de 2011 a 2023, casi siempre sin cambio de dueño. El filtro de cadena se ofrece solo para comparar.",
   // About the data: LTCFocus source, and the explorer's sales table (November 2026)
   "LTCFocus, Brown University School of Public Health (the 2023 figures on each home's page and the Explore the data page):": "LTCFocus, Escuela de Salud Pública de la Universidad de Brown (las cifras de 2023 en la página de cada hogar y la página Explorar los datos):",
   "Sales of these homes in our records": "Ventas de estos hogares en nuestros registros",

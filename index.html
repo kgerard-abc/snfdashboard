@@ -2731,6 +2731,7 @@ function xpRender(body){
       h("li",{text:"A dash means LTCFocus has no figure for that home and year."}),
       h("li",{text:"Staffing has two series that should not be joined: inspection records (2011 to 2018) and payroll records (2017 on). LTCFocus estimates part of the low-care measure from 2020 on, so it is shown as two measures."}),
       h("li",{text:"For-profit and chain filters use each year's status, so a home that changed counts only in the years it met the filter."}),
+      h("li",{text:"We group homes by owner group, not by LTCFocus's chain flag. That flag is each home's own answer on its inspection form, and it is often wrong. In 2023 it marked 14 Rhode Island homes as not part of a chain, including 5 Marquis Health Services homes, even though CMS listed all 14 in a chain that June. It also switched between yes and no 73 times from 2011 to 2023, usually with no change in owner. The chain filter is offered for comparison only."}),
       h("li",{text:"The owner group is the one in our records now, not the owner in each year. Homes that have closed show \u201cClosed.\u201d Sale dates come from our nursing home sales site, which follows RIDOH's change of ownership reviews."}),
       h("li",{text:"Each home is tracked by LTCFocus's building ID, so a home keeps its history through name and owner changes. The ID can stay with a home that moved: Tockwotton on the Waterfront moved from Providence to East Providence in 2013. The name shown is the name CMS uses now, or the last name LTCFocus had for a closed home."})),
     h("p",{class:"small"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
@@ -2787,7 +2788,7 @@ function xpHomes(panel, body){
     sel("Town", st.town, [["","All towns"]].concat(towns.map(t => [t,t])), v => st.town = v),
     sel("Owner group", st.og, [["","All owner groups"]].concat(ogs.map(t => [t,t])), v => st.og = v),
     sel("For-profit", st.fp, [["","All"],["1","For-profit"],["0","Nonprofit or government"]], v => st.fp = v),
-    sel("Chain", st.ch, [["","All"],["1","Part of a chain"],["0","Not part of a chain"]], v => st.ch = v),
+    sel("Chain (as the home reported)", st.ch, [["","All"],["1","Part of a chain"],["0","Not part of a chain"]], v => st.ch = v),
     sel("Sales", st.sold, [["","All"],["yes","Sold at least once"],["no","No sale in our records"]], v => st.sold = v),
     sel("Still open", st.open, [["","All"],["open","In the 2023 file"],["closed","Not in the 2023 file"]], v => st.open = v)));
   // highlighted homes
