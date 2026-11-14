@@ -2447,7 +2447,7 @@ function viewFacility(ccn){
     ["Dementia care unit (RIHCA, 2025)", x.dementia_unit_rihca_2025 ? (x.dementia_unit_rihca_2025.toLowerCase().startsWith("y") ? "Yes" : x.dementia_unit_rihca_2025) : null, ""],
     ["Direct care spending per resident day (2022, EOHHS)", x.direct_care_per_diem_2022_eohhs ? "$"+(+x.direct_care_per_diem_2022_eohhs).toFixed(2) : null, ""],
     ["Union", x.union, ""],
-    ["Notes", x.notes, ""],
+    ["Notes", /^\s*closed\.?\s*$/i.test(x.notes || "") ? "" : x.notes, ""],   // a bare "Closed" note is already in the status
   ].filter(r => r[1] != null && r[1] !== "" && r[1] !== "0");
   // Brown University LTCFocus, 2023: this home next to the Rhode Island and U.S. averages.
   // Every explanation is visible text (no hover-only notes), so phone users can read it.
@@ -2538,10 +2538,9 @@ function xpPrep(j){
     const f = byCCN[hm.ccn];
     hm.label = (f && f.name) || hm.name || ("CMS number " + hm.ccn + " (closed before 2011)");
     hm.townNow = (f && f.city) || hm.town || "";
-    // "Owner group now": a home the site confirms closed (a "Closed ..." note in Facility extras) shows "Closed";
-    // one CMS no longer lists, without a confirmed closing, shows "No longer listed by CMS"
-    const closed = f && /^Closed/.test(f.status), gone = f ? !/^(Open|Not Medicare)/.test(f.status) : !hm.y["2023"];
-    hm.og = closed ? "Closed" : gone ? "No longer listed by CMS" : (f && f.x && f.x.owner_group) || "Not on file";
+    // "Owner group now": a home that has closed (or converted to assisted living) shows "Closed"
+    const gone = f ? !/^(Open|Not Medicare)/.test(f.status) : !hm.y["2023"];
+    hm.og = gone ? "Closed" : (f && f.x && f.x.owner_group) || "Not on file";
     hm.yrs = Object.keys(hm.y).sort();
     hm.in2023 = !!hm.y["2023"];
   });
@@ -2732,7 +2731,7 @@ function xpRender(body){
       h("li",{text:"A dash means LTCFocus has no figure for that home and year."}),
       h("li",{text:"Staffing has two series that should not be joined: inspection records (2011 to 2018) and payroll records (2017 on). LTCFocus estimates part of the low-care measure from 2020 on, so it is shown as two measures."}),
       h("li",{text:"For-profit and chain filters use each year's status, so a home that changed counts only in the years it met the filter."}),
-      h("li",{text:"The owner group is the one in our records now, not the owner in each year. Homes we know have closed show \u201cClosed.\u201d Homes CMS no longer lists, but that we have not confirmed as closed, show \u201cNo longer listed by CMS.\u201d Sale dates come from our nursing home sales site, which follows RIDOH's change of ownership reviews."}),
+      h("li",{text:"The owner group is the one in our records now, not the owner in each year. Homes that have closed show \u201cClosed.\u201d Sale dates come from our nursing home sales site, which follows RIDOH's change of ownership reviews."}),
       h("li",{text:"Each home is tracked by LTCFocus's building ID, so a home keeps its history through name and owner changes. The ID can stay with a home that moved: Tockwotton on the Waterfront moved from Providence to East Providence in 2013. The name shown is the name CMS uses now, or the last name LTCFocus had for a closed home."})),
     h("p",{class:"small"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
     h("p",{class:"small",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."}),
@@ -2777,7 +2776,7 @@ function xpHomes(panel, body){
   if (st.chart !== "time" && !yearList.includes(st.year)) st.year = yearList[yearList.length-1];
   const sel = (label, val, opts, onch) => h("label",null, h("span",{text:label}), h("select",{onchange:e => { onch(e.target.value); rerender(); }}, opts.map(([v,t]) => h("option",{value:v, selected:v===val}, t))));
   const towns = [...new Set(XP.homes.map(hm => hm.townNow).filter(Boolean))].sort();
-  const OG_LAST = ["Not on file", "Closed", "No longer listed by CMS"];   // these go at the end of the list
+  const OG_LAST = ["Not on file", "Closed"];   // these go at the end of the list
   const ogs = [...new Set(XP.homes.map(hm => hm.og))].sort((a,b) => (OG_LAST.indexOf(a) - OG_LAST.indexOf(b)) || a.localeCompare(b));
   panel.append(h("div",{class:"filters xp-ctl"},
     h("label",null, h("span",{text:"Measure"}), xpMeasureSelect(st.m, v => { st.m = v; rerender(); })),
