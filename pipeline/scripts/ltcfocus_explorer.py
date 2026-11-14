@@ -33,8 +33,8 @@ PP_YEARS = list(range(2007, 2016))
 # source: insp, mds, adm, pay, qm, mcr, out (described in SOURCES below)
 MEASURES = [
     # The home
-    ("totbeds", "Beds", "num", "insp", "Certified beds, as reported at the home's annual inspection.", 1),
-    ("nresid", "Residents on the first Thursday in April", "num", "mds", "Number of residents in the home that day.", 1),
+    ("totbeds", "Beds", "num", "insp", "Beds as LTCFocus counts them from the home's inspection report: certified beds, or available beds when the home reports more residents than certified beds. A missing or unlikely number is filled in from earlier years.", 1),
+    ("nresid", "Residents on the first Thursday in April, 2017 on", "num", "mds", "Number of residents in the home that day.", 1),
     ("avg_dailycensus", "Average daily census", "num", "mcr", "Average number of residents in the home each day of the year.", 1),
     ("occpct", "Occupancy (%)", "pct", "insp", "Occupied beds as a share of all beds, at the home's annual inspection.", 1),
     ("profit", "For-profit", "yn", "insp", "Whether the home is run for profit. For a group of homes, the share of homes.", 1),
@@ -45,7 +45,7 @@ MEASURES = [
     # Who pays
     ("paymcaid", "Medicaid main payer (% of residents)", "pct", "insp", "Residents whose care is paid mainly by Medicaid, at the home's annual inspection.", 1),
     ("paymcare", "Medicare main payer (% of residents)", "pct", "insp", "Residents whose care is paid mainly by Medicare, at the home's annual inspection.", 1),
-    ("pcthmo", "Medicare Advantage (% of residents)", "pct", "mcr", "Residents in a Medicare Advantage plan on the first Thursday in April.", 1),
+    ("pcthmo", "Medicare Advantage (% of residents), 2019 on", "pct", "mcr", "Residents in a Medicare Advantage plan on the first Thursday in April.", 1),
     ("pctpvtdays", "Private pay (% of resident days)", "pct", "mcr", "Share of the year's resident days that were private pay, from LTCFocus's Medicare and enrollment records. LTCFocus published this only for 2000 to 2015.", 1),
     # Who lives there
     ("avgage", "Average age", "num", "mds", "Average age of residents.", 1),
@@ -57,26 +57,26 @@ MEASURES = [
     # Care needs
     ("acuindex2", "Acuity index", "num", "insp", "How much care the residents need, from counts the home reports at its inspection: help with daily activities and special treatments. Higher means more care.", 1),
     ("avgadl_mds3", "ADL score (0 to 28)", "num", "mds", "How much help residents need with daily activities like eating, moving, and using the toilet. 0 means no help, 28 means total help.", 1),
-    ("pctlocare_mds3", "Low-care residents (%), 2011 to 2019", "pct", "mds", "Residents who need little help with daily activities. LTCFocus changed how it counts this in 2020.", 1),
-    ("pctlocare_imp", "Low-care residents (%), 2020 on", "pct", "mds", "Residents who need little help with daily activities, counted LTCFocus's newer way.", 1),
-    ("pctbedft_mds3", "Bedfast (%)", "pct", "mds", "Residents who stay in bed all or most of the time.", 1),
-    ("pctwalking", "Walk in the hallway (%)", "pct", "mds", "Residents who can walk in the hallway.", 1),
+    ("pctlocare_mds3", "Low-care residents (%), 2011 to 2019", "pct", "mds", "Residents who need no hands-on help with moving in bed, transferring, using the toilet, or eating, and are not in CMS's special rehab or clinically complex groups.", 1),
+    ("pctlocare_imp", "Low-care residents (%), 2020 on", "pct", "mds", "The same measure. CMS stopped publishing the care groups it relies on in October 2019, so LTCFocus estimates them from 2020 on.", 1),
+    ("pctbedft_mds3", "Bedfast (%)", "pct", "mds", "Residents who depend completely on staff to move between bed and chair, or who did not get out of bed.", 1),
+    ("pctwalking", "Walk in the hallway without help (%)", "pct", "mds", "Residents who walk in the hallway on their own.", 1),
     ("pctincont_bladr_mds3", "Bladder incontinence (%)", "pct", "mds", "Residents who are incontinent of urine.", 1),
     ("pctincont_bowel_mds3", "Bowel incontinence (%)", "pct", "mds", "Residents who are incontinent of bowel.", 1),
     ("pctcath_mds3", "Catheter (%)", "pct", "mds", "Residents with a urinary catheter.", 1),
     ("pctvent_mds3", "On a ventilator (%)", "pct", "mds", "Residents on a ventilator.", 1),
     # Health conditions
     ("pctalz_dem", "Alzheimer's or other dementia (%)", "pct", "mds", "Residents with Alzheimer's disease or another dementia.", 1),
-    ("pctlowcfs", "Little or no memory and thinking problems (%)", "pct", "mds", "Residents whose cognition is intact or only a little impaired.", 1),
-    ("pctmidcfs", "Moderate memory and thinking problems (%)", "pct", "mds", "Residents with mild or moderate cognitive impairment.", 1),
-    ("pcthighcfs", "Severe memory and thinking problems (%)", "pct", "mds", "Residents with severe cognitive impairment.", 1),
+    ("pctlowcfs", "No memory and thinking problems (%)", "pct", "mds", "Residents whose cognition is intact (Cognitive Function Scale score of 1).", 1),
+    ("pctmidcfs", "Mild or moderate memory and thinking problems (%)", "pct", "mds", "Residents with mild or moderate cognitive impairment (Cognitive Function Scale score of 2 or 3).", 1),
+    ("pcthighcfs", "Severe memory and thinking problems (%)", "pct", "mds", "Residents with severe cognitive impairment (Cognitive Function Scale score of 4).", 1),
     ("pctschiz_bipol", "Schizophrenia or bipolar disorder (%)", "pct", "mds", "Residents with schizophrenia or bipolar disorder.", 1),
     ("pctchf", "Heart failure (%)", "pct", "mds", "Residents with congestive heart failure.", 1),
     ("pcthyper", "High blood pressure (%)", "pct", "mds", "Residents with high blood pressure.", 1),
     ("pctobese", "Severe obesity (%)", "pct", "mds", "Residents with a body mass index of 35 or more.", 1),
     ("pctuti", "Urinary tract infection (%)", "pct", "mds", "Residents with a urinary tract infection.", 1),
     # Admissions
-    ("adm_bed", "Admissions per bed", "num", "adm", "Admissions during the year divided by the number of beds. Higher means more short stays.", 1),
+    ("adm_bed", "Admissions per bed", "num", "adm", "Admissions during the year divided by the number of beds.", 1),
     ("agg_hosp", "Admitted from a hospital (%)", "pct", "adm", "Share of the year's admissions that came from a hospital.", 1),
     ("agg_comm", "Admitted from the community (%)", "pct", "adm", "Share of the year's admissions that came from home or elsewhere in the community.", 1),
     # Staffing, inspection records
@@ -98,28 +98,36 @@ MEASURES = [
     ("pctfall30_mds3", "Fell since admission or last assessment (%)", "pct", "mds", "Residents who had a fall since they arrived or since their last assessment.", 1),
     ("nhcpu_mds3", "Pressure ulcers, high-risk long-stay residents (%)", "pct", "qm", "Long-stay residents at high risk who have pressure ulcers (bed sores).", 1),
     ("nhcadl_mds3", "Long-stay residents needing more help with daily activities (%)", "pct", "qm", "Long-stay residents whose need for help with daily activities went up.", 1),
-    ("nhcpain_mds3", "Long-stay residents with daily pain (%), 2011 to 2018", "pct", "qm", "Long-stay residents with moderate to severe pain.", 1),
-    ("pctfluvax_in", "Flu shot given in this home (%)", "pct", "mds", "Residents who got a flu shot in this home.", 1),
-    ("pctfluvax_out", "Flu shot, here or elsewhere (%)", "pct", "mds", "Residents who got a flu shot in this home or somewhere else.", 1),
+    ("nhcpain_mds3", "Long-stay residents with daily pain (%), 2011 to 2018", "pct", "qm", "Long-stay residents who said they had pain every day.", 1),
+    ("pctfluvax_in", "Flu shot given in this home (%), 2019 on", "pct", "mds", "Residents who got a flu shot in this home.", 1),
+    ("pctfluvax_out", "Flu shot, here or elsewhere (%), 2019 on", "pct", "mds", "Residents who got a flu shot in this home or somewhere else.", 1),
     ("mds_hospptyr", "Hospital stays per resident year", "num", "out", "Hospital stays for every 365 days residents spent in the home. Not adjusted for how sick residents were.", 1),
-    ("obs_rehosprate", "Rehospitalization rate (%)", "pct", "out", "Residents newly admitted from a hospital who went back to a hospital (LTCFocus's rehospitalization rate). Not adjusted.", 100),
-    ("adj_rehosprate", "Rehospitalization rate, adjusted (%)", "pct", "out", "The same figure, adjusted by LTCFocus for how sick residents were when they arrived.", 100),
-    ("obs_successfuldc", "Successful discharge to the community (%)", "pct", "out", "Residents newly admitted from a hospital who went home or elsewhere in the community within 100 days and had no nursing home stay in the 30 days after. Not adjusted.", 100),
+    ("obs_rehosprate", "Back to the hospital within 30 days (%)", "pct", "out", "Residents 55 and older newly admitted from a hospital who were sent back to a hospital within 30 days. Not adjusted.", 100),
+    ("adj_rehosprate", "Back to the hospital within 30 days, adjusted (%)", "pct", "out", "The same figure, adjusted by LTCFocus for how sick residents were when they arrived.", 100),
+    ("obs_successfuldc", "Successful discharge to the community (%)", "pct", "out", "Residents 55 and older newly admitted from a hospital who went home or elsewhere in the community within 100 days and had no nursing home stay in the 30 days after. Not adjusted.", 100),
     ("adj_successfuldc", "Successful discharge to the community, adjusted (%)", "pct", "out", "The same figure, adjusted by LTCFocus for how sick residents were when they arrived.", 100),
 ]
 
 SOURCES = {
-    "insp": "Inspection records (CASPER): reported by the home at its annual inspection by RIDOH for CMS.",
+    "insp": "Inspection records (CASPER): reported by the home at its most recent annual inspection by RIDOH for CMS, which can be a year or more earlier.",
     "mds": "Resident assessments (MDS): residents in the home on the first Thursday in April.",
     "adm": "Resident assessments (MDS) of everyone admitted during the year.",
     "pay": "Payroll records (PBJ): the week with the first Thursday in April, except where noted.",
-    "qm": "CMS quality measures (Care Compare), April to June.",
-    "mcr": "Medicare and enrollment records (LTCFocus's Residential History File).",
-    "out": "Resident assessments (MDS) for the whole year, linked by LTCFocus to hospital records.",
+    "qm": "CMS quality measures (Care Compare), April to June, except January to March for 2023.",
+    "mcr": "Medicare and enrollment records (LTCFocus's Residential History File). Medicare Advantage is for the first Thursday in April; the others cover the whole year.",
+    "out": "Resident assessments (MDS) for the whole calendar year.",
 }
 
 # U.S. and state columns that hold the same measure under another name
 NAT_COL = {"cnahprd_pbj": "cnahrpd_pbj_nat"}
+NAT_FROM = {"pctfluvax_in": 2019, "pctfluvax_out": 2019}   # the dictionary starts these in 2019; earlier national values are left out
+# When a measure's figure is taken: "apr" (around the first Thursday in April), "cal" (the whole calendar year),
+# or "insp" (the home's most recent inspection). The page uses this to place sale dates fairly.
+CAL = {"avg_dailycensus", "pctpvtdays", "adm_bed", "agg_hosp", "agg_comm", "mds_hospptyr",
+       "obs_rehosprate", "adj_rehosprate", "obs_successfuldc", "adj_successfuldc"}
+# What "LNE" (not published) means for a measure. The default is 1 to 10 residents.
+TOO_FEW = {"mds_hospptyr": "fewer than 4,500 resident days in the year", "agg_hosp": "1 to 10 admissions",
+           "agg_comm": "1 to 10 admissions", "adm_bed": "1 to 10 admissions"}
 STA_SCALE = {"anymdex_pbj": 100}   # the state file gives this one as a proportion
 SUM = {"totbeds", "nresid", "avg_dailycensus"}   # for a group of homes (or a state), these are totals
 STA_COL = {"adj_rehosprate": "avg_adj_rehosp_sta", "obs_rehosprate": "avg_obs_rehosp_sta",
@@ -172,6 +180,10 @@ def title(s):
 def main(folder, out_path):
     cw = read(find(folder, "accptid_crosswalk.xls"))
     to_id = dict(zip(cw.PROV1680, cw.ACCPT_ID))
+    to_ccn = {}
+    for c, a in zip(cw.PROV1680, cw.ACCPT_ID):
+        if a.startswith("41") and c != a:
+            to_ccn.setdefault(a, c)
     keys = [m[0] for m in MEASURES]
 
     homes = {}   # building id -> record
@@ -210,7 +222,8 @@ def main(folder, out_path):
     out_homes = []
     for bid, h in sorted(homes.items()):
         yrs = sorted(h["names"])
-        rec = {"id": bid, "ccn": h["ccn"],
+        ccn = h["ccn"] if yrs else to_ccn.get(bid, bid)   # homes known only from private pay: CMS number from the crosswalk
+        rec = {"id": bid, "ccn": ccn,
                "name": h["names"][yrs[-1]] if yrs else "",
                "town": h["towns"][yrs[-1]] if yrs else "",
                "y": {k: h["y"][k] for k in sorted(h["y"])}}
@@ -226,7 +239,8 @@ def main(folder, out_path):
     for key, _, kind, _, _, scale in MEASURES:
         col = NAT_COL.get(key, key + "_nat")
         if col in nat.columns:
-            us[key] = {str(int(float(y))): val(v, scale) for y, v in zip(nat.year, nat[col]) if val(v, scale) is not None}
+            us[key] = {str(int(float(y))): val(v, scale) for y, v in zip(nat.year, nat[col])
+                       if val(v, scale) is not None and int(float(y)) >= NAT_FROM.get(key, 0)}
 
     # every state, 2023
     st = read(find(folder, "state_2023_A.csv"))
@@ -245,7 +259,9 @@ def main(folder, out_path):
         "source": "LTCFocus, Brown University School of Public Health (ltcfocus.org)",
         "years": [str(y) for y in PP_YEARS[:4]] + [str(y) for y in YEARS],
         "sources": SOURCES,
-        "measures": [dict({"key": k, "label": l, "kind": kd, "src": s, "def": d}, **({"sum": 1} if k in SUM else {}))
+        "measures": [dict({"key": k, "label": l, "kind": kd, "src": s, "def": d,
+                           "when": "cal" if k in CAL else "insp" if s == "insp" else "apr",
+                           "tf": TOO_FEW.get(k, "1 to 10 residents")}, **({"sum": 1} if k in SUM else {}))
                      for k, l, kd, s, d, _ in MEASURES],
         "homes": out_homes,
         "us": us,
