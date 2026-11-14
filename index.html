@@ -2506,6 +2506,7 @@ function viewLtcfocus(){
     P("The Rhode Island and U.S. averages are LTCFocus's own state and national figures. The one exception is the Rhode Island acuity average (11.7), which leaves out 23 homes that LTCFocus lists as 0; LTCFocus's own state figure (8.33) counts those zeros. LTCFocus has no U.S. figure for acuity, nurse practitioners or physician assistants, or pressure ulcers."),
     P("Too few to show: between 1 and 10 residents had this, so LTCFocus does not publish the number, to protect residents' privacy. It does not mean zero."),
     P("No figure: LTCFocus has no number for this home or this average."),
+    h("p",null, h("span",{text:"Nursing homes report most of these figures themselves, and most are rarely checked."}), " ", h("a",{href:"#explore",text:"How far to trust these figures"})),
     h("p",null, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
     P("LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."),
     h("p",null, h("a",{href:"#explore",text:"Explore the LTCFocus data for every home, 2011 to 2023"})),
@@ -2722,6 +2723,10 @@ function xpRender(body){
   if (st.tab === "homes") xpHomes(panel, body);
   else if (st.tab === "states") xpStates(panel, body);
   else xpUS(panel, body);
+  body.append(h("h2",{id:"xp-trust", text:"Who reports these figures, and how far to trust them"}),
+    h("p",{text:"Nursing homes report most of these figures themselves, and most are rarely checked. Use them to compare homes and to ask questions, not as proof."}),
+    h("ul",{class:"xp-notes"}, ["Resident figures come from assessments that each home's own staff fill out. A 2025 federal inspector general report found that nursing homes nationwide left 43% of serious falls out of those assessments.", "Inspection figures, such as beds, occupancy, who pays, and special care units, are numbers the home gives to inspectors. Some are a year or more old.", "Payroll staffing figures are the most reliable, because they come from payroll records that CMS can audit.", "We checked what we could against CMS and state records. For 2023, beds matched CMS for 73 of 75 homes, and for-profit status matched our own records for every home. Payroll staffing rose and fell with CMS's quarterly figures. Occupancy was 15 points or more away from CMS's figure for 4 homes.", "Dementia units did not match. LTCFocus shows 10 homes with one in 2023. RIDOH's 2025 list shows special care unit beds at 8 homes, and only 5 homes are on both lists."].map(x => h("li",{text:x}))),
+    h("p",{class:"small"}, h("a",{href:"https://oig.hhs.gov/reports/all/2025/nursing-homes-failed-to-report-43-percent-of-falls-with-major-injury-and-hospitalization-among-their-medicare-enrolled-residents/", target:"_blank", rel:"noopener", text:"Source for falls: HHS Office of Inspector General, September 2025"})));
   body.append(h("h2",{text:"Things to know before you use these figures"}),
     h("ul",{class:"xp-notes"},
       h("li",{text:"Each figure comes from one of several sources, and they cover different times. Resident and payroll figures are from around the first Thursday in April. Inspection figures are what the home reported at its most recent annual inspection, which can be a year or more earlier, so some homes show the same figure two years in a row. Admissions, hospital stays, private pay, and average daily census cover the whole calendar year. The source of each measure is listed in the definitions under the chart."}),
