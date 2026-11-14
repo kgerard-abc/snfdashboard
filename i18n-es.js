@@ -1,6 +1,12 @@
 /* Spanish phrase table for i18n.js. Format: "English phrase": "Spanish phrase".
    See the comment at the top of i18n.js for how placeholders work. */
 window.RINH_ES = {
+  // About the data: LTCFocus source, and the explorer's sales table (November 2026)
+  "LTCFocus, Brown University School of Public Health (the 2023 figures on each home's page and the Explore the data page):": "LTCFocus, Escuela de Salud Pública de la Universidad de Brown (las cifras de 2023 en la página de cada hogar y la página Explorar los datos):",
+  "Sales of these homes in our records": "Ventas de estos hogares en nuestros registros",
+  "From our nursing home sales site. The LTCFocus figures above go through 2023, so later sales are listed for context only.": "De nuestro sitio de ventas de hogares de ancianos. Las cifras de LTCFocus de arriba llegan hasta 2023, así que las ventas posteriores se muestran solo como contexto.",
+  "Sale date": "Fecha de venta",
+  "Buyer": "Comprador",
   // "Explore the LTCFocus data" page (#explore), November 2026
   "Explore the data": "Explorar los datos",
   "Chart, filter, and download Brown University's LTCFocus figures": "Grafique, filtre y descargue las cifras de LTCFocus de la Universidad de Brown",
