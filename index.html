@@ -177,6 +177,48 @@ td.home{min-width:150px}
 .chart-table summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .chart-table .ct-wrap{max-height:320px;overflow:auto;border-top:1px solid var(--line)}
 .chart-table table{font-size:13px}
+/* Explore the LTCFocus data (#explore) */
+.xp{max-width:1100px}
+.xp-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 14px}
+.xp-tabs .btn-quiet.on,.xp-tabs .btn-quiet.on:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.xp-ctl{margin-bottom:8px}
+.xp-ctl label{flex-direction:column;align-items:flex-start;gap:2px;cursor:default}
+.xp-ctl label>span{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.xp-ctl select{max-width:min(100%,360px)}
+.xp-picks{align-items:flex-end}
+.xp-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.xp .key{display:inline-block;width:10px;height:10px;border-radius:1px;margin-right:6px;vertical-align:baseline}
+.xp-count{margin:4px 0 8px}
+.xp-out{padding:14px 16px;margin-bottom:14px}
+.xp-out h3{margin:0 0 6px}
+.xp-out h4{margin:10px 0 2px;font-size:14px}
+.xp-tbl{max-height:460px;overflow:auto;margin-top:10px}
+.xp-tbl table{font-size:13px;border-collapse:collapse}
+.xp-tbl th,.xp-tbl td{padding:4px 8px;white-space:nowrap;border-bottom:1px solid var(--grid)}
+.xp-tbl thead th{position:sticky;top:0;background:var(--panel);z-index:1;white-space:normal;vertical-align:bottom;min-width:56px}
+.xp-tbl tbody th{font-weight:400;text-align:left;white-space:normal;min-width:180px;position:sticky;left:0;background:var(--bg);z-index:1}
+.xp-tbl thead th:first-child{left:0;z-index:2}
+@media (max-width:600px){.xp-tbl tbody th{min-width:130px}}
+.xp-tbl tr.xp-sum th,.xp-tbl tr.xp-sum td{font-weight:600}
+.xp-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.xp-defs p{margin:0 0 8px;max-width:75ch}
+.xp-notes li{margin-bottom:6px;max-width:75ch}
+.xp-bars{display:grid;gap:3px;margin:8px 0}
+.xp-bar{display:grid;grid-template-columns:minmax(120px,34%) 1fr 64px;gap:8px;align-items:center;font-size:13px}
+.xp-bar.hi .xp-bn{font-weight:700}
+.xp-bt{position:relative;height:14px}
+.xp-bf{position:absolute;left:0;top:1px;bottom:1px;background:var(--ink-2);border-radius:0 3px 3px 0}
+.xp-ref{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--s1)}
+.xp-ref.dash{background:repeating-linear-gradient(180deg,var(--ref) 0 3px,transparent 3px 5px)}
+@media (max-width:600px){
+  .xp-ctl label,.xp-ctl select{width:100%;max-width:100%}
+  .xp-flt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .xp-flt label{min-width:0}
+  .xp-bar{grid-template-columns:1fr 56px;row-gap:1px}
+  .xp-bn{grid-column:1 / -1}
+  .xp-out{padding:12px 10px}
+}
+
 /* LTCFocus 2023 table ("More about this home"): a stacked layout on phones, with the column names shown in each row */
 .ltcf-tbl td{vertical-align:top}
 .ltcf-lab{display:none}
@@ -441,6 +483,7 @@ footer p{max-width:90ch;margin:0 0 10px}
         <a href="#patterns" id="tab-patterns" title="What the harm citations of the past three years have in common">Patterns in harm citations</a>
         <a href="#owners" id="tab-owners" title="Homes grouped by the company or group that owns them">Owner groups</a>
         <a href="#about" id="tab-about" title="Where this data comes from and how to read it">About the data</a>
+        <a href="#explore" id="tab-explore" title="Chart, filter, and download Brown University's LTCFocus figures">Explore the data</a>
         <a href="#hospital" id="tab-hospital">Leaving the hospital</a>
         <a href="#care" id="tab-care">Nursing home vs assisted living</a>
         <a class="ext first" href="https://alinspections.abc-ri.org" target="_blank" rel="noopener" title="Our companion site covering RIDOH inspections of assisted living residences">Assisted living info <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
@@ -1949,6 +1992,9 @@ function viewAbout(){
       h("li",{text:"Owner groups, union, dementia, Medicaid, and spending figures are added by ABC-RI from other sources noted on each home's page."}),
       h("li",{text:"A few Rhode Island nursing homes are not in CMS data at all (they are not certified for Medicare or Medicaid), so they aren't rated here."})
     ),
+    h("h2",{text:"Explore the data",style:"margin-top:20px"}),
+    h("p",{text:"Researchers, reporters, policymakers, and people looking for care for themselves or someone else can chart, filter, and download Brown University's LTCFocus figures for every Rhode Island nursing home from 2011 to 2023."}),
+    h("p",null, h("a",{href:"#explore",text:"Explore the LTCFocus data"})),
     h("h2",{text:"Related ABC-RI resources",style:"margin-top:20px"}),
     h("p",null, "Looking at assisted living instead of a nursing home? See our companion ", h("a",{href:"https://alinspections.abc-ri.org",target:"_blank",rel:"noopener",text:"Rhode Island Assisted Living Inspection Records"}), " site, which covers RIDOH inspections for assisted living residences the same way this site covers CMS data for nursing homes."),
     h("p",null, "Planning a visit? Download our ", h("a",{href:"visit-checklist.pdf",target:"_blank",rel:"noopener",text:"printable visit checklist"}), " (", h("a",{href:"visit-checklist-large-print.pdf",target:"_blank",rel:"noopener",text:"large print version"}), ") of questions to ask and things to look for."),
@@ -2393,9 +2439,521 @@ function viewLtcfocus(){
     P("No figure: LTCFocus has no number for this home or this average."),
     h("p",null, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
     P("LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."),
+    h("p",null, h("a",{href:"#explore",text:"Explore the LTCFocus data for every home, 2011 to 2023"})),
     h("p",null, h("a",{href:"#home",text:"Look up a nursing home"}))));
 }
 
+// ---------- "Explore the LTCFocus data" page (#explore), for researchers, reporters, and policymakers.
+// Data: ltcfocus-explorer.json, built by pipeline/scripts/ltcfocus_explorer.py from Brown University's
+// LTCFocus downloads (November 2026). It loads only when someone opens this page.
+// Owner groups come from Facility extras (D.facilities[].x.owner_group); sale dates from the sales site's sales.json.
+let XP = null, XPstate = null;
+const XP_COLORS = ["#2a78d6","#eb6834","#1baf7a","#eda100"];   // highlighted homes; checked with the dataviz palette validator on #F6F3EA
+const XP_GROUPS = [
+  ["The home", ["totbeds","nresid","avg_dailycensus","occpct","profit","multifac","hospbase","alzunit","anyunit"]],
+  ["Who pays", ["paymcaid","paymcare","pcthmo","pctpvtdays"]],
+  ["Who lives there", ["avgage","pctunder65","pctfem","pctwhite_mds3","pctblack_mds3","pcthisp_mds3"]],
+  ["Care needs", ["acuindex2","avgadl_mds3","pctlocare_mds3","pctlocare_imp","pctbedft_mds3","pctwalking","pctincont_bladr_mds3","pctincont_bowel_mds3","pctcath_mds3","pctvent_mds3"]],
+  ["Health conditions", ["pctalz_dem","pctlowcfs","pctmidcfs","pcthighcfs","pctschiz_bipol","pctchf","pcthyper","pctobese","pctuti"]],
+  ["Admissions", ["adm_bed","agg_hosp","agg_comm"]],
+  ["Staffing, inspection records", ["dchrppd","rnhrppd","lpnhrppd","cnahrppd","rn2nrs","anymdex"]],
+  ["Staffing, payroll records", ["dchprd_pbj","rnhprd_pbj","lpnhprd_pbj","cnahprd_pbj","rn2nrs_pbj","anymdex_pbj"]],
+  ["Quality and outcomes", ["restrain","pctfall30_mds3","nhcpu_mds3","nhcadl_mds3","nhcpain_mds3","pctfluvax_in","pctfluvax_out","mds_hospptyr","obs_rehosprate","adj_rehosprate","obs_successfuldc","adj_successfuldc"]]
+];
+const XP_STATES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",DC:"District of Columbia",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+
+function xpPrep(j){
+  j.mi = {}; j.measures.forEach((m,i) => { j.mi[m.key] = i; m.i = i; });
+  j.byKey = {}; j.measures.forEach(m => j.byKey[m.key] = m);
+  j.homes.forEach(hm => {
+    const f = byCCN[hm.ccn];
+    hm.label = (f && f.name) || hm.name || ("CMS number " + hm.ccn + " (closed before 2011)");
+    hm.townNow = (f && f.city) || hm.town || "";
+    hm.og = (f && f.x && f.x.owner_group) || "Not on file";
+    hm.yrs = Object.keys(hm.y).sort();
+    hm.in2023 = !!hm.y["2023"];
+  });
+  j.homes.sort((a,b) => a.label.localeCompare(b.label));
+  return j;
+}
+// completed sales of a home, oldest first, from the sales site
+function xpSales(hm){
+  const all = ((SALES && SALES.homes) || {})[hm.ccn] || [];
+  return all.filter(e => !e.pending && e.date).map(e => ({date:e.date, y:+e.date.slice(0,4), buyer:e.buyer || "a new owner"})).sort((a,b) => a.date < b.date ? -1 : 1);
+}
+const xpV = (hm, m, y) => { const r = hm.y[y]; return r ? r[m.i] : null; };
+const xpIsNum = v => typeof v === "number";
+function xpFmt(m, v, group){
+  if (v === "f") return "Too few";
+  if (v == null) return "–";
+  if (m.kind === "yn" && !group) return v ? "Yes" : "No";
+  if (m.kind === "pct" || m.kind === "yn") return (Math.round(v*10)/10).toFixed(1) + "%";
+  if (m.sum) return v >= 1000 ? Math.round(v).toLocaleString("en-US") : String(Math.round(v*10)/10);
+  return Math.abs(v) < 10 ? v.toFixed(2) : v.toFixed(1);
+}
+// average (or share of homes, for yes or no measures) across homes, for one year; also the middle home, the total,
+// and how many homes are "too few". Homes that are too few are left out, which can push an average up or down,
+// so no average or middle home is given when more than 1 in 10 homes with an entry are too few (hidden: true).
+// pass(hm, y): optional test for whether a home counts in that year (the for-profit and chain filters).
+function xpAgg(m, homes, y, pass){
+  const hs = pass ? homes.filter(hm => pass(hm, y)) : homes;
+  const all = hs.map(hm => xpV(hm, m, y)), vs = all.filter(xpIsNum), tf = all.filter(v => v === "f").length;
+  if (!vs.length) return {v:null, n:0, mid:null, tot:null, tf, hidden:false};
+  const sorted = vs.slice().sort((a,b)=>a-b), k = sorted.length;
+  const mid = k % 2 ? sorted[(k-1)/2] : (sorted[k/2-1] + sorted[k/2]) / 2;
+  const sum = vs.reduce((a,b)=>a+b,0);
+  const hidden = tf > 0 && tf / (k + tf) > 0.1;
+  return {v: hidden ? null : m.kind === "yn" ? 100*sum/k : sum/k, n:k, mid: hidden || m.kind === "yn" ? null : mid, tot:sum, tf, hidden};
+}
+function xpYearsFor(m){ return XP.years.filter(y => XP.homes.some(hm => { const v = xpV(hm, m, y); return v != null; })); }
+function xpMeasureSelect(val, onch, filter){
+  const sel = h("select",{onchange:e => onch(e.target.value)});
+  XP_GROUPS.forEach(([g, keys]) => {
+    const ks = keys.filter(k => XP.byKey[k] && (!filter || filter(XP.byKey[k])));
+    if (!ks.length) return;
+    sel.append(h("optgroup",{label:g}, ks.map(k => h("option",{value:k, selected:k===val}, XP.byKey[k].label))));
+  });
+  return sel;
+}
+function xpCSV(name, rows){
+  const esc = c => { const t = c == null ? "" : String(c); return /[",\n]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
+  const blob = new Blob(["﻿" + rows.map(r => r.map(esc).join(",")).join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = h("a",{href:URL.createObjectURL(blob), download:name}); document.body.append(a); a.click(); a.remove();
+}
+function xpCsvVal(v, m){ return v === "f" ? "too few to show (" + ((m && m.tf) || "1 to 10 residents") + ")" : v == null ? "" : v; }
+// a line chart with years along the bottom. series: [{name, color, vals:{year:v}, width, dash, faint}]
+// markers: [{x (fractional year), color, label}]. Tooltip lists the named series; the visible table holds every number.
+function xpLineChart(o){
+  const box = h("div",{class:"chart"});
+  const draw = () => {
+    box.textContent = "";
+    const W = Math.max(280, box.clientWidth || 600), H = o.height || 300, pad = {l:48, r:14, t:12, b:26};
+    const off = o.off == null ? 0.25 : o.off;   // where in the year a point sits: April (0.25) or mid-year (0.5)
+    const ys = o.years.map(Number), x0 = ys[0], x1 = ys[ys.length-1] + Math.max(0.5, off + 0.25);
+    let lo = Infinity, hi = -Infinity;
+    o.series.forEach(sr => o.years.forEach(y => { const v = sr.vals[y]; if (xpIsNum(v)){ lo = Math.min(lo,v); hi = Math.max(hi,v); } }));
+    if (!isFinite(lo)){ box.append(h("p",{class:"small",text:"No figures for this measure and these homes."})); return; }
+    lo = Math.min(0, lo); if (o.pct) hi = Math.max(hi, 1);
+    const span = hi - lo || 1, raw = span/4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1,2,2.5,5,10].map(x=>x*mag).find(x => span/x <= 5) || mag*10;
+    hi = Math.ceil(hi/step)*step;
+    const X = t => pad.l + (W-pad.l-pad.r) * (t - x0 + off) / (x1 - x0 + off);
+    const Y = v => pad.t + (H-pad.t-pad.b) * (1 - (v-lo)/((hi-lo)||1));
+    const svg = s("svg",{viewBox:`0 0 ${W} ${H}`, width:"100%", role:"img", "aria-label":o.aria});
+    const g = s("g",{class:"grid"}), ax = s("g",{class:"axis"});
+    for (let v = lo; v <= hi + 1e-9; v += step){
+      g.append(s("line",{x1:pad.l, x2:W-pad.r, y1:Y(v), y2:Y(v)}));
+      const t = s("text",{x:pad.l-6, y:Y(v)+3.5, "text-anchor":"end"}); t.textContent = +v.toFixed(2) + (o.pct ? "%" : ""); ax.append(t);
+    }
+    const every = W < 520 && ys.length > 8 ? 2 : 1;
+    ys.forEach((y,i) => { if ((ys.length-1-i) % every) return; const t = s("text",{x:X(y+off), y:H-7, "text-anchor":"middle"}); t.textContent = W < 520 ? "’" + String(y).slice(2) : y; ax.append(t); });
+    svg.append(g, ax);
+    (o.markers||[]).forEach(mk => { if (mk.x < x0 || mk.x > x1) return; svg.append(s("line",{x1:X(mk.x), x2:X(mk.x), y1:pad.t, y2:H-pad.b, stroke:mk.color, "stroke-width":1.5, "stroke-dasharray":"4 3"})); });
+    const path = sr => { let d = "", prev = null; o.years.forEach(y => { const v = sr.vals[y]; if (!xpIsNum(v)){ prev = null; return; } d += (prev == null ? "M" : "L") + X(+y+off).toFixed(1) + "," + Y(v).toFixed(1); prev = y; }); return d; };
+    o.series.filter(sr => sr.faint).forEach(sr => { const d = path(sr); if (d) svg.append(s("path",{d, fill:"none", stroke:"var(--grid)", "stroke-width":1})); });
+    o.series.filter(sr => !sr.faint).forEach(sr => {
+      const d = path(sr); if (d) svg.append(s("path",{d, fill:"none", stroke:sr.color, "stroke-width":sr.width||2, "stroke-dasharray":sr.dash||"", "stroke-linejoin":"round", "stroke-linecap":"round"}));
+      o.years.forEach((y,i) => { const v = sr.vals[y]; if (!xpIsNum(v)) return;
+        const lone = !xpIsNum(sr.vals[o.years[i-1]]) && !xpIsNum(sr.vals[o.years[i+1]]);
+        if (lone || sr.dots) svg.append(s("circle",{cx:X(+y+off), cy:Y(v), r:lone ? 4 : 3, fill:sr.color, stroke:"var(--bg)", "stroke-width":2})); });
+    });
+    const named = o.series.filter(sr => !sr.faint);
+    const cross = s("line",{y1:pad.t, y2:H-pad.b, stroke:"var(--ink-2)", "stroke-width":1, opacity:0}); svg.append(cross);
+    const hit = s("rect",{x:pad.l, y:pad.t, width:W-pad.l-pad.r, height:H-pad.t-pad.b, fill:"transparent"}); svg.append(hit);
+    const tip = h("div",{class:"tip", hidden:true});
+    hit.addEventListener("pointermove", ev => {
+      const r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) * W / r.width;
+      let best = o.years[0]; o.years.forEach(y => { if (Math.abs(X(+y+off)-sx) < Math.abs(X(+best+off)-sx)) best = y; });
+      const x = X(+best+off); cross.setAttribute("x1",x); cross.setAttribute("x2",x); cross.setAttribute("opacity",1);
+      tip.textContent = ""; tip.append(h("div",{class:"t",text:best}));
+      named.forEach(sr => { const v = sr.vals[best]; if (v == null) return; tip.append(h("div",{class:"row"}, h("i",{class:"key",style:`background:${sr.color}`}), h("b",{text:o.fmt(v)}), h("span",{class:"small",text:sr.name}))); });
+      (o.markers||[]).filter(mk => Math.floor(mk.x) === +best).forEach(mk => tip.append(h("div",{class:"small",text:mk.label})));
+      tip.hidden = false; const bw = box.clientWidth, px = x * r.width / W;
+      tip.style.top = "8px"; tip.style.left = (px + 12 + tip.offsetWidth > bw ? Math.max(0, px - tip.offsetWidth - 12) : px + 12) + "px";
+    });
+    hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("opacity",0); });
+    box.append(svg, tip);
+  };
+  requestAnimationFrame(draw);
+  if (XPstate.ro) XPstate.ro.disconnect();
+  XPstate.ro = new ResizeObserver(() => draw()); XPstate.ro.observe(box);
+  return box;
+}
+// ranked bars, built as HTML so every name and value is visible text. items: [{label, sub, v, shown, hi, color}]
+function xpBars(items, refs, fmtV, pct){
+  const vals = items.map(it => it.v).concat(refs.map(r => r.v)).filter(xpIsNum);
+  const max = Math.max(pct ? 1 : 0, ...vals) || 1;
+  const wrap = h("div",{class:"xp-bars"});
+  items.forEach(it => {
+    const w = xpIsNum(it.v) ? Math.max(0.5, 100*it.v/max) : 0;
+    wrap.append(h("div",{class:"xp-bar" + (it.hi ? " hi" : "")},
+      h("span",{class:"xp-bn"}, h("span",{text:it.label}), it.sub ? h("span",{class:"small",text:" " + it.sub}) : null),
+      h("span",{class:"xp-bt"}, xpIsNum(it.v) ? h("i",{class:"xp-bf", style:`width:${w}%` + (it.color ? `;background:${it.color}` : "")}) : null,
+        refs.filter(r => xpIsNum(r.v)).map(r => h("i",{class:"xp-ref" + (r.dash ? " dash" : ""), style:`left:${100*r.v/max}%`}))),
+      h("span",{class:"xp-bv r num", text:fmtV(it.v)})));
+  });
+  return wrap;
+}
+function xpScatter(o){
+  const box = h("div",{class:"chart"});
+  const draw = () => {
+    box.textContent = "";
+    const W = Math.max(280, box.clientWidth || 600), H = Math.min(420, Math.max(260, W*0.6)), pad = {l:52, r:14, t:12, b:40};
+    const pts = o.pts; if (!pts.length){ box.append(h("p",{class:"small",text:"No home has both figures for this year."})); return; }
+    const ext = k => { const lo0 = Math.min(...pts.map(p=>p[k])), hi = Math.max(...pts.map(p=>p[k])); const span = (hi-lo0) || Math.abs(hi) || 1, mag = Math.pow(10, Math.floor(Math.log10(span/4))); const st = [1,2,2.5,5,10].map(x=>x*mag).find(x => span/x <= 5) || mag*10; const lo = Math.floor(lo0/st)*st; return [lo, Math.max(lo+st, Math.ceil(hi/st)*st), st]; };
+    const [xl, xh, xs] = ext("x"), [yl, yh, ys] = ext("y");
+    const X = v => pad.l + (W-pad.l-pad.r)*(v-xl)/((xh-xl)||1), Y = v => pad.t + (H-pad.t-pad.b)*(1-(v-yl)/((yh-yl)||1));
+    const svg = s("svg",{viewBox:`0 0 ${W} ${H}`, width:"100%", role:"img", "aria-label":o.aria});
+    const g = s("g",{class:"grid"}), ax = s("g",{class:"axis"});
+    for (let v = xl; v <= xh+1e-9; v += xs){ g.append(s("line",{x1:X(v),x2:X(v),y1:pad.t,y2:H-pad.b})); const t = s("text",{x:X(v), y:H-pad.b+14, "text-anchor":"middle"}); t.textContent = +v.toFixed(2); ax.append(t); }
+    for (let v = yl; v <= yh+1e-9; v += ys){ g.append(s("line",{x1:pad.l,x2:W-pad.r,y1:Y(v),y2:Y(v)})); const t = s("text",{x:pad.l-6, y:Y(v)+3.5, "text-anchor":"end"}); t.textContent = +v.toFixed(2); ax.append(t); }
+    const xt = s("text",{x:(pad.l+W-pad.r)/2, y:H-4, "text-anchor":"middle"}); xt.textContent = o.xLabel; ax.append(xt);
+    svg.append(g, ax);
+    const tip = h("div",{class:"tip", hidden:true});
+    pts.slice().sort((a,b) => (a.color?1:0) - (b.color?1:0)).forEach(p => {
+      const c = s("circle",{cx:X(p.x), cy:Y(p.y), r:p.color ? 6 : 4.5, fill:p.color || "var(--ink-2)", "fill-opacity":p.color ? 1 : 0.55, stroke:"var(--bg)", "stroke-width":1.5, tabindex:0});
+      const show = () => { tip.textContent = ""; tip.append(h("div",{class:"t",text:p.label}), h("div",{class:"small"}, h("span",{text:o.xLabel}), ": " + o.fx(p.x)), h("div",{class:"small"}, h("span",{text:o.yLabel}), ": " + o.fy(p.y)));
+        tip.hidden = false; const r = svg.getBoundingClientRect(), px = X(p.x)*r.width/W, py = Y(p.y)*r.height/H;
+        tip.style.left = (px + 12 + tip.offsetWidth > box.clientWidth ? Math.max(0, px - tip.offsetWidth - 12) : px + 12) + "px"; tip.style.top = Math.max(0, py - 30) + "px"; };
+      c.addEventListener("pointerenter", show); c.addEventListener("focus", show);
+      c.addEventListener("pointerleave", () => tip.hidden = true); c.addEventListener("blur", () => tip.hidden = true);
+      svg.append(c);
+    });
+    box.append(svg, tip);
+  };
+  requestAnimationFrame(draw);
+  if (XPstate.ro) XPstate.ro.disconnect();
+  XPstate.ro = new ResizeObserver(() => draw()); XPstate.ro.observe(box);
+  return box;
+}
+
+function viewExplore(){
+  const sec = h("section",{class:"care xp"});
+  app.append(sec);
+  sec.append(h("h1",{text:"Explore the LTCFocus data"}),
+    h("p",{class:"lede",text:"For anyone who wants to dig into the numbers, including researchers, reporters, policymakers, and people looking for care for themselves or someone else. Chart, filter, and download Brown University's LTCFocus figures for every Rhode Island nursing home from 2011 to 2023 (private pay from 2007 to 2015), and compare Rhode Island with other states and the U.S."}),
+    h("p",{class:"small"}, h("a",{href:"#ltcfocus",text:"Where these figures come from, and when"}), " · ", h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"LTCFocus, Brown University School of Public Health"})));
+  const body = h("div",null, h("p",{text:"Loading the LTCFocus figures…"}));
+  sec.append(body);
+  const go = () => { if (!XPstate) XPstate = {tab:"homes", m:"paymcaid", m2:"dchprd_pbj", chart:"time", year:"2023", town:"", og:"", fp:"", ch:"", sold:"", open:"", picks:[], sm:"pcthmo", ppy:"2015", um:"pcthmo"}; xpRender(body); };
+  if (XP) { go(); return; }
+  fetch("ltcfocus-explorer.json").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => { XP = xpPrep(j); if (body.isConnected) go(); })
+    .catch(() => { body.textContent = ""; body.append(h("p",{text:"The LTCFocus figures could not be loaded. Please try again later."})); });
+  salesReady.then(() => { if (XP && body.isConnected) xpRender(body); });
+}
+function xpRender(body){
+  const st = XPstate;
+  body.textContent = "";
+  const tabs = [["homes","Rhode Island homes"],["states","Rhode Island and other states"],["us","Rhode Island and the U.S. over time"]];
+  body.append(h("div",{class:"xp-tabs", role:"group", "aria-label":"What to explore"}, tabs.map(([k,t]) =>
+    h("button",{type:"button", class:"btn-quiet" + (st.tab === k ? " on" : ""), "aria-pressed":String(st.tab === k), onclick:() => { st.tab = k; xpRender(body); }}, t))));
+  const panel = h("div",{class:"xp-panel"}); body.append(panel);
+  if (st.tab === "homes") xpHomes(panel, body);
+  else if (st.tab === "states") xpStates(panel, body);
+  else xpUS(panel, body);
+  body.append(h("h2",{text:"Things to know before you use these figures"}),
+    h("ul",{class:"xp-notes"},
+      h("li",{text:"Each figure comes from one of several sources, and they cover different times. Resident and payroll figures are from around the first Thursday in April. Inspection figures are what the home reported at its most recent annual inspection, which can be a year or more earlier, so some homes show the same figure two years in a row. Admissions, hospital stays, private pay, and average daily census cover the whole calendar year. The source of each measure is listed in the definitions under the chart."}),
+      h("li",{text:"Too few: LTCFocus does not publish the number, to protect residents' privacy. For most measures this means 1 to 10 residents had it. For hospital stays, it means the home had fewer than 4,500 resident days in the year. It does not mean zero."}),
+      h("li",{text:"Averages of Rhode Island homes count each home the same and leave out homes that are too few to show. That can push an average up or down, sometimes a lot, so no average is shown for a year when more than 1 in 10 homes are too few to show."}),
+      h("li",{text:"LTCFocus's own state figures count all residents together for resident measures, and average across homes for most inspection, payroll, and quality measures. LTCFocus does not say how its U.S. figures are built. Its 2023 state figures count 80 Rhode Island homes for inspection measures, while its 2023 home file lists 75."}),
+      h("li",{text:"A dash means LTCFocus has no figure for that home and year."}),
+      h("li",{text:"Staffing has two series that should not be joined: inspection records (2011 to 2018) and payroll records (2017 on). LTCFocus estimates part of the low-care measure from 2020 on, so it is shown as two measures."}),
+      h("li",{text:"For-profit and chain filters use each year's status, so a home that changed counts only in the years it met the filter."}),
+      h("li",{text:"The owner group is the one in our records now, not the owner in each year. Homes that have closed show “Not on file.” Sale dates come from our nursing home sales site, which follows RIDOH's change of ownership reviews."}),
+      h("li",{text:"Each home is tracked by LTCFocus's building ID, so a home keeps its history through name and owner changes. The ID can stay with a home that moved: Tockwotton on the Waterfront moved from Providence to East Providence in 2013. The name shown is the name CMS uses now, or the last name LTCFocus had for a closed home."})),
+    h("p",{class:"small"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
+    h("p",{class:"small",text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."}),
+    h("p",{class:"small",text:"Owner groups and sales: ABC-RI."}));
+}
+function xpDefs(keys){
+  return h("div",{class:"xp-defs"}, keys.map(k => { const m = XP.byKey[k]; return h("p",null, h("strong",null, h("span",{text:m.label}), ":"), " ", h("span",{text:m.def}), " ", h("span",{class:"small"}, h("span",{text:"Source:"}), " ", h("span",{text:XP.sources[m.src]}))); }));
+}
+
+// filters that do not depend on the year
+function xpBase(hm){
+  const st = XPstate;
+  if (st.town && hm.townNow !== st.town) return false;
+  if (st.og && hm.og !== st.og) return false;
+  if (st.open === "open" && !hm.in2023) return false;
+  if (st.open === "closed" && hm.in2023) return false;
+  if (st.sold === "yes" && !xpSales(hm).length) return false;
+  if (st.sold === "no" && xpSales(hm).length) return false;
+  return true;
+}
+// for-profit and chain, which can change from year to year
+function xpPassYear(hm, y){
+  const st = XPstate;
+  if (st.fp && String(xpV(hm, XP.byKey.profit, y)) !== st.fp) return false;
+  if (st.ch && String(xpV(hm, XP.byKey.multifac, y)) !== st.ch) return false;
+  return true;
+}
+// homes in LTCFocus that year that meet every filter
+function xpFiltered(y){ return XP.homes.filter(hm => hm.y[y] && xpBase(hm) && xpPassYear(hm, y)); }
+// a short note on how a measure's timing lines up with sale dates
+function xpSaleNote(m){
+  return m.when === "cal" ? "This measure covers the whole calendar year, so a sale during a year falls inside that year's figure."
+    : m.when === "insp" ? "Inspection figures come from the home's most recent inspection, which can be a year or more earlier, so they may not line up with sale dates."
+    : "Figures for this measure are from around April, so a sale later in the year comes after that year's figure.";
+}
+function xpHomes(panel, body){
+  const st = XPstate, m = XP.byKey[st.m], m2 = XP.byKey[st.m2];
+  const rerender = () => xpRender(body);
+  const yearsM = xpYearsFor(m);
+  const yearsXY = yearsM.filter(y => xpYearsFor(m2).includes(y));
+  const yearList = st.chart === "xy" ? yearsXY : yearsM;
+  if (st.chart !== "time" && !yearList.includes(st.year)) st.year = yearList[yearList.length-1];
+  const sel = (label, val, opts, onch) => h("label",null, h("span",{text:label}), h("select",{onchange:e => { onch(e.target.value); rerender(); }}, opts.map(([v,t]) => h("option",{value:v, selected:v===val}, t))));
+  const towns = [...new Set(XP.homes.map(hm => hm.townNow).filter(Boolean))].sort();
+  const ogs = [...new Set(XP.homes.map(hm => hm.og))].sort((a,b) => a === "Not on file" ? 1 : b === "Not on file" ? -1 : a.localeCompare(b));
+  panel.append(h("div",{class:"filters xp-ctl"},
+    h("label",null, h("span",{text:"Measure"}), xpMeasureSelect(st.m, v => { st.m = v; rerender(); })),
+    sel("Chart", st.chart, [["time","Over time"],["year","One year, every home"],["xy","Two measures, one year"]], v => st.chart = v),
+    st.chart !== "time" && yearList.length ? sel("Year", st.year, yearList.map(y => [y,y]), v => st.year = v) : null,
+    st.chart === "xy" ? h("label",null, h("span",{text:"Compare with"}), xpMeasureSelect(st.m2, v => { st.m2 = v; rerender(); }, mm => mm.kind !== "yn")) : null));
+  panel.append(h("div",{class:"filters xp-ctl xp-flt"},
+    sel("Town", st.town, [["","All towns"]].concat(towns.map(t => [t,t])), v => st.town = v),
+    sel("Owner group", st.og, [["","All owner groups"]].concat(ogs.map(t => [t,t])), v => st.og = v),
+    sel("For-profit", st.fp, [["","All"],["1","For-profit"],["0","Nonprofit or government"]], v => st.fp = v),
+    sel("Chain", st.ch, [["","All"],["1","Part of a chain"],["0","Not part of a chain"]], v => st.ch = v),
+    sel("Sales", st.sold, [["","All"],["yes","Sold at least once"],["no","No sale in our records"]], v => st.sold = v),
+    sel("Still open", st.open, [["","All"],["open","In the 2023 file"],["closed","Not in the 2023 file"]], v => st.open = v)));
+  // highlighted homes
+  st.picks = st.picks.filter(id => XP.homes.some(hm => hm.id === id));
+  const picked = st.picks.map(id => XP.homes.find(hm => hm.id === id));
+  const colorOf = hm => { const k = st.picks.indexOf(hm.id); return k < 0 ? null : XP_COLORS[k]; };
+  panel.append(h("div",{class:"filters xp-ctl xp-picks"},
+    h("label",null, h("span",{text:"Highlight a home"}), h("select",{disabled:st.picks.length >= 4, onchange:e => { if (e.target.value) { st.picks.push(e.target.value); rerender(); } }},
+      h("option",{value:""}, st.picks.length >= 4 ? "Up to 4 homes" : "Choose a home"),
+      XP.homes.filter(hm => !st.picks.includes(hm.id)).map(hm => h("option",{value:hm.id}, hm.label + (hm.townNow ? ", " + hm.townNow : ""))))),
+    picked.map(hm => h("button",{type:"button", class:"btn-quiet xp-chip", "aria-label":"Remove " + hm.label, onclick:() => { st.picks = st.picks.filter(x => x !== hm.id); rerender(); }},
+      h("i",{class:"key", style:`background:${colorOf(hm)}`}), hm.label, " ×"))));
+  const fv = v => xpFmt(m, v, false), fg = v => xpFmt(m, v, true);
+  const yrFilter = !!(st.fp || st.ch);
+  // over time: homes with any entry for this measure in a year they meet the filters; one year: homes in LTCFocus that year
+  const homes = st.chart === "time"
+    ? XP.homes.filter(hm => xpBase(hm) && yearsM.some(y => xpV(hm, m, y) != null && xpPassYear(hm, y)))
+    : st.year ? xpFiltered(st.year) : [];
+  panel.append(h("p",{class:"small xp-count", text: st.chart === "time"
+    ? (homes.length === 1 ? "1 home with figures for this measure matches these filters." : `${homes.length} homes with figures for this measure match these filters.`)
+    : (homes.length === 1 ? `1 home matches these filters in ${st.year}.` : `${homes.length} homes match these filters in ${st.year}.`)}));
+  if (!homes.length && !picked.length){ panel.append(h("p",{text:"No homes match these filters."})); return; }
+  const aggWord = m.kind === "yn" ? "Share of these homes" : "Average of these homes";
+  const out = h("div",{class:"card xp-out"}); panel.append(out);
+  const tfLabel = () => h("strong",null, h("span",{text:"Too few to show"}), " ", h("span",{text:"(" + m.tf + ")"}), ":");
+  const hiddenNote = "No average is shown for a year when more than 1 in 10 homes are too few to show, because leaving them out would skew it.";
+
+  if (st.chart === "time"){
+    const years = yearsM;
+    const off = m.when === "cal" ? 0.5 : 0.25;
+    const valIn = (hm, y) => !yrFilter || xpPassYear(hm, y) ? xpV(hm, m, y) : null;
+    const A = {}; years.forEach(y => A[y] = xpAgg(m, homes, y, xpPassYear));
+    const agg = Object.fromEntries(years.map(y => [y, A[y].v]));
+    const us = XP.us[m.key] || {};
+    const series = [];
+    if (m.kind !== "yn") homes.forEach(hm => series.push({name:hm.label, faint:true, vals:Object.fromEntries(years.map(y => [y, valIn(hm, y)]))}));
+    series.push({name:aggWord, color:"var(--s1)", width:2.5, vals:agg});
+    const showUS = Object.keys(us).length > 0;
+    if (showUS) series.push({name:"U.S. (LTCFocus)", color:"var(--ref)", dash:"5 4", vals:us});
+    const markers = [];
+    picked.forEach(hm => {
+      series.push({name:hm.label, color:colorOf(hm), width:2, dots:true, vals:Object.fromEntries(years.map(y => [y, m.kind === "yn" ? (xpIsNum(xpV(hm,m,y)) ? 100*xpV(hm,m,y) : null) : xpV(hm, m, y)]))});
+      xpSales(hm).forEach(sa => { const [yy,mo,dd] = sa.date.split("-").map(Number); markers.push({x:yy + (mo-1)/12 + (dd-1)/365, color:colorOf(hm), label:hm.label + ": sold to " + sa.buyer + ", " + dlabel(sa.date)}); });
+    });
+    out.append(h("h3",null, h("span",{text:m.label})),
+      h("div",{class:"legend"}, series.filter(sr => !sr.faint).map(sr => h("span",null, h("i",{class:"ln", style:`background:${sr.color}` + (sr.dash ? ";background:repeating-linear-gradient(90deg,var(--ref) 0 5px,transparent 5px 8px)" : "")}), sr.name)),
+        m.kind !== "yn" && homes.length ? h("span",null, h("i",{class:"ln", style:"background:var(--grid)"}), "Each home that matches") : null,
+        markers.length ? h("span",null, h("i",{class:"mk"}), "Sale (dashed line, in the home's color)") : null),
+      xpLineChart({years, series, markers, off, pct:m.kind !== "num", fmt:fg, aria:m.label + ", " + years[0] + " to " + years[years.length-1]}));
+    if (markers.length) out.append(h("p",{class:"small",style:"margin-bottom:0",text:"Sales in our records:"}), h("ul",{class:"small xp-sales"}, markers.map(mk => h("li",{text:mk.label}))), h("p",{class:"small",text:xpSaleNote(m)}));
+    if (!showUS) out.append(h("p",{class:"small",text:"LTCFocus has no U.S. figure for this measure."}));
+    if (years.some(y => A[y].hidden)) out.append(h("p",{class:"small",text:hiddenNote}));
+    // table: summary rows, then every home
+    const head = ["Home", "Town", "Owner group now"].concat(years, ["Sold"]);
+    const blanks = ["", ""], rows = [];
+    rows.push({cls:"xp-sum", cells:[aggWord].concat(blanks, years.map(y => fg(agg[y])), [""])});
+    if (m.kind !== "yn") rows.push({cls:"xp-sum", cells:["Middle home"].concat(blanks, years.map(y => fv(A[y].mid)), [""])});
+    if (m.sum) rows.push({cls:"xp-sum", cells:["Total of these homes"].concat(blanks, years.map(y => fv(A[y].tot)), [""])});
+    rows.push({cls:"xp-sum", cells:["Homes with a figure"].concat(blanks, years.map(y => String(A[y].n)), [""])});
+    if (years.some(y => A[y].tf)) rows.push({cls:"xp-sum", cells:["Homes too few to show"].concat(blanks, years.map(y => String(A[y].tf)), [""])});
+    if (showUS) rows.push({cls:"xp-sum", cells:["U.S. (LTCFocus)"].concat(blanks, years.map(y => fg(us[y])), [""])});
+    homes.forEach(hm => rows.push({color:colorOf(hm), cells:[hm.label, hm.townNow, hm.og].concat(years.map(y => yrFilter && !xpPassYear(hm, y) && xpV(hm, m, y) != null ? "·" : fv(xpV(hm, m, y))), [xpSales(hm).map(sa => sa.y).join(", ")])}));
+    out.append(xpTable(head, rows, 3));
+    if (yrFilter) out.append(h("p",{class:"small",text:"· means the home did not meet the for-profit or chain filter that year."}));
+    out.append(h("div",{class:"xp-dl"},
+      h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m.key + ".csv",
+        [["LTCFocus building ID","CMS number","Home","Town","Owner group now","Sale dates (our records)"].concat(years.map(y => m.label + ", " + y))]
+          .concat(homes.map(hm => [hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpSales(hm).map(sa => sa.date).join("; ")].concat(years.map(y => yrFilter && !xpPassYear(hm, y) ? "" : xpCsvVal(xpV(hm, m, y), m)))))) }, "Download this table (CSV)"),
+      xpAllButton()));
+  } else if (st.chart === "year"){
+    const y = st.year, a = xpAgg(m, homes, y), us = (XP.us[m.key] || {})[y];
+    const withV = homes.map(hm => ({hm, v:xpV(hm, m, y)})).filter(o => xpIsNum(o.v));
+    withV.sort((p,q) => q.v - p.v);
+    const tooFew = homes.filter(hm => xpV(hm, m, y) === "f"), none = homes.filter(hm => xpV(hm, m, y) == null);
+    out.append(h("h3",null, h("span",{text:m.label}), ", " + y));
+    if (m.kind === "yn"){
+      const yes = withV.filter(o => o.v === 1).map(o => o.hm), no = withV.filter(o => o.v === 0).map(o => o.hm);
+      out.append(h("p",{text:`${fg(a.v)} of these homes: ${yes.length} of ${a.n}.`}),
+        h("h4",{text:"Yes"}), h("p",{text:yes.map(hm => hm.label).join(", ") || "None"}),
+        h("h4",{text:"No"}), h("p",{text:no.map(hm => hm.label).join(", ") || "None"}));
+    } else {
+      const refs = [{v:a.v}, {v:us, dash:true}];
+      out.append(h("div",{class:"legend"},
+        h("span",null, h("i",{class:"bx", style:"background:var(--ink-2)"}), "Each home"),
+        picked.length ? h("span",null, h("i",{class:"bx", style:`background:${XP_COLORS[0]}`}), "Highlighted homes in their colors") : null,
+        xpIsNum(a.v) ? h("span",null, h("i",{class:"mk", style:"width:2px;background:var(--s1)"}), "Solid line: average of these homes, " + fg(a.v)) : null,
+        xpIsNum(us) ? h("span",null, h("i",{class:"mk", style:"width:2px;background:var(--ref)"}), "Dashed line: U.S., " + fg(us)) : null),
+        xpBars(withV.map(o => ({label:o.hm.label, sub:o.hm.townNow, v:o.v, hi:!!colorOf(o.hm), color:colorOf(o.hm)})), refs, fv, m.kind === "pct"));
+      if (a.hidden) out.append(h("p",{class:"small",text:`No average: ${a.tf} of ${a.n + a.tf} homes are too few to show, so an average of the rest would be misleading.`}));
+      else out.append(h("p",{class:"small",text:`Average of these homes: ${fg(a.v)}. Middle home: ${fv(a.mid)}. ${a.n} homes have a figure.` + (m.sum ? ` Total: ${fv(a.tot)}.` : "")}));
+    }
+    if (tooFew.length) out.append(h("p",{class:"small"}, tfLabel(), " ", tooFew.map(hm => hm.label).join(", ")));
+    if (none.length) out.append(h("p",{class:"small"}, h("strong",{text:"No figure:"}), " ", none.map(hm => hm.label).join(", ")));
+    const sold = homes.filter(hm => xpSales(hm).some(sa => sa.y === +y));
+    if (sold.length) out.append(h("p",{class:"small"}, h("strong",{text:`Sold in ${y}:`}), " ", sold.map(hm => hm.label + " (" + xpSales(hm).filter(sa => sa.y === +y).map(sa => sa.date).join(", ") + ")").join("; "), " ", h("span",{text:xpSaleNote(m)})));
+    out.append(h("div",{class:"xp-dl"},
+      h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m.key + "-" + y + ".csv",
+        [["LTCFocus building ID","CMS number","Home","Town","Owner group now","For-profit in " + y,"Part of a chain in " + y,"Sale dates (our records)", m.label + ", " + y]]
+          .concat(homes.map(hm => [hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpCsvVal(xpV(hm, XP.byKey.profit, y)), xpCsvVal(xpV(hm, XP.byKey.multifac, y)), xpSales(hm).map(sa => sa.date).join("; "), xpCsvVal(xpV(hm, m, y), m)]))) }, "Download this list (CSV)"),
+      xpAllButton()));
+  } else {
+    const y = st.year;
+    if (!y){ out.append(h("p",{text:"These two measures have no year in common. Choose another pair."})); }
+    else {
+      const pts = homes.map(hm => ({hm, x:xpV(hm, m2, y), y:xpV(hm, m, y)})).filter(p => xpIsNum(p.x) && xpIsNum(p.y))
+        .map(p => ({label:p.hm.label, x:p.x, y:p.y, color:colorOf(p.hm), hm:p.hm}));
+      const left = homes.length - pts.length;
+      const kids = [h("h3",null, h("span",{text:m.label}), " ", h("span",{text:"and"}), " ", h("span",{text:m2.label}), ", " + y),
+        h("p",{class:"small"}, h("strong",{text:"Up:"}), " ", h("span",{text:m.label}), " ", h("strong",{text:"Across:"}), " ", h("span",{text:m2.label}), " ", h("span",{text:"Each dot is a home. The axes do not start at zero."}))];
+      if (picked.length) kids.push(h("div",{class:"legend"}, picked.map(hm => h("span",null, h("i",{class:"bx", style:`background:${colorOf(hm)}`}), hm.label))));
+      kids.push(xpScatter({pts, xLabel:m2.label, yLabel:m.label, fx:v => xpFmt(m2, v, false), fy:fv, aria:m.label + " and " + m2.label + ", " + y}));
+      out.append(...kids);
+      if (pts.length >= 5){
+        const n = pts.length, mx = pts.reduce((s0,p)=>s0+p.x,0)/n, my = pts.reduce((s0,p)=>s0+p.y,0)/n;
+        const sxy = pts.reduce((s0,p)=>s0+(p.x-mx)*(p.y-my),0), sxx = pts.reduce((s0,p)=>s0+(p.x-mx)**2,0), syy = pts.reduce((s0,p)=>s0+(p.y-my)**2,0);
+        const r = sxx && syy ? sxy/Math.sqrt(sxx*syy) : null;
+        if (r != null) out.append(h("p",{class:"small",text:`Correlation (r) across these ${n} homes: ${r.toFixed(2)}. A correlation does not show that one causes the other.`}));
+      }
+      if (left) out.append(h("p",{class:"small",text:`${left} of the homes that match are left out because they are missing one of the two figures or have too few residents to show.`}));
+      out.append(xpTable(["Home","Town","Owner group now", m2.label, m.label], pts.sort((a,b) => a.label.localeCompare(b.label)).map(p => ({color:p.color, cells:[p.label, p.hm.townNow, p.hm.og, xpFmt(m2, p.x, false), fv(p.y)]})), 3));
+      out.append(h("div",{class:"xp-dl"},
+        h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m2.key + "-" + m.key + "-" + y + ".csv",
+          [["LTCFocus building ID","CMS number","Home","Town","Owner group now", m2.label + ", " + y, m.label + ", " + y]]
+            .concat(homes.map(hm => [hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpCsvVal(xpV(hm, m2, y), m2), xpCsvVal(xpV(hm, m, y), m)]))) }, "Download this table (CSV)"),
+        xpAllButton()));
+    }
+  }
+  panel.append(h("h2",{text:"What the measures mean"}), xpDefs(st.chart === "xy" ? [m.key, m2.key] : [m.key]));
+}
+function xpTable(head, rows, textCols){
+  const tb = h("tbody");
+  rows.forEach(r => tb.append(h("tr",{class:r.cls || null}, r.cells.map((c,i) => i === 0
+    ? h("th",{scope:"row"}, r.color ? h("i",{class:"key", style:`background:${r.color}`}) : null, c)
+    : h("td",{class:i < textCols ? "" : "r num", text:c})))));
+  return h("div",{class:"tbl-wrap xp-tbl"}, h("table",null, h("thead",null, h("tr",null, head.map((t,i) => h("th",{scope:"col", class:i < textCols ? "" : "r", text:t})))), tb));
+}
+function xpAllButton(){
+  return [xpAllHomesButton(), h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-definitions.csv",
+    [["Measure","LTCFocus column","Kind","What it means","Source"]].concat(XP.measures.map(m => [m.label, m.key, m.kind === "yn" ? "yes or no (1 or 0)" : m.kind === "pct" ? "percent" : "number", m.def, XP.sources[m.src]]))) }, "Download the definitions (CSV)")];
+}
+function xpAllHomesButton(){
+  return h("button",{type:"button", class:"btn-quiet", onclick:() => {
+    const ms = XP.measures;
+    const rows = [["LTCFocus building ID","CMS number","Home","Town","Owner group now","Sale dates (our records)","Year"].concat(ms.map(m => m.label + " [" + m.key + "]"))];
+    XP.homes.forEach(hm => hm.yrs.forEach(y => rows.push([hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpSales(hm).map(sa => sa.date).join("; "), y].concat(ms.map(m => xpCsvVal(xpV(hm, m, y), m))))));
+    xpCSV("ltcfocus-ri-all-homes-all-years.csv", rows);
+  }}, "Download every home, every year, every measure (CSV)");
+}
+// Rhode Island and other states, 2023 (private pay: 2007 to 2015). States only: D.C. is listed but not ranked.
+// Rank 1 is the highest; states with the same figure share a rank.
+function xpStates(panel, body){
+  const st = XPstate, rerender = () => xpRender(body);
+  const has = mm => (XP.states2023[mm.key] && Object.values(XP.states2023[mm.key]).some(xpIsNum)) || mm.key === "pctpvtdays";
+  if (!has(XP.byKey[st.sm])) st.sm = "pcthmo";
+  const m = XP.byKey[st.sm], isPP = m.key === "pctpvtdays";
+  const ppYears = Object.keys(XP.pp_states).sort();
+  panel.append(h("div",{class:"filters xp-ctl"},
+    h("label",null, h("span",{text:"Measure"}), xpMeasureSelect(st.sm, v => { st.sm = v; rerender(); }, has)),
+    isPP ? h("label",null, h("span",{text:"Year"}), h("select",{onchange:e => { st.ppy = e.target.value; rerender(); }}, ppYears.map(y => h("option",{value:y, selected:y===st.ppy}, y)))) : null));
+  const yr = isPP ? st.ppy : "2023";
+  const src = isPP ? XP.pp_states[yr] : XP.states2023[m.key];
+  const list = Object.entries(src).filter(([k,v]) => xpIsNum(v) && XP_STATES[k] && k !== "DC").map(([k,v]) => ({k, v})).sort((a,b) => b.v - a.v);
+  list.forEach(o => o.rank = 1 + list.filter(p => p.v > o.v).length);
+  const ri = list.find(o => o.k === "RI");
+  const dc = src.DC;
+  const us = isPP ? null : (XP.us[m.key] || {})["2023"];
+  const fg = v => xpFmt(m, v, true);
+  const sorted = list.map(o => o.v).slice().sort((a,b)=>a-b), k = sorted.length, mid = k ? (k % 2 ? sorted[(k-1)/2] : (sorted[k/2-1]+sorted[k/2])/2) : null;
+  const out = h("div",{class:"card xp-out"}); panel.append(out);
+  out.append(h("h3",null, h("span",{text:m.label}), m.sum ? [" ", h("span",{text:"(total in each state)"})] : m.kind === "yn" ? [" ", h("span",{text:"(share of homes)"})] : null, ", " + yr));
+  if (ri){
+    const ties = list.filter(o => o.k !== "RI" && o.v === ri.v).map(o => XP_STATES[o.k]);
+    const kids = [h("strong",{text:`Rhode Island: ${fg(ri.v)}, ${ri.rank} of ${list.length} states, counting from the highest.`})];
+    if (ties.length) kids.push(" ", h("span",{text:"Tied with " + ties.join(", ") + "."}));
+    kids.push(" ", h("span",{text:`Middle state: ${fg(mid)}.`}));
+    if (xpIsNum(us) && !m.sum) kids.push(" ", h("span",{text:`U.S.: ${fg(us)}.`}));
+    out.append(h("p",null, ...kids));
+  }
+  else out.append(h("p",{text:"LTCFocus does not publish a Rhode Island figure for this measure (too few residents)."}));
+  if (m.key === "acuindex2") out.append(h("p",{class:"small"}, h("strong",{text:"Use this ranking with care."}), " ", h("span",{text:"LTCFocus lists 23 of Rhode Island's 75 homes as 0 for 2023, which cannot be right, and its state figure counts those zeros. Leaving them out, Rhode Island's homes average 11.7. Other states may have zeros too."})));
+  if (m.src === "insp" && !isPP) out.append(h("p",{class:"small",text:"LTCFocus's 2023 state figures count 80 Rhode Island homes for inspection measures, while its 2023 home file lists 75, so these figures can differ from the Rhode Island homes view."}));
+  out.append(h("div",{class:"legend"},
+    h("span",null, h("i",{class:"bx", style:"background:var(--ink-2)"}), "Each state"),
+    h("span",null, h("i",{class:"bx", style:"background:var(--s2)"}), "Rhode Island"),
+    xpIsNum(us) && !m.sum ? h("span",null, h("i",{class:"mk", style:"width:2px;background:var(--ref)"}), "Dashed line: U.S.") : null));
+  out.append(xpBars(list.map(o => ({label:o.rank + ". " + XP_STATES[o.k], v:o.v, hi:o.k === "RI", color:o.k === "RI" ? "var(--s2)" : null})), [{v:m.sum ? null : us, dash:true}], fg, m.kind !== "num"));
+  if (xpIsNum(dc)) out.append(h("p",{class:"small"}, h("strong",{text:"District of Columbia (not ranked):"}), " " + fg(dc)));
+  const missing = Object.keys(XP_STATES).filter(s2 => s2 !== "DC" && !list.some(o => o.k === s2));
+  if (missing.length) out.append(h("p",{class:"small"}, h("strong",{text:"Not in this LTCFocus file, or no figure:"}), " ", missing.map(s2 => XP_STATES[s2]).join(", ")));
+  out.append(h("p",{class:"small",text: isPP
+    ? "Private pay is LTCFocus's share of all resident days in the state's homes that were private pay. LTCFocus stopped publishing it after 2015."
+    : "These are LTCFocus's own state figures. For resident measures, a state's figure counts all its residents together. For most inspection, payroll, and quality measures, it is the average of the state's homes. Beds and residents are totals."}));
+  out.append(h("div",{class:"xp-dl"}, h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-states-" + m.key + "-" + yr + ".csv",
+    [["Rank (1 = highest)","State", m.label + ", " + yr]].concat(list.map(o => [o.rank, XP_STATES[o.k].replace(" "," "), o.v])).concat(xpIsNum(dc) ? [["","District of Columbia", dc]] : []).concat(xpIsNum(us) && !m.sum ? [["","United States", us]] : [])) }, "Download this list (CSV)")));
+  panel.append(h("h2",{text:"What the measure means"}), xpDefs([m.key]));
+}
+// Rhode Island and the U.S. by year
+function xpUS(panel, body){
+  const st = XPstate, rerender = () => xpRender(body);
+  const has = mm => (XP.us[mm.key] && Object.keys(XP.us[mm.key]).length && !mm.sum) || mm.key === "pctpvtdays";
+  if (!has(XP.byKey[st.um])) st.um = "pcthmo";
+  const m = XP.byKey[st.um], isPP = m.key === "pctpvtdays";
+  panel.append(h("div",{class:"filters xp-ctl"}, h("label",null, h("span",{text:"Measure"}), xpMeasureSelect(st.um, v => { st.um = v; rerender(); }, has))));
+  const fg = v => xpFmt(m, v, true);
+  let years, riVals = {}, other = {}, riName, otherName, A = {};
+  const stateRI = isPP ? null : (XP.states2023[m.key] || {}).RI;
+  if (isPP){
+    years = Object.keys(XP.pp_states).sort();
+    riName = "Rhode Island (LTCFocus state figure)"; otherName = "Middle state";
+    years.forEach(y => { const vs = Object.entries(XP.pp_states[y]).filter(([k,v]) => xpIsNum(v) && XP_STATES[k] && k !== "DC").map(([,v]) => v).sort((a,b)=>a-b), k = vs.length;
+      riVals[y] = XP.pp_states[y].RI; other[y] = k ? (k % 2 ? vs[(k-1)/2] : (vs[k/2-1]+vs[k/2])/2) : null; });
+  } else {
+    years = XP.years.filter(y => +y >= 2011 && (xpAgg(m, XP.homes, y).n || XP.us[m.key][y] != null));
+    riName = "Rhode Island (average of its homes)"; otherName = "U.S. (LTCFocus)";
+    years.forEach(y => { A[y] = xpAgg(m, XP.homes, y); riVals[y] = A[y].v; other[y] = XP.us[m.key][y]; });
+  }
+  const out = h("div",{class:"card xp-out"}); panel.append(out);
+  const series = [{name:riName, color:"var(--s2)", width:2.5, dots:true, vals:riVals}, {name:otherName, color:"var(--s1)", width:2, dash:"5 4", dots:true, vals:other}];
+  const showState = xpIsNum(stateRI);
+  if (showState) series.push({name:"Rhode Island, LTCFocus state figure (2023)", color:"var(--s2)", width:0, dots:true, vals:{"2023":stateRI}});
+  out.append(h("h3",null, h("span",{text:m.label})),
+    h("div",{class:"legend"}, h("span",null, h("i",{class:"ln", style:"background:var(--s2)"}), riName), h("span",null, h("i",{class:"ln", style:"background:repeating-linear-gradient(90deg,var(--s1) 0 5px,transparent 5px 8px)"}), otherName),
+      showState ? h("span",null, h("i",{class:"bx", style:"background:var(--s2);border-radius:50%"}), "Rhode Island, LTCFocus state figure (2023)") : null),
+    xpLineChart({years, series, off:m.when === "cal" ? 0.5 : 0.25, pct:m.kind !== "num", fmt:fg, aria:m.label + ", Rhode Island and " + otherName}));
+  const diff = y => xpIsNum(riVals[y]) && xpIsNum(other[y]) ? riVals[y] - other[y] : null;
+  const dtxt = d => d == null ? "–" : (d > 0 ? "+" : d < 0 ? "−" : "") + (m.kind === "num" ? Math.abs(d).toFixed(Math.abs(d) < 10 ? 2 : 1) : (Math.round(Math.abs(d)*10)/10).toFixed(1) + " points");
+  const head = ["Year", riName, otherName, "Difference"].concat(isPP ? [] : ["Rhode Island homes with a figure", "Rhode Island homes too few to show"]);
+  out.append(xpTable(head, years.slice().reverse().map(y => ({cells:[y, fg(riVals[y]), fg(other[y]), dtxt(diff(y))].concat(isPP ? [] : [String(A[y].n), String(A[y].tf)])})), 1));
+  if (!isPP && years.some(y => A[y].hidden)) out.append(h("p",{class:"small",text:"No Rhode Island average is shown for a year when more than 1 in 10 homes are too few to show, because leaving them out would skew it."}));
+  if (showState) out.append(h("p",{class:"small",text:`For 2023, LTCFocus's own Rhode Island figure is ${fg(stateRI)}. It counts all residents together for resident measures, so it can differ from the average of the homes.`}));
+  out.append(h("p",{class:"small",text: isPP
+    ? "Both lines are LTCFocus state figures: Rhode Island's, and the middle of all states in the file. LTCFocus has no U.S. figure for private pay."
+    : "The Rhode Island line averages Rhode Island's homes, each counted the same, from LTCFocus's yearly home files. The U.S. line is LTCFocus's national figure."}));
+  out.append(h("div",{class:"xp-dl"}, h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-us-" + m.key + ".csv",
+    [["Year", riName.replace(" "," "), otherName].concat(isPP ? [] : ["Rhode Island homes with a figure","Rhode Island homes too few to show"])]
+      .concat(years.map(y => [y, riVals[y] == null ? "" : +riVals[y].toFixed(3), other[y] == null ? "" : other[y]].concat(isPP ? [] : [A[y].n, A[y].tf])))) }, "Download this table (CSV)")));
+  panel.append(h("h2",{text:"What the measure means"}), xpDefs([m.key]));
+}
 // The Long-Term Care Ombudsman Program's number, on the home page and the "Which kind of care?" page.
 // Source: RI Office of Healthy Aging, oha.ri.gov/what-we-do/protect/ombudsman-program (checked November 8, 2026).
 // The program's name links to risltcop.org, which forwards to the Alliance for Better Long Term Care's Ombudsman Program page.
@@ -2878,7 +3436,7 @@ function route(){
   const hsh = (location.hash||"#home").slice(1);
   app.textContent = "";
   app.classList.toggle("fac", hsh.startsWith("f-"));
-  ["home","harms","patterns","owners","about","hospital","care"].forEach(t => { const on = hsh===t || (t==="hospital" && hsh.startsWith("hospital=")) || (t==="care" && hsh==="costs") || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  ["home","harms","patterns","owners","about","explore","hospital","care"].forEach(t => { const on = hsh===t || (t==="hospital" && hsh.startsWith("hospital=")) || (t==="care" && hsh==="costs") || (t==="home" && (hsh===""||hsh==="list")), a = document.getElementById("tab-"+t); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
   if (hsh.startsWith("f-")) viewFacility(hsh.slice(2));
   else if (hsh==="harms") viewHarms();
   else if (hsh==="patterns") viewPatterns();
@@ -2886,13 +3444,14 @@ function route(){
   else if (hsh==="about") viewAbout();
   else if (hsh==="care" || hsh==="costs") viewCare();
   else if (hsh==="ltcfocus") viewLtcfocus();
+  else if (hsh==="explore") viewExplore();
   else if (hsh==="hospital" || hsh.startsWith("hospital=")) viewHospital(hsh.slice(9));
   else viewHome();
   footer();
   if (hsh === "costs") { const c = document.getElementById("costs"); if (c) c.scrollIntoView(); }
   else if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
-  document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh==="ltcfocus" ? "About the LTCFocus figures · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
+  document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh==="ltcfocus" ? "About the LTCFocus figures · Rhode Island Nursing Homes" : hsh==="explore" ? "Explore the LTCFocus data · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
   if (f) gcEvent(f.name);
 }
 // GoatCounter visitor counts. The page view is counted when count.js loads; opening a home is

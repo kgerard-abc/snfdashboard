@@ -98,7 +98,7 @@
   }
 
   // ---- applying it to the page
-  var ATTRS = ["title", "aria-label", "placeholder", "alt"];
+  var ATTRS = ["title", "aria-label", "placeholder", "alt", "label"];   // "label": <optgroup> names
   var shown = new WeakMap();   // text node -> {orig, out}
   var attrOrig = new WeakMap(); // element -> {attr: {orig, out}}
   var SKIP = /^(SCRIPT|STYLE|NOSCRIPT)$/;
