@@ -38,7 +38,8 @@ MEASURES = [
     ("avg_dailycensus", "Average daily census", "num", "mcr", "Average number of residents in the home each day of the year.", 1),
     ("occpct", "Occupancy (%)", "pct", "insp", "Occupied beds as a share of all beds, at the home's annual inspection.", 1),
     ("profit", "For-profit", "yn", "insp", "Whether the home is run for profit. For a group of homes, the share of homes.", 1),
-    ("multifac", "Part of a chain (as the home reported)", "yn", "insp", "Whether the home said it is part of a chain on its inspection form. For a group of homes, the share of homes. This often disagrees with CMS: in 2023, 14 Rhode\u00a0Island homes said no while CMS listed them in a chain that June. Our owner groups are a better guide.", 1),
+    # LTCFocus's chain flag (multifac) is left out on purpose: each home reports it itself, and ABC-RI found it
+    # inaccurate for Rhode Island (2023: 14 homes said no while CMS listed them in a chain). Owner groups are ABC-RI's own.
     ("hospbase", "Hospital-based", "yn", "insp", "Whether the home is part of a hospital. For a group of homes, the share of homes.", 1),
     ("alzunit", "Has a dementia (Alzheimer's) unit", "yn", "insp", "Whether the home reports a special care unit for dementia. For a group of homes, the share of homes.", 1),
     ("anyunit", "Has any special care unit", "yn", "insp", "Whether the home reports any special care unit, not counting ventilator units. For a group of homes, the share of homes.", 1),
