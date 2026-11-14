@@ -2068,7 +2068,9 @@ function viewAbout(){
     h("h2",{text:"Sources",style:"margin-top:20px"}),
     h("p",null, "CMS nursing home data archive: ", h("a",{href:"https://data.cms.gov/provider-data/archived-data/nursing-homes",target:"_blank",rel:"noopener",text:"data.cms.gov/provider-data/archived-data/nursing-homes"})),
     h("p",null, "CMS Care Compare: ", h("a",{href:"https://www.medicare.gov/care-compare/",target:"_blank",rel:"noopener",text:"medicare.gov/care-compare"})),
-    h("p",null, "CMS Special Focus Facility program rules (QSO-23-01-NH, revised January 2026): ", h("a",{href:"https://www.cms.gov/files/document/qso-23-01-nh-revised-2026-01-28.pdf",target:"_blank",rel:"noopener",text:"cms.gov"}))
+    h("p",null, "CMS Special Focus Facility program rules (QSO-23-01-NH, revised January 2026): ", h("a",{href:"https://www.cms.gov/files/document/qso-23-01-nh-revised-2026-01-28.pdf",target:"_blank",rel:"noopener",text:"cms.gov"})),
+    h("p",null, h("span",{text:"LTCFocus, Brown University School of Public Health (the 2023 figures on each home's page and the Explore the data page):"}), " ", h("a",{href:"https://ltcfocus.org/",target:"_blank",rel:"noopener",text:"ltcfocus.org"}), h("sup",{text:"*"})),
+    h("p",{class:"small"}, h("sup",{text:"*"}), " ", h("span",{text:"LTCFocus is sponsored by the National Institute on Aging (1P01AG027296) through a cooperative agreement with the Brown University School of Public Health."}))
   ));
 }
 
@@ -2836,16 +2838,21 @@ function xpHomes(panel, body){
     if (!showUS) out.append(h("p",{class:"small",text:"LTCFocus has no U.S. figure for this measure."}));
     if (years.some(y => A[y].hidden)) out.append(h("p",{class:"small",text:hiddenNote}));
     // table: summary rows, then every home
-    const head = ["Home", "Town", "Owner group now"].concat(years, ["Sold"]);
+    const head = ["Home", "Town", "Owner group now"].concat(years);
     const blanks = ["", ""], rows = [];
-    rows.push({cls:"xp-sum", cells:[aggWord].concat(blanks, years.map(y => fg(agg[y])), [""])});
-    if (m.kind !== "yn") rows.push({cls:"xp-sum", cells:["Middle home"].concat(blanks, years.map(y => fv(A[y].mid)), [""])});
-    if (m.sum) rows.push({cls:"xp-sum", cells:["Total of these homes"].concat(blanks, years.map(y => fv(A[y].tot)), [""])});
-    rows.push({cls:"xp-sum", cells:["Homes with a figure"].concat(blanks, years.map(y => String(A[y].n)), [""])});
-    if (years.some(y => A[y].tf)) rows.push({cls:"xp-sum", cells:["Homes too few to show"].concat(blanks, years.map(y => String(A[y].tf)), [""])});
-    if (showUS) rows.push({cls:"xp-sum", cells:["U.S. (LTCFocus)"].concat(blanks, years.map(y => fg(us[y])), [""])});
-    homes.forEach(hm => rows.push({color:colorOf(hm), cells:[hm.label, hm.townNow, hm.og].concat(years.map(y => yrFilter && !xpPassYear(hm, y) && xpV(hm, m, y) != null ? "·" : fv(xpV(hm, m, y))), [xpSales(hm).map(sa => sa.y).join(", ")])}));
+    rows.push({cls:"xp-sum", cells:[aggWord].concat(blanks, years.map(y => fg(agg[y])))});
+    if (m.kind !== "yn") rows.push({cls:"xp-sum", cells:["Middle home"].concat(blanks, years.map(y => fv(A[y].mid)))});
+    if (m.sum) rows.push({cls:"xp-sum", cells:["Total of these homes"].concat(blanks, years.map(y => fv(A[y].tot)))});
+    rows.push({cls:"xp-sum", cells:["Homes with a figure"].concat(blanks, years.map(y => String(A[y].n)))});
+    if (years.some(y => A[y].tf)) rows.push({cls:"xp-sum", cells:["Homes too few to show"].concat(blanks, years.map(y => String(A[y].tf)))});
+    if (showUS) rows.push({cls:"xp-sum", cells:["U.S. (LTCFocus)"].concat(blanks, years.map(y => fg(us[y])))});
+    homes.forEach(hm => rows.push({color:colorOf(hm), cells:[hm.label, hm.townNow, hm.og].concat(years.map(y => yrFilter && !xpPassYear(hm, y) && xpV(hm, m, y) != null ? "·" : fv(xpV(hm, m, y))))}));
     out.append(xpTable(head, rows, 3));
+    // sales get their own small table, so the year columns above hold only LTCFocus figures
+    const sales = homes.flatMap(hm => xpSales(hm).map(sa => ({hm, sa}))).sort((p,q) => p.hm.label.localeCompare(q.hm.label) || (p.sa.date < q.sa.date ? -1 : 1));
+    if (sales.length) out.append(h("h4",{text:"Sales of these homes in our records"}),
+      h("p",{class:"small",text:"From our nursing home sales site. The LTCFocus figures above go through 2023, so later sales are listed for context only."}),
+      xpTable(["Home","Sale date","Buyer"], sales.map(o => ({color:colorOf(o.hm), cells:[o.hm.label, dlabel(o.sa.date), o.sa.buyer]})), 3));
     if (yrFilter) out.append(h("p",{class:"small",text:"· means the home did not meet the for-profit or chain filter that year."}));
     out.append(h("div",{class:"xp-dl"},
       h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m.key + ".csv",
