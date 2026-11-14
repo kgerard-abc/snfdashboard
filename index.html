@@ -2519,7 +2519,7 @@ function viewLtcfocus(){
 let XP = null, XPstate = null;
 const XP_COLORS = ["#2a78d6","#eb6834","#1baf7a","#eda100"];   // highlighted homes; checked with the dataviz palette validator on #F6F3EA
 const XP_GROUPS = [
-  ["The home", ["totbeds","nresid","avg_dailycensus","occpct","profit","multifac","hospbase","alzunit","anyunit"]],
+  ["The home", ["totbeds","nresid","avg_dailycensus","occpct","profit","hospbase","alzunit","anyunit"]],
   ["Who pays", ["paymcaid","paymcare","pcthmo","pctpvtdays"]],
   ["Who lives there", ["avgage","pctunder65","pctfem","pctwhite_mds3","pctblack_mds3","pcthisp_mds3"]],
   ["Care needs", ["acuindex2","avgadl_mds3","pctlocare_mds3","pctlocare_imp","pctbedft_mds3","pctwalking","pctincont_bladr_mds3","pctincont_bowel_mds3","pctcath_mds3","pctvent_mds3"]],
@@ -2565,7 +2565,7 @@ function xpFmt(m, v, group){
 // average (or share of homes, for yes or no measures) across homes, for one year; also the middle home, the total,
 // and how many homes are "too few". Homes that are too few are left out, which can push an average up or down,
 // so no average or middle home is given when more than 1 in 10 homes with an entry are too few (hidden: true).
-// pass(hm, y): optional test for whether a home counts in that year (the for-profit and chain filters).
+// pass(hm, y): optional test for whether a home counts in that year (the for-profit filter).
 function xpAgg(m, homes, y, pass){
   const hs = pass ? homes.filter(hm => pass(hm, y)) : homes;
   const all = hs.map(hm => xpV(hm, m, y)), vs = all.filter(xpIsNum), tf = all.filter(v => v === "f").length;
@@ -2706,7 +2706,7 @@ function viewExplore(){
     h("p",{class:"small"}, h("a",{href:"#ltcfocus",text:"Where these figures come from, and when"}), " · ", h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"LTCFocus, Brown University School of Public Health"})));
   const body = h("div",null, h("p",{text:"Loading the LTCFocus figures…"}));
   sec.append(body);
-  const go = () => { if (!XPstate) XPstate = {tab:"homes", m:"paymcaid", m2:"dchprd_pbj", chart:"time", year:"2023", town:"", og:"", fp:"", ch:"", sold:"", open:"", picks:[], sm:"pcthmo", ppy:"2015", um:"pcthmo"}; xpRender(body); };
+  const go = () => { if (!XPstate) XPstate = {tab:"homes", m:"paymcaid", m2:"dchprd_pbj", chart:"time", year:"2023", town:"", og:"", fp:"", sold:"", open:"", picks:[], sm:"pcthmo", ppy:"2015", um:"pcthmo"}; xpRender(body); };
   if (XP) { go(); return; }
   fetch("ltcfocus-explorer.json").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => { XP = xpPrep(j); if (body.isConnected) go(); })
     .catch(() => { body.textContent = ""; body.append(h("p",{text:"The LTCFocus figures could not be loaded. Please try again later."})); });
@@ -2730,7 +2730,8 @@ function xpRender(body){
       h("li",{text:"LTCFocus's own state figures count all residents together for resident measures, and average across homes for most inspection, payroll, and quality measures. LTCFocus does not say how its U.S. figures are built. Its 2023 state figures count 80 Rhode Island homes for inspection measures, while its 2023 home file lists 75."}),
       h("li",{text:"A dash means LTCFocus has no figure for that home and year."}),
       h("li",{text:"Staffing has two series that should not be joined: inspection records (2011 to 2018) and payroll records (2017 on). LTCFocus estimates part of the low-care measure from 2020 on, so it is shown as two measures."}),
-      h("li",{text:"For-profit and chain filters use each year's status, so a home that changed counts only in the years it met the filter."}),
+      h("li",{text:"The for-profit filter uses each year's status, so a home that changed counts only in the years it was for-profit."}),
+      h("li",{text:"We don't use LTCFocus's information on chains, because each home reports it itself and we found it isn't accurate. Owner groups come from our own research."}),
       h("li",{text:"The owner group is the one in our records now, not the owner in each year. Homes that have closed show \u201cClosed.\u201d Sale dates come from our nursing home sales site, which follows RIDOH's change of ownership reviews."}),
       h("li",{text:"Each home is tracked by LTCFocus's building ID, so a home keeps its history through name and owner changes. The ID can stay with a home that moved: Tockwotton on the Waterfront moved from Providence to East Providence in 2013. The name shown is the name CMS uses now, or the last name LTCFocus had for a closed home."})),
     h("p",{class:"small"}, h("a",{href:"https://ltcfocus.org/", target:"_blank", rel:"noopener", text:"Source: LTCFocus, Brown University School of Public Health"})),
@@ -2752,11 +2753,10 @@ function xpBase(hm){
   if (st.sold === "no" && xpSales(hm).length) return false;
   return true;
 }
-// for-profit and chain, which can change from year to year
+// for-profit, which can change from year to year
 function xpPassYear(hm, y){
   const st = XPstate;
   if (st.fp && String(xpV(hm, XP.byKey.profit, y)) !== st.fp) return false;
-  if (st.ch && String(xpV(hm, XP.byKey.multifac, y)) !== st.ch) return false;
   return true;
 }
 // homes in LTCFocus that year that meet every filter
@@ -2787,7 +2787,6 @@ function xpHomes(panel, body){
     sel("Town", st.town, [["","All towns"]].concat(towns.map(t => [t,t])), v => st.town = v),
     sel("Owner group", st.og, [["","All owner groups"]].concat(ogs.map(t => [t,t])), v => st.og = v),
     sel("For-profit", st.fp, [["","All"],["1","For-profit"],["0","Nonprofit or government"]], v => st.fp = v),
-    sel("Chain", st.ch, [["","All"],["1","Part of a chain"],["0","Not part of a chain"]], v => st.ch = v),
     sel("Sales", st.sold, [["","All"],["yes","Sold at least once"],["no","No sale in our records"]], v => st.sold = v),
     sel("Still open", st.open, [["","All"],["open","In the 2023 file"],["closed","Not in the 2023 file"]], v => st.open = v)));
   // highlighted homes
@@ -2801,7 +2800,7 @@ function xpHomes(panel, body){
     picked.map(hm => h("button",{type:"button", class:"btn-quiet xp-chip", "aria-label":"Remove " + hm.label, onclick:() => { st.picks = st.picks.filter(x => x !== hm.id); rerender(); }},
       h("i",{class:"key", style:`background:${colorOf(hm)}`}), hm.label, " ×"))));
   const fv = v => xpFmt(m, v, false), fg = v => xpFmt(m, v, true);
-  const yrFilter = !!(st.fp || st.ch);
+  const yrFilter = !!st.fp;
   // over time: homes with any entry for this measure in a year they meet the filters; one year: homes in LTCFocus that year
   const homes = st.chart === "time"
     ? XP.homes.filter(hm => xpBase(hm) && yearsM.some(y => xpV(hm, m, y) != null && xpPassYear(hm, y)))
@@ -2856,7 +2855,7 @@ function xpHomes(panel, body){
     if (sales.length) out.append(h("h4",{text:"Sales of these homes in our records"}),
       h("p",{class:"small",text:"From our nursing home sales site. The LTCFocus figures above go through 2023, so later sales are listed for context only."}),
       xpTable(["Home","Sale date","Buyer"], sales.map(o => ({color:colorOf(o.hm), cells:[o.hm.label, dlabel(o.sa.date), o.sa.buyer]})), 3));
-    if (yrFilter) out.append(h("p",{class:"small",text:"· means the home did not meet the for-profit or chain filter that year."}));
+    if (yrFilter) out.append(h("p",{class:"small",text:"· means the home was not for-profit that year."}));
     out.append(h("div",{class:"xp-dl"},
       h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m.key + ".csv",
         [["LTCFocus building ID","CMS number","Home","Town","Owner group now","Sale dates (our records)"].concat(years.map(y => m.label + ", " + y))]
@@ -2890,8 +2889,8 @@ function xpHomes(panel, body){
     if (sold.length) out.append(h("p",{class:"small"}, h("strong",{text:`Sold in ${y}:`}), " ", sold.map(hm => hm.label + " (" + xpSales(hm).filter(sa => sa.y === +y).map(sa => sa.date).join(", ") + ")").join("; "), " ", h("span",{text:xpSaleNote(m)})));
     out.append(h("div",{class:"xp-dl"},
       h("button",{type:"button", class:"btn-quiet", onclick:() => xpCSV("ltcfocus-ri-" + m.key + "-" + y + ".csv",
-        [["LTCFocus building ID","CMS number","Home","Town","Owner group now","For-profit in " + y,"Part of a chain in " + y,"Sale dates (our records)", m.label + ", " + y]]
-          .concat(homes.map(hm => [hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpCsvVal(xpV(hm, XP.byKey.profit, y)), xpCsvVal(xpV(hm, XP.byKey.multifac, y)), xpSales(hm).map(sa => sa.date).join("; "), xpCsvVal(xpV(hm, m, y), m)]))) }, "Download this list (CSV)"),
+        [["LTCFocus building ID","CMS number","Home","Town","Owner group now","For-profit in " + y,"Sale dates (our records)", m.label + ", " + y]]
+          .concat(homes.map(hm => [hm.id, hm.ccn, hm.label, hm.townNow, hm.og, xpCsvVal(xpV(hm, XP.byKey.profit, y)), xpSales(hm).map(sa => sa.date).join("; "), xpCsvVal(xpV(hm, m, y), m)]))) }, "Download this list (CSV)"),
       xpAllButton()));
   } else {
     const y = st.year;
