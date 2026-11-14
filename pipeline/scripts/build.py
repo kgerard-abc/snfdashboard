@@ -85,7 +85,7 @@ MONTHS = ["january", "february", "march", "april", "may", "june", "july", "augus
 
 
 def closed_from_note(note):
-    """A facility details note that starts "Closed <Month> <Year>" (or just "Closed <Year>") marks a home
+    """A facility details note that starts "Closed <Month> <Year>" (or "Closed <Year>", or just "Closed") marks a home
     closed even if CMS still lists it. Returns (status label, last month to show data for, year_only) or None."""
     s = str(note or "")
     m = re.match(r"\s*closed\s+([a-z]+)\s+(\d{4})", s, re.I)
@@ -95,6 +95,8 @@ def closed_from_note(note):
     m = re.match(r"\s*closed\s+(?:in\s+)?(\d{4})\b", s, re.I)
     if m:
         return f"Closed {m.group(1)}", f"{m.group(1)}-12", True
+    if re.match(r"\s*closed\b", s, re.I):   # "Closed" with no date: the status shows the last month CMS listed it
+        return "Closed", None, False
     return None
 
 
@@ -256,6 +258,8 @@ def derive(d):
             closed_last = None
             if closed:
                 status, closed_month, year_only = closed
+                if closed_month is None:   # closing date not recorded
+                    status, closed_month = f"Closed (last listed {month_label(L['cms_month'])})", L["cms_month"]
                 # show the home as of the last CMS file on or before it closed (CMS skips some months)
                 rows_c = pm[(pm["ccn"] == ccn) & (pm["cms_month"] <= closed_month)]
                 if year_only:   # no month known: the last file that year that still reported residents
