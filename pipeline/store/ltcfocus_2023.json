@@ -2,8 +2,8 @@
  "year": 2023,
  "source": "LTCFocus, Brown University School of Public Health, facility, state, and national files for 2023 (ltcfocus.org).",
  "notes": [
-  "Resident assessment (MDS) figures describe residents in the home on the first Thursday in April 2023 (April 6). Inspection (CASPER) figures are what the home reported at its annual inspection, late 2022 or 2023. Payroll (PBJ) figures cover 2023. Pressure ulcers are a CMS quality measure for April to June 2023.",
-  "Rhode Island and U.S. averages are LTCFocus's own state and national figures, except the Rhode Island acuity average (11.7), which leaves out 23 homes that LTCFocus lists as 0; LTCFocus's own state figure (8.33) counts the zeros.",
+  "Resident assessment (MDS) figures describe residents in the home on the first Thursday in April 2023 (April 6). Inspection (CASPER) figures are what the home reported at its most recent annual inspection, which can be a year or more earlier. Payroll (PBJ) figures cover 2023. Pressure ulcers are a CMS quality measure for January to March 2023 (LTCFocus used April to June in earlier years).",
+  "Rhode Island and U.S. averages are LTCFocus's own state and national figures, except the Rhode Island acuity average (11.7), which leaves out 23 homes that LTCFocus lists as 0; LTCFocus's own state figure (8.33) counts the zeros.",
   "\"too few\" means between 1 and 10 residents had this, so LTCFocus does not publish the number."
  ],
  "measures": [
@@ -41,7 +41,7 @@
    "key": "acuindex2",
    "label": "Acuity index",
    "kind": "num",
-   "explain": "A score for how much care residents need. It counts residents who need help eating, using the toilet, or moving; residents who are bedfast; residents who get treatments such as breathing care, IV therapy, tube feeding, or physical therapy; and residents with dementia or a psychiatric diagnosis. Rhode Island homes range from about 9 to 13. LTCFocus lists 23 Rhode Island homes as 0, which cannot be right, so they show “No figure” and are left out of the Rhode Island average.",
+   "explain": "A score for how much care residents need. It counts residents who need help eating, using the toilet, or moving; residents who are bedfast; residents who get treatments such as breathing care, IV therapy, tube feeding, or physical therapy; and residents with dementia or a psychiatric diagnosis. Rhode Island homes range from about 9 to 13. LTCFocus lists 23 Rhode Island homes as 0, which cannot be right, so they show “No figure” and are left out of the Rhode Island average.",
    "ri": 11.7,
    "us": null,
    "group": "casper",
@@ -141,7 +141,7 @@
    "key": "anymdex_pbj",
    "label": "Nurse practitioner or physician assistant",
    "kind": "yn",
-   "explain": "Whether the home's payroll records show any nurse practitioner or physician assistant hours at any time in 2023. Those who work for an outside medical practice are not counted, so “No” does not mean residents never see one. The Rhode Island and U.S. figures are the share of homes with hours.",
+   "explain": "Whether the home's payroll records show any nurse practitioner or physician assistant hours at any time in 2023. The Rhode Island figure is the share of homes with hours. LTCFocus has no U.S. figure for this.",
    "ri": 24.0,
    "us": null,
    "group": "pbj",
@@ -1407,8 +1407,8 @@
  },
  "groups": {
   "mds": "Residents in the home on April 6, 2023 (resident assessments)",
-  "casper": "At the home's annual inspection, late 2022 or 2023 (reported by the home)",
+  "casper": "At the home's most recent annual inspection, which can be a year or more before April 2023 (reported by the home)",
   "pbj": "Payroll records, 2023",
-  "qm": "CMS quality measure, April to June 2023"
+  "qm": "CMS quality measure, January to March 2023"
  }
 }
