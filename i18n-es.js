@@ -4,6 +4,10 @@ window.RINH_ES = {
   // Colleague review fixes (November 2026): rating summary, U.S. comparisons, star key, quarterly charts
   "Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter, usually because too few residents at the home qualified for that measure. At a smaller home, a few residents can move a percentage a lot from one quarter to the next, so look at the pattern over time more than any one quarter.": "Medidas de calidad trimestrales basadas en evaluaciones de residentes y reclamos a Medicare. Un valor más bajo es mejor en todas ellas. Un corte en una línea significa que CMS no informó un valor para ese trimestre, normalmente porque muy pocos residentes del hogar calificaban para esa medida. En un hogar más pequeño, unos pocos residentes pueden cambiar mucho un porcentaje de un trimestre a otro, así que fíjese en la tendencia a lo largo del tiempo más que en un solo trimestre.",
   "Quarter": "Trimestre",
+  "0 stars": "0 estrellas",
+  "0 stars:": "0 estrellas:",
+  "is a Special Focus Facility. CMS doesn't give star ratings to homes in that program, so we count it as 0 stars.": "es un Centro de Enfoque Especial. CMS no da calificaciones con estrellas a los hogares en ese programa, así que lo contamos como 0 estrellas.",
+  "{n} of the {n} homes ({n}%) have 0, 1, or 2 stars, below average. {n} ({n}%) have 4 or 5 stars, above average.": "{1} de los {2} hogares ({3}%) tienen 0, 1 o 2 estrellas, por debajo del promedio. {4} ({5}%) tienen 4 o 5 estrellas, por encima del promedio.",
   "Distance, nearest first": "Distancia, el más cercano primero",
   "Name, Z to A": "Nombre, de la Z a la A",
   "Owner group, Z to A": "Grupo propietario, de la Z a la A",
