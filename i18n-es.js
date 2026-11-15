@@ -84,6 +84,7 @@ window.RINH_ES = {
   "Not rated:": "Sin calificar:",
   "is a Special Focus Facility. CMS doesn't give star ratings to homes in that program.": "es un Centro de Enfoque Especial. CMS no da calificaciones con estrellas a los hogares en ese programa.",
   "The list below also includes {n} homes that aren't Medicare-certified. CMS doesn't rate them.": "La lista de abajo también incluye {n} hogares que no están certificados por Medicare. CMS no los califica.",
+  "Green is above average, yellow is average, and red is below average.": "Verde es por encima del promedio, amarillo es el promedio y rojo es por debajo del promedio.",
   "Star ratings from CMS (5 is best):": "Calificaciones con estrellas de CMS (5 es lo mejor):",
   "5 stars: Much above average": "5 estrellas: muy por encima del promedio",
   "4 stars: Above average": "4 estrellas: por encima del promedio",

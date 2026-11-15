@@ -1123,7 +1123,8 @@ function pips(r, lg){ const cc = r==null ? "" : r<=2 ? " r-bad" : r===3 ? " r-wa
 const STAR_WORDS = {5:"Much above average", 4:"Above average", 3:"Average", 2:"Below average", 1:"Much below average"};
 function starKey(){
   return h("div",{class:"star-key"}, h("strong",{text:"Star ratings from CMS (5 is best):"}),
-    [5,4,3,2,1].map(n => h("span",{class:"rating"}, pips(n), h("span",{text: n + " " + (n===1?"star":"stars") + ": " + STAR_WORDS[n]}))));
+    [5,4,3,2,1].map(n => h("span",{class:"rating"}, pips(n), h("span",{text: n + " " + (n===1?"star":"stars") + ": " + STAR_WORDS[n]}))),
+    h("span",{text:"Green is above average, yellow is average, and red is below average."}));
 }
 function ratingEl(r, lg, reason){ return r==null ? h("span",{class:"small",title:reason||undefined,text:"Not rated"}) : h("span",{class:"rating", title: r+" of 5 stars"}, pips(r,lg), h("span",{class:"num", text: r})); }
 function notRatedReason(f, i){
@@ -1612,7 +1613,7 @@ function viewHome(){
         h("div",{text:`Rhode Island average. U.S. average: ${fmt(usHv)}.`}),
         vsUS(riHv, usHv, true, 2),
         hrs.length ? h("div",{class:"more"}, h("span",{text:`Homes range from ${fmt(Math.min(...hrs),1)} to ${fmt(Math.max(...hrs),1)} hours.`}), " ",
-          h("a",{href:"#list", text:"See homes ranked by staffing", onclick:e=>{ e.preventDefault(); if (LIST_SORT) LIST_SORT("adj", -1); }})) : null]),
+          h("a",{href:"#list", text:"See homes ranked by staffing", onclick:e=>{ e.preventDefault(); if (LIST_SORT) LIST_SORT("hprd", -1); }})) : null]),
       tile("Nursing staff turnover", fmt(riT,1)+"%", [
         h("div",{text:`Rhode Island average. U.S. average: ${fmt(usT,1)}%. Lower turnover is better.`}),
         vsUS(riT, usT, false, 1)])
