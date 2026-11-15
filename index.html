@@ -1576,7 +1576,11 @@ function ratingSummary(open, ovr, low, high, unrated, notCert){
     why,
     notCert ? h("p",null, h("span",{text:`The list below also includes ${notCert} homes that aren't Medicare-certified. CMS doesn't rate them.`})) : null);
 }
-let LIST_SORT = null;   // set by the home list, so a link on the home page can re-sort it
+let LIST_SORT = null;
+// What the home list remembers while the page stays open (not between visits): a ZIP code or location,
+// the distance limit, and whether the key is open. Going to a home and pressing Back then brings the list
+// back the way it was, so the page can return to the same place in it.
+const LISTMEM = {loc:null, radius:0, keyOpen:null};   // set by the home list, so a link on the home page can re-sort it
 
 function viewHome(){
   const open = FAC.filter(f=>f.status==="Open");
@@ -1733,7 +1737,7 @@ window.addEventListener("hashchange", () => setTimeout(() => cmpUpdate(), 0));
 
 function homesTable(){
   const sec = h("section",{id:"list"});
-  let viewMode = "list", nearLoc = null, nearRadius = 0, tmap = null, lastFiltered = [], mapDirty = true;
+  let viewMode = "list", nearLoc = LISTMEM.loc, nearRadius = LISTMEM.radius, tmap = null, lastFiltered = [], mapDirty = true;
   const cities = [...new Set(FAC.filter(f=>f.town).map(f=>f.town))].sort();
   if (state.city && !cities.includes(state.city)) state.city = VILLAGE_TOWN[state.city] || "";
   const groups = [...new Set(FAC.map(f=>(f.x||{}).owner_group).filter(Boolean))].sort();
@@ -1760,7 +1764,7 @@ function homesTable(){
     if (a==null) return "Case-mix adjusted hours are not available for this home.";
     return "Reported "+fmt(r)+" nurse hours per resident per day; "+fmt(a)+" after adjusting for how much care residents need.";
   }
-  if (state.sort==="dist"){ state.sort = "name"; state.dir = 1; }   // a location isn't remembered between visits
+  if (state.sort==="dist" && !nearLoc){ state.sort = "name"; state.dir = 1; }   // a location isn't remembered between visits
   const tbody = h("tbody"), thead = h("thead"), count = h("span",{class:"small"});
   const statusEl = h("p",{class:"list-status",role:"status","aria-live":"polite"});
   const city = h("select",{id:"f-city","aria-label":"Town"}, h("option",{value:"",text:"All towns"}), cities.map(c=>h("option",{value:c,text:c})));
@@ -1798,7 +1802,7 @@ function homesTable(){
   // Clears the filters only; a ZIP code or location and the sort stay as they are.
   function clearFilters(){
     state.city = ""; state.group = ""; state.minStars = ""; state.text = "";
-    city.value = ""; group.value = ""; stars.value = ""; nearRadius = 0; radiusSel.value = "0";
+    city.value = ""; group.value = ""; stars.value = ""; nearRadius = LISTMEM.radius = 0; radiusSel.value = "0";
     saveState(); render(); syncSort();
   }
   function render(){
@@ -1920,7 +1924,7 @@ function homesTable(){
   }
   function nearStatus(msg){ nearStatusEl.textContent = msg; }
   function setNear(lat,lng,label){
-    nearLoc = {lat,lng,label};
+    nearLoc = LISTMEM.loc = {lat,lng,label};
     nearClearBtn.hidden = false;
     let best = null;
     FAC.forEach(f => { if (!hasCoords(f)) return; const d = milesBetween(lat,lng,f.lat,f.lon); if (best===null || d<best) best=d; });
@@ -1930,7 +1934,7 @@ function homesTable(){
     if (best!==null && best>40) nearStatusEl.append(" ", h("span",{text:"Note: the nearest home is "+Math.round(best)+" miles away, so you may be outside Rhode Island."}));
     saveState(); render(); syncSort();
   }
-  function clearNear(){ nearLoc=null; nearClearBtn.hidden=true; radiusRow.hidden=true; nearRadius=0; radiusSel.value="0"; nearStatus("");
+  function clearNear(){ nearLoc = LISTMEM.loc = null; nearClearBtn.hidden=true; radiusRow.hidden=true; nearRadius = LISTMEM.radius = 0; radiusSel.value="0"; nearStatus("");
     if (state.sort==="dist"){ state.sort="name"; state.dir=1; } saveState(); render(); syncSort(); }
   function useMyLocation(){
     if (!navigator.geolocation){ nearStatus("Your browser can't share its location." + (ZIPS?" Try a ZIP code instead.":"")); return; }
@@ -1958,7 +1962,7 @@ function homesTable(){
   const nearClearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearClear",hidden:true,text:"Stop using distance"});
   const radiusSel = h("select",{id:"f-radius"}, [0,5,10,20].map(m => h("option",{value:m,text: m ? "Within " + m + " miles" : "Any distance"})));
   const radiusRow = h("span",{class:"radius-row",hidden:true}, h("label",{for:"f-radius",class:"near-or",text:"Show homes"}), " ", radiusSel);
-  radiusSel.addEventListener("change", () => { nearRadius = +radiusSel.value; render(); });
+  radiusSel.addEventListener("change", () => { nearRadius = LISTMEM.radius = +radiusSel.value; render(); });
   const nearStatusEl = h("p",{class:"near-status",role:"status","aria-live":"polite"});
   const zipGroup = h("span",{id:"zipGroup"}, h("label",{class:"near-or",for:"zipInput",text:"a ZIP code"}), " ", zipInput, " ", zipGo);
   const nearOr = h("span",{class:"near-or",id:"nearOr",text:"or"});
@@ -2078,7 +2082,14 @@ function homesTable(){
   );
   cmpUpdate();
   const keyEl = sec.querySelector("#list-key");
-  if (window.matchMedia && matchMedia("(min-width:901px) and (min-height:501px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
+  if (LISTMEM.keyOpen != null) keyEl.open = LISTMEM.keyOpen;
+  else if (window.matchMedia && matchMedia("(min-width:901px) and (min-height:501px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
+  keyEl.addEventListener("toggle", () => { LISTMEM.keyOpen = keyEl.open; });
+  if (nearLoc){   // coming back to the list with a location still set
+    nearClearBtn.hidden = false; radiusRow.hidden = false; radiusSel.value = String(nearRadius);
+    if (/^ZIP code \d{5}$/.test(nearLoc.label)) zipInput.value = nearLoc.label.slice(-5);
+    nearStatus("Each home shows its distance from " + nearLoc.label + " (straight line, not driving distance).");
+  }
   render(); syncSort();
   LIST_SORT = (k, dir) => { state.sort = k; state.dir = dir; saveState(); setViewMode("list"); render(); syncSort(); sec.scrollIntoView({behavior:"smooth", block:"start"}); };
   if (!SALES) salesReady.then(() => { if (tbody.isConnected && SALES) render(); });
@@ -3768,6 +3779,7 @@ function route(){
   else viewHome();
   footer();
   if (hsh === "costs") { const c = document.getElementById("costs"); if (c) c.scrollIntoView(); }
+  else if (restoreY != null){ const y = restoreY; restoreY = null; window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y)); }
   else if (hsh !== "list") window.scrollTo(0,0);
   const f = hsh.startsWith("f-") && byCCN[hsh.slice(2)];
   document.title = f ? f.name + " · Rhode Island Nursing Homes" : (hsh==="care" || hsh==="costs") ? "Nursing home vs assisted living · Rhode Island Nursing Homes" : hsh==="ltcfocus" ? "About the LTCFocus figures · Rhode Island Nursing Homes" : hsh==="explore" ? "Explore the LTCFocus data · Rhode Island Nursing Homes" : hsh==="staffing" ? "Staffing and quality · Rhode Island Nursing Homes" : hsh.startsWith("hospital") ? "Leaving the hospital · Rhode Island Nursing Homes" : "Rhode Island Nursing Homes";
@@ -3783,6 +3795,14 @@ function gcEvent(n, tries){
     else if ((tries||0) < 20) setTimeout(() => gcEvent(n, (tries||0) + 1), 500);
   } catch (e) {}
 }
+// Back and Forward return to where you were on the page (for example, your place in the list of homes).
+// The scroll position is saved into each history entry as you scroll and just before you follow a link.
+let restoreY = null, saveT = 0;
+try { history.scrollRestoration = "manual"; } catch (e) {}
+const saveY = () => { try { history.replaceState(Object.assign({}, history.state || {}, {y: Math.round(window.scrollY)}), ""); } catch (e) {} };
+window.addEventListener("scroll", () => { clearTimeout(saveT); saveT = setTimeout(saveY, 150); }, {passive:true});
+document.addEventListener("click", saveY, true);
+window.addEventListener("popstate", e => { restoreY = e.state && typeof e.state.y === "number" ? e.state.y : null; });
 window.addEventListener("hashchange", route);
 route();
 })();
