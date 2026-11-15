@@ -353,7 +353,12 @@ body.cmp-on{padding-bottom:84px}
   .homes-tbl td.c-group .cl{display:inline;margin-right:6px}
   .homes-tbl .cl{display:block;font-size:12px;line-height:1.25;color:var(--muted);margin-bottom:2px;font-weight:400}
   .homes-tbl td.c-adj,.homes-tbl td.c-adj12,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
-  .homes-tbl.sort-adj12 td.c-adj12{display:block}
+  /* the column the list is sorted by is labeled in bold; a figure the cards normally leave out shows in a
+     highlighted line under the home's name */
+  .homes-tbl td.home{order:-3} .homes-tbl td.c-group{order:-1}
+  .homes-tbl td.is-sort .cl{font-weight:700;color:var(--ink)}
+  .homes-tbl td.is-sort.c-adj,.homes-tbl td.is-sort.c-adj12,.homes-tbl td.is-sort.c-rn,.homes-tbl td.is-sort.c-turn,.homes-tbl td.is-sort.c-beds{display:flex;gap:8px;align-items:baseline;grid-column:1/-1;order:-2;background:var(--panel);border:0;margin:0;padding:6px 10px;border-radius:var(--r)}
+  .homes-tbl td.is-sort.c-adj .cl,.homes-tbl td.is-sort.c-adj12 .cl,.homes-tbl td.is-sort.c-rn .cl,.homes-tbl td.is-sort.c-turn .cl,.homes-tbl td.is-sort.c-beds .cl{margin:0}
   /* the figures row of each card gets its own band, so a figure isn't read as belonging to the rating above it */
   .homes-tbl td.c-hprd{grid-column:1}
   .homes-tbl td.c-hprd,.homes-tbl td.c-adj12,.homes-tbl td.c-harm,.homes-tbl td.c-ij,.homes-tbl td.c-fines{border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
@@ -1783,9 +1788,8 @@ function homesTable(){
         h("td",{class:"r num",text:f.beds==null?"–":String(Math.round(f.beds))})
       ));
       const tr = tbody.lastChild;   // phone layout: each cell carries its column name, hidden on wider screens
-      [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); td.prepend(h("span",{class:"cl",text:cols[i].t})); } });
+      [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); if (cols[i].k===state.sort && !nearLoc) td.classList.add("is-sort"); td.prepend(h("span",{class:"cl",text:cols[i].t})); } });
     });
-    if (tbody.parentNode) tbody.parentNode.classList.toggle("sort-adj12", state.sort==="adj12");   // phones show this column only when sorting by it
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
     requestAnimationFrame(updHint);
     lastFiltered = rows;
@@ -1930,10 +1934,22 @@ function homesTable(){
   new ResizeObserver(updHint).observe(tblScroll);
   const tblWrap = h("div",null, hint, tblScroll);
   // Phones hide the column headings, so they get a sort menu instead.
-  const SORTS = [["name",1,"Name"],["overall",-1,"Overall rating, highest first"],["overall",1,"Overall rating, lowest first"],
-    ["harm",-1,"Harm citations, most first"],["ij",-1,"Immediate jeopardy, most first"],["fines",-1,"Fines, highest first"],
-    ["hprd",-1,"Nurse hours, most first"],["adj",-1,"Case-mix adjusted nurse hours, most first"],["adj12",-1,"Adjusted nurse hours, 12-month average, most first"],["staffing",-1,"Staffing rating, highest first"]];
-  const sortSel = h("select",{id:"f-sort","aria-label":"Sort by"}, SORTS.map((s,i)=>h("option",{value:i,text:s[2]})));
+  const SORTS = [   // [column, direction, label, group]
+    ["name",1,"Name, A to Z","Home"],["group",1,"Owner group, A to Z","Home"],["beds",-1,"Beds, most first","Home"],["beds",1,"Beds, fewest first","Home"],
+    ["overall",-1,"Overall rating, highest first","Star ratings"],["overall",1,"Overall rating, lowest first","Star ratings"],
+    ["health",-1,"Inspection rating, highest first","Star ratings"],["health",1,"Inspection rating, lowest first","Star ratings"],
+    ["staffing",-1,"Staffing rating, highest first","Star ratings"],["staffing",1,"Staffing rating, lowest first","Star ratings"],
+    ["qm",-1,"Quality rating, highest first","Star ratings"],["qm",1,"Quality rating, lowest first","Star ratings"],
+    ["hprd",-1,"Nurse hours, most first","Staffing"],["hprd",1,"Nurse hours, fewest first","Staffing"],
+    ["adj",-1,"Case-mix adjusted nurse hours, most first","Staffing"],["adj",1,"Case-mix adjusted nurse hours, fewest first","Staffing"],
+    ["adj12",-1,"Adjusted nurse hours, 12-month average, most first","Staffing"],["adj12",1,"Adjusted nurse hours, 12-month average, fewest first","Staffing"],
+    ["rn",-1,"RN hours, most first","Staffing"],["rn",1,"RN hours, fewest first","Staffing"],
+    ["turn",1,"Turnover, lowest first","Staffing"],["turn",-1,"Turnover, highest first","Staffing"],
+    ["harm",-1,"Harm citations, most first","Inspections and fines"],["harm",1,"Harm citations, fewest first","Inspections and fines"],
+    ["ij",-1,"Immediate jeopardy, most first","Inspections and fines"],["ij",1,"Immediate jeopardy, fewest first","Inspections and fines"],
+    ["fines",-1,"Fines, highest first","Inspections and fines"],["fines",1,"Fines, lowest first","Inspections and fines"]];
+  const sortSel = h("select",{id:"f-sort","aria-label":"Sort by"}, [...new Set(SORTS.map(s=>s[3]))].map(g =>
+    h("optgroup",{label:g}, SORTS.map((s,i)=>s[3]===g ? h("option",{value:i,text:s[2]}) : null))));
   const syncSort = () => { const i = SORTS.findIndex(s=>s[0]===state.sort && s[1]===state.dir); sortSel.value = i<0 ? "" : i; };
   sortSel.addEventListener("change",()=>{ const s = SORTS[+sortSel.value]; if (!s) return; state.sort=s[0]; state.dir=s[1]; saveState(); render(); });
   const sortRow = h("div",{class:"sort-row"}, h("label",{for:"f-sort",text:"Sort by"}), sortSel);
