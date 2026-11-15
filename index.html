@@ -177,14 +177,33 @@ td.desc{min-width:260px}
 td.home{min-width:150px}
 /* Home list wider than the page: it scrolls inside its own box, with the home names and the column
    headings held in place, and a line above it says so (colleague review, November 2026). */
-.homes-scroll{max-height:min(78vh,900px);overflow:auto}
-.homes-tbl th:first-child,.homes-tbl td.home{position:sticky;left:0;background:var(--bg);z-index:1;box-shadow:1px 0 0 var(--line)}
+.homes-scroll{overflow-x:auto}
+.homes-tbl th:first-child,.homes-tbl td.home{position:sticky;left:0;background:var(--bg);z-index:1;box-shadow:1px 0 0 var(--line),inset 0 -1px 0 var(--line)}
 .homes-tbl thead th{z-index:2}
 .homes-tbl thead th:first-child{z-index:3}
 .homes-tbl tbody tr:hover td.home{background:var(--panel)}
+.list-bar{position:sticky;top:0;z-index:4;background:var(--bg)}
+.head-strip{overflow:hidden;border-bottom:1px solid var(--line);background:var(--bg)}
+.head-strip-in{display:flex}
+.hs-cell{flex:none;box-sizing:border-box;padding:9px 10px;white-space:nowrap;font-size:12px;font-weight:600;color:var(--ink-2)}
+.hs-cell.r{text-align:right}
+.hs-cell.first{position:relative;z-index:1;background:var(--bg);box-shadow:1px 0 0 var(--line)}
 .scroll-hint{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;margin:10px 0 8px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
 .scroll-hint .btns{display:inline-flex;gap:6px;margin-left:auto}
-.scroll-hint button{font-size:14px;padding:3px 10px}
+.scroll-hint button{font-size:15px;padding:0 14px;min-height:44px}
+.th-sort{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;line-height:1.35;min-height:32px}
+.th-sort:hover{color:var(--ink);text-decoration:underline}
+.th-sort:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.list-status{font-size:14px;margin:10px 0 8px;max-width:none}
+.btn-link{font:inherit;color:var(--ink);background:none;border:0;padding:10px 4px;text-decoration:underline;cursor:pointer;font-weight:600}
+.nr-why{font-size:12px;color:var(--muted);margin-top:2px;white-space:normal}
+.radius-row{display:inline-flex;align-items:center;gap:6px}
+#f-radius{font-size:14px;min-height:44px;padding:4px 8px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);color:var(--ink)}
+/* touch targets on the list page: at least 44px tall */
+.filters select,.near-row .btn-quiet,#zipInput,.view-btn{min-height:44px}
+.list-key summary{padding:12px 0}
+.cmp-check{width:22px;height:22px;margin:0;vertical-align:middle}
+.cmp-hit{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-11px 2px -11px -11px;cursor:pointer;vertical-align:middle}
 
 /* charts */
 .chart{position:relative;width:100%}
@@ -311,7 +330,7 @@ dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;padding:6px 0;border-bottom
 .list-key{max-width:100ch;margin:0 0 10px;color:var(--ink-2)}
 .list-key summary{cursor:pointer;font-weight:600;color:var(--ink)}
 .sort-row{display:none}
-.cmp-check{width:17px;height:17px;margin:0 8px 0 0;vertical-align:-3px;accent-color:var(--ink);cursor:pointer}
+.cmp-check{accent-color:var(--ink);cursor:pointer}
 .cmp-hint{margin:0 0 8px;font-style:italic}
 .cmp-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:2px solid var(--ink);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
 .cmp-bar[hidden]{display:none}
@@ -340,9 +359,10 @@ body.cmp-on{padding-bottom:84px}
   .cmp-tbl .rating{display:inline-flex;flex-wrap:wrap;gap:2px 4px}
 }
 .homes-tbl .cl{display:none}
-@media (max-width:700px){
+@media (max-width:900px), (max-height:500px){   /* the home list becomes cards where its columns don't fit */
   .sort-row{display:flex;align-items:center;gap:8px;margin:0 0 10px}
-  .sort-row select{flex:1;min-width:0}
+  .sort-row select{flex:1;min-width:0;min-height:44px;font-size:16px}
+  .sort-row[hidden]{display:none}
   .tbl-wrap:has(.homes-tbl){overflow:visible}
   .homes-tbl,.homes-tbl tbody{display:block;width:100%}
   .homes-tbl thead{display:none}
@@ -1112,6 +1132,13 @@ function notRatedReason(f, i){
   if (f.status!=="Open") return "This home is closed; CMS no longer publishes a rating for it.";
   return "CMS hasn't published a rating for this period.";
 }
+// The same reasons, short enough to show under "Not rated" in the home list (not only on hover).
+function notRatedShort(f){
+  if ((f.x||{}).not_in_cms) return "Not certified";
+  if ((ser(f.ccn,"sff"))[LI]==="SFF") return "Special Focus";
+  if (f.status!=="Open") return "Closed";
+  return "None this month";
+}
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
 // CMS's own claims-based measure set (from Medicare claims, not facility-submitted assessments); every other
@@ -1634,7 +1661,8 @@ function cmpBox(f){
     else CMP.splice(CMP.indexOf(f.ccn), 1);
     cmpUpdate();
   });
-  return cb;
+  // a 44px tap area around the small box, so a near miss doesn't open the home instead
+  return h("label",{class:"cmp-hit", onclick:e=>e.stopPropagation()}, cb);
 }
 let cmpBar = null, cmpOverlay = null;
 function cmpUpdate(msg){
@@ -1705,7 +1733,7 @@ window.addEventListener("hashchange", () => setTimeout(() => cmpUpdate(), 0));
 
 function homesTable(){
   const sec = h("section",{id:"list"});
-  let viewMode = "list", nearLoc = null, tmap = null, lastFiltered = [], mapDirty = true;
+  let viewMode = "list", nearLoc = null, nearRadius = 0, tmap = null, lastFiltered = [], mapDirty = true;
   const cities = [...new Set(FAC.filter(f=>f.town).map(f=>f.town))].sort();
   if (state.city && !cities.includes(state.city)) state.city = VILLAGE_TOWN[state.city] || "";
   const groups = [...new Set(FAC.map(f=>(f.x||{}).owner_group).filter(Boolean))].sort();
@@ -1716,15 +1744,15 @@ function homesTable(){
     {k:"health", t:"Inspections", r:1, get:f=>at(f.ccn,"health",LI)},
     {k:"staffing", t:"Staffing", r:1, get:f=>at(f.ccn,"staffing",LI)},
     {k:"qm", t:"Quality", r:1, get:f=>at(f.ccn,"qm",LI)},
-    {k:"hprd", t:"Nurse hrs/res/day", r:1, get:f=>lastVal(ser(f.ccn,"hprd"))[0]},
-    {k:"adj", t:"Case-mix adjusted nurse hrs/res/day", lines:["Case-mix adjusted ","nurse hrs/res/day"], r:1, tip:"Total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. Compare it to the unadjusted column: if adjusted hours are lower, the residents needed more care than the raw hours suggest. This is the figure CMS uses for the staffing star rating.", get:f=>lastVal(ser(f.ccn,"adj_hprd"))[0]},
-    {k:"adj12", t:"Adjusted nurse hrs, 12-month average", lines:["Adjusted nurse hrs, ","12-month average"], r:1, tip:"The same case-mix adjusted hours, averaged over the last four quarters of payroll data, so one unusual quarter counts for a quarter of the figure instead of all of it. Shown only when CMS has all four quarters for the home.", get:f=>{ const a = adj12(f.ccn); return a && a.n===4 ? a.v : null; }},
-    {k:"rn", t:"RN hrs", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
-    {k:"turn", t:"Turnover", r:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
+    {k:"hprd", t:"Nurse hrs/res/day", c:"Nurse hours per resident per day", r:1, get:f=>lastVal(ser(f.ccn,"hprd"))[0]},
+    {k:"adj", t:"Case-mix adjusted nurse hrs/res/day", c:"Case-mix adjusted nurse hours per resident per day", lines:["Nurse hrs/res/day,","case-mix adjusted"], r:1, tip:"Total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. Compare it to the unadjusted column: if adjusted hours are lower, the residents needed more care than the raw hours suggest. This is the figure CMS uses for the staffing star rating.", get:f=>lastVal(ser(f.ccn,"adj_hprd"))[0]},
+    {k:"adj12", t:"Adjusted nurse hrs, 12-month average", c:"Adjusted nurse hours, 12-month average", lines:["Adjusted nurse hrs,","12-month average"], r:1, tip:"The same case-mix adjusted hours, averaged over the last four quarters of payroll data, so one unusual quarter counts for a quarter of the figure instead of all of it. Shown only when CMS has all four quarters for the home.", get:f=>{ const a = adj12(f.ccn); return a && a.n===4 ? a.v : null; }},
+    {k:"rn", t:"RN hrs", c:"RN hours per resident per day", r:1, get:f=>lastVal(ser(f.ccn,"rn_hprd"))[0]},
+    {k:"turn", t:"Turnover", c:"Nursing staff turnover (share who left in the past 12 months)", r:1, low:1, get:f=>lastVal(ser(f.ccn,"turnover"))[0]},
     {k:"harm", t:"Harm citations (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].harm3 : null},
     {k:"ij", t:"Immediate jeopardy (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].ij3 : null},
     {k:"fines", t:"Fines (3 yrs)", r:1, get:f=>STATS[f.ccn] ? STATS[f.ccn].fines3 : null},
-    {k:"beds", t:"Beds", r:1, get:f=>num(f.beds)},
+    {k:"beds", t:"Beds", c:"Certified beds", r:1, get:f=>num(f.beds)},
   ];
   const colByKey = Object.fromEntries(cols.map(c=>[c.k,c]));
   function adjTitle(f){
@@ -1732,7 +1760,9 @@ function homesTable(){
     if (a==null) return "Case-mix adjusted hours are not available for this home.";
     return "Reported "+fmt(r)+" nurse hours per resident per day; "+fmt(a)+" after adjusting for how much care residents need.";
   }
+  if (state.sort==="dist"){ state.sort = "name"; state.dir = 1; }   // a location isn't remembered between visits
   const tbody = h("tbody"), thead = h("thead"), count = h("span",{class:"small"});
+  const statusEl = h("p",{class:"list-status",role:"status","aria-live":"polite"});
   const city = h("select",{id:"f-city","aria-label":"Town"}, h("option",{value:"",text:"All towns"}), cities.map(c=>h("option",{value:c,text:c})));
   const group = h("select",{id:"f-group","aria-label":"Owner group"}, h("option",{value:"",text:"All owner groups"}), groups.map(c=>h("option",{value:c,text:c})));
   const stars = h("select",{id:"f-stars","aria-label":"Overall rating"}, h("option",{value:"",text:"Any rating"}), [5,4,3,2,1].map(n=>h("option",{value:n,text:n===5?"5 stars":n+"+ stars"})), h("option",{value:"low",text:"1 or 2 stars"}));
@@ -1740,20 +1770,52 @@ function homesTable(){
   city.value = state.city; group.value = state.group; stars.value = state.minStars; closed.checked = state.showClosed;
   [city,group,stars].forEach(el=>el.addEventListener("change",()=>{ state.city=city.value; state.group=group.value; state.minStars=stars.value; saveState(); render(); }));
   closed.addEventListener("change",()=>{ state.showClosed = closed.checked; saveState(); render(); });
+  // One way to change the sort, from a heading or the menu. Headings keep keyboard focus after the list redraws.
+  function sortBy(k, dir, fromHeading){
+    state.sort = k; state.dir = dir; saveState(); render(); syncSort();
+    if (fromHeading){ const b = thead.querySelector('.th-sort[data-k="'+k+'"]'); if (b) b.focus(); }
+  }
+  // Says in words what the list shows and how it is sorted, with a way back to every home. Screen readers read it out.
+  function listStatus(n){
+    const total = FAC.filter(f => f.ccn && (f.status==="Open" || (f.x||{}).not_in_cms)).length;
+    const s = SORTS.find(x => x[0]===state.sort && (x[0]==="dist" || x[1]===state.dir));
+    const sortLbl = state.sort==="dist" && nearLoc ? [h("span",{text:"Distance, nearest first"}), " (", h("span",{text:nearLoc.label}), ")"] : h("span",{text: s && s[0]!=="dist" ? s[2] : "Name, A to Z"});
+    const filt = [];
+    if (state.city) filt.push(["Town:", state.city]);
+    if (state.group) filt.push(["Owner group:", state.group]);
+    if (state.minStars) filt.push(["Rating:", stars.selectedOptions[0] ? stars.selectedOptions[0].textContent : state.minStars]);
+    if (nearLoc && nearRadius) filt.push(["Within " + nearRadius + " miles of", nearLoc.label]);
+    if (state.showClosed) filt.push(["Closed homes included", ""]);
+    const narrowed = filt.length || n !== total;
+    statusEl.textContent = "";
+    statusEl.append(...[h("span",{text: narrowed ? `Showing ${n} of ${total} homes.` : `Showing all ${total} homes.`}), " ",
+      ...filt.map(([a,b]) => [h("span",{text:a}), b ? [" ", h("strong",{text:b})] : null, ". "]),
+      h("span",{text:"Sorted by:"}), " ", h("strong",null, sortLbl), ".",
+      (narrowed || state.sort!=="name" || state.dir!==1) ? [" ", h("button",{type:"button",class:"btn-link",text: narrowed ? "Show all homes" : "Sort by name", onclick:resetList})] : null].flat(Infinity).filter(x => x!=null));
+  }
+  function resetList(){
+    state.city = ""; state.group = ""; state.minStars = ""; state.showClosed = false; state.sort = "name"; state.dir = 1;
+    city.value = ""; group.value = ""; stars.value = ""; closed.checked = false; nearRadius = 0; radiusSel.value = "0";
+    if (nearLoc) clearNear(); else { saveState(); render(); syncSort(); }
+  }
   function render(){
     thead.textContent = "";
-    thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), tabindex:0, title:c.tip||null, "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none",
-      onclick:()=>{ if (state.sort===c.k) state.dir*=-1; else { state.sort=c.k; state.dir = c.r ? -1 : 1; } saveState(); render(); syncSort(); },
-      onkeydown:e=>{ if (e.key==="Enter") e.target.click(); }}, ...(c.lines ? [c.lines[0], h("br"), c.lines[1]] : [c.t]), state.sort===c.k ? h("span",{class:"arr",text: state.dir>0?" ▲":" ▼"}) : null))));
+    thead.append(h("tr",null, cols.map(c => h("th",{class:"sort"+(c.r?" r":""), scope:"col", "aria-sort": state.sort===c.k ? (state.dir>0?"ascending":"descending"):"none"},
+      h("button",{type:"button", class:"th-sort", "data-k":c.k,
+        onclick:()=>sortBy(c.k, state.sort===c.k ? -state.dir : (c.low ? 1 : c.r ? -1 : 1), true)},
+        ...(c.lines ? [c.lines[0], " ", h("br"), c.lines[1]] : [c.t]), state.sort===c.k ? h("span",{class:"arr","aria-hidden":"true",text: state.dir>0?" ▲":" ▼"}) : null)))));
     let rows = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open" || (f.x||{}).not_in_cms));
     if (state.city) rows = rows.filter(f=>f.town===state.city);
     if (state.group) rows = rows.filter(f=>(f.x||{}).owner_group===state.group);
     if (state.minStars){ rows = rows.filter(f=>{ const v = at(f.ccn,"overall",LI); return state.minStars==="low" ? (v!=null && v<=2) : (v!=null && v>=+state.minStars); }); }
     if (nearLoc){
       rows.forEach(f => { f._dist = hasCoords(f) ? milesBetween(nearLoc.lat,nearLoc.lng,f.lat,f.lon) : null; });
+      if (nearRadius) rows = rows.filter(f => f._dist!=null && f._dist <= nearRadius);
+    }
+    if (nearLoc && state.sort==="dist"){
       rows.sort((a,b)=>{ if (a._dist==null && b._dist==null) return a.name.localeCompare(b.name); if (a._dist==null) return 1; if (b._dist==null) return -1; return a._dist-b._dist; });
     } else {
-      const col = cols.find(c=>c.k===state.sort) || cols[0];
+      const col = cols.find(c=>c.k===state.sort) || cols[0];   // "dist" with no location falls back to name
       rows.sort((a,b)=>{ const x = col.get(a), y = col.get(b);
         if (x==null && y==null) return a.name.localeCompare(b.name); if (x==null) return 1; if (y==null) return -1;
         return (typeof x === "string" ? x.localeCompare(y) : x - y) * state.dir || a.name.localeCompare(b.name); });
@@ -1776,7 +1838,8 @@ function homesTable(){
           h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
           flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
-        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)))),
+        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)),
+          k==="overall" && at(f.ccn,k,LI)==null ? h("div",{class:"nr-why",text:notRatedShort(f)}) : null)),
         h("td",{class:"r num",text:fmt(colByKey.hprd.get(f))}),
         h("td",{class:"r num",title:adjTitle(f),text:fmt(colByKey.adj.get(f))}),
         h("td",{class:"r num",text:fmt(colByKey.adj12.get(f))}),
@@ -1788,10 +1851,11 @@ function homesTable(){
         h("td",{class:"r num",text:f.beds==null?"–":String(Math.round(f.beds))})
       ));
       const tr = tbody.lastChild;   // phone layout: each cell carries its column name, hidden on wider screens
-      [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); if (cols[i].k===state.sort && !nearLoc) td.classList.add("is-sort"); td.prepend(h("span",{class:"cl",text:cols[i].t})); } });
+      [...tr.children].forEach((td,i) => { if (i>0) { td.classList.add("c-"+cols[i].k); if (cols[i].k===state.sort) td.classList.add("is-sort"); td.prepend(h("span",{class:"cl",text:cols[i].c || cols[i].t})); } });
     });
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
-    requestAnimationFrame(updHint);
+    listStatus(rows.length);
+    requestAnimationFrame(() => { updHint(); stripSig = ""; updStrip(); });
     lastFiltered = rows;
     if (viewMode==="map") refreshMap(false); else mapDirty = true;
   }
@@ -1846,7 +1910,7 @@ function homesTable(){
   function setViewMode(mode){
     viewMode = mode;
     mapPanel.hidden = (mode!=="map");
-    tblWrap.hidden = (mode==="map");
+    tblWrap.hidden = (mode==="map"); sortRow.hidden = (mode==="map");
     viewListBtn.setAttribute("aria-pressed", mode==="list" ? "true":"false");
     viewMapBtn.setAttribute("aria-pressed", mode==="map" ? "true":"false");
     if (mode==="map") refreshMap(true);
@@ -1857,13 +1921,14 @@ function homesTable(){
     nearClearBtn.hidden = false;
     let best = null;
     FAC.forEach(f => { if (!hasCoords(f)) return; const d = milesBetween(lat,lng,f.lat,f.lon); if (best===null || d<best) best=d; });
-    let msg = "Closest homes to "+label+" are listed first (straight-line distance, not driving distance).";
-    if (label==="your location") msg += " Your location stays in your browser; we don't receive or store it.";
-    if (best!==null && best>40) msg += " Note: the nearest home is "+Math.round(best)+" miles away, so you may be outside Rhode Island.";
-    nearStatus(msg);
-    render();
+    state.sort = "dist"; state.dir = 1; radiusRow.hidden = false;
+    nearStatus("Each home shows its distance from " + label + " (straight line, not driving distance).");
+    if (label==="your location") nearStatusEl.append(" ", h("span",{text:"Your location stays in your browser; we don't receive or store it."}));
+    if (best!==null && best>40) nearStatusEl.append(" ", h("span",{text:"Note: the nearest home is "+Math.round(best)+" miles away, so you may be outside Rhode Island."}));
+    saveState(); render(); syncSort();
   }
-  function clearNear(){ nearLoc=null; nearClearBtn.hidden=true; nearStatus(""); render(); }
+  function clearNear(){ nearLoc=null; nearClearBtn.hidden=true; radiusRow.hidden=true; nearRadius=0; radiusSel.value="0"; nearStatus("");
+    if (state.sort==="dist"){ state.sort="name"; state.dir=1; } saveState(); render(); syncSort(); }
   function useMyLocation(){
     if (!navigator.geolocation){ nearStatus("Your browser can't share its location." + (ZIPS?" Try a ZIP code instead.":"")); return; }
     nearBtn.disabled = true;
@@ -1887,12 +1952,15 @@ function homesTable(){
   const nearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearBtn",text:"My location"});
   const zipInput = h("input",{id:"zipInput",type:"text",inputmode:"numeric",maxlength:"5",autocomplete:"postal-code",placeholder:"02903"});
   const zipGo = h("button",{type:"button",class:"btn-quiet",id:"zipGo",text:"Sort"});
-  const nearClearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearClear",hidden:true,text:"Stop sorting by distance"});
+  const nearClearBtn = h("button",{type:"button",class:"btn-quiet",id:"nearClear",hidden:true,text:"Stop using distance"});
+  const radiusSel = h("select",{id:"f-radius"}, [0,5,10,20].map(m => h("option",{value:m,text: m ? "Within " + m + " miles" : "Any distance"})));
+  const radiusRow = h("span",{class:"radius-row",hidden:true}, h("label",{for:"f-radius",class:"near-or",text:"Show homes"}), " ", radiusSel);
+  radiusSel.addEventListener("change", () => { nearRadius = +radiusSel.value; render(); });
   const nearStatusEl = h("p",{class:"near-status",role:"status","aria-live":"polite"});
   const zipGroup = h("span",{id:"zipGroup"}, h("label",{class:"near-or",for:"zipInput",text:"a ZIP code"}), " ", zipInput, " ", zipGo);
   const nearOr = h("span",{class:"near-or",id:"nearOr",text:"or"});
   const nearRow = h("div",{class:"near-row",hidden:!anyCoords},
-    h("span",{class:"near-or near-lead",text:"Sort by distance from"}), nearBtn, nearOr, zipGroup, nearClearBtn, nearStatusEl);
+    h("span",{class:"near-or near-lead",text:"Sort by distance from"}), nearBtn, nearOr, zipGroup, radiusRow, nearClearBtn, nearStatusEl);
   nearBtn.addEventListener("click", useMyLocation);
   nearClearBtn.addEventListener("click", clearNear);
   zipGo.addEventListener("click", useZip);
@@ -1930,12 +1998,41 @@ function homesTable(){
       : "You're at the right end of the list. Use the buttons, or scroll sideways, to go back.";
     goL.disabled = tblScroll.scrollLeft <= 2; goR.disabled = tblScroll.scrollLeft >= over - 2;
   };
-  tblScroll.addEventListener("scroll", updHint, {passive:true});
-  new ResizeObserver(updHint).observe(tblScroll);
-  const tblWrap = h("div",null, hint, tblScroll);
+  // Column headings that stay at the top of the screen once the real ones scroll away. The scrolling box
+  // (needed to scroll sideways) stops the real headings from staying put on their own. A copy for sighted
+  // users only: screen readers and the keyboard use the real headings.
+  const strip = h("div",{class:"head-strip","aria-hidden":"true",hidden:true}), stripIn = h("div",{class:"head-strip-in"});
+  strip.append(stripIn);
+  let stripSig = "";
+  const buildStrip = () => {
+    const ths = [...thead.querySelectorAll("th")];
+    const sig = ths.map(th => th.offsetWidth + th.textContent).join("|");
+    if (sig === stripSig) return; stripSig = sig;
+    stripIn.textContent = ""; stripIn.style.width = tblScroll.scrollWidth + "px";
+    ths.forEach((th,i) => { const c = h("div",{class:"hs-cell"+(th.classList.contains("r")?" r":"")+(i===0?" first":""), style:`width:${th.offsetWidth}px`});
+      [...th.childNodes].forEach(n => c.append(n.cloneNode(true))); c.querySelectorAll("button").forEach(b => b.tabIndex = -1); stripIn.append(c); });
+  };
+  strip.addEventListener("click", e => { const b = e.target.closest(".th-sort"); if (!b) return;
+    const real = thead.querySelector('.th-sort[data-k="'+b.dataset.k+'"]'); if (real) real.click(); });
+  const updStrip = () => {
+    if (!tblScroll.isConnected){ window.removeEventListener("scroll", updStrip); return; }
+    const tableMode = getComputedStyle(thead).display !== "none" && !tblScroll.hidden;
+    const r = thead.getBoundingClientRect(), barH = hint.hidden ? 0 : hint.offsetHeight, tb = tblScroll.getBoundingClientRect();
+    const show = tableMode && r.bottom < barH && tb.bottom > barH + 60;
+    strip.hidden = !show;
+    if (!show) return;
+    buildStrip();
+    stripIn.style.transform = `translateX(${-tblScroll.scrollLeft}px)`;
+    const first = stripIn.firstChild; if (first) first.style.transform = `translateX(${tblScroll.scrollLeft}px)`;
+  };
+  tblScroll.addEventListener("scroll", () => { updHint(); updStrip(); }, {passive:true});
+  window.addEventListener("scroll", updStrip, {passive:true});
+  new ResizeObserver(() => { updHint(); stripSig = ""; updStrip(); }).observe(tblScroll);
+  const listBar = h("div",{class:"list-bar"}, hint, strip);
+  const tblWrap = h("div",null, listBar, tblScroll);
   // Phones hide the column headings, so they get a sort menu instead.
   const SORTS = [   // [column, direction, label, group]
-    ["name",1,"Name, A to Z","Home"],["group",1,"Owner group, A to Z","Home"],["beds",-1,"Beds, most first","Home"],["beds",1,"Beds, fewest first","Home"],
+    ["dist",1,"Distance, nearest first","Home"],["name",1,"Name, A to Z","Home"],["name",-1,"Name, Z to A","Home"],["group",1,"Owner group, A to Z","Home"],["group",-1,"Owner group, Z to A","Home"],["beds",-1,"Beds, most first","Home"],["beds",1,"Beds, fewest first","Home"],
     ["overall",-1,"Overall rating, highest first","Star ratings"],["overall",1,"Overall rating, lowest first","Star ratings"],
     ["health",-1,"Inspection rating, highest first","Star ratings"],["health",1,"Inspection rating, lowest first","Star ratings"],
     ["staffing",-1,"Staffing rating, highest first","Star ratings"],["staffing",1,"Staffing rating, lowest first","Star ratings"],
@@ -1950,12 +2047,14 @@ function homesTable(){
     ["fines",-1,"Fines, highest first","Inspections and fines"],["fines",1,"Fines, lowest first","Inspections and fines"]];
   const sortSel = h("select",{id:"f-sort","aria-label":"Sort by"}, [...new Set(SORTS.map(s=>s[3]))].map(g =>
     h("optgroup",{label:g}, SORTS.map((s,i)=>s[3]===g ? h("option",{value:i,text:s[2]}) : null))));
-  const syncSort = () => { const i = SORTS.findIndex(s=>s[0]===state.sort && s[1]===state.dir); sortSel.value = i<0 ? "" : i; };
-  sortSel.addEventListener("change",()=>{ const s = SORTS[+sortSel.value]; if (!s) return; state.sort=s[0]; state.dir=s[1]; saveState(); render(); });
+  const syncSort = () => { const i = SORTS.findIndex(s=>s[0]===state.sort && (s[0]==="dist" || s[1]===state.dir)); sortSel.value = i<0 ? "" : i; };
+  sortSel.addEventListener("change",()=>{ const s = SORTS[+sortSel.value]; if (!s) return;
+    if (s[0]==="dist" && !nearLoc){ syncSort(); nearStatus("To sort by distance, use My location or enter a ZIP code above."); (zipGroup.hidden ? nearBtn : zipInput).focus(); return; }
+    sortBy(s[0], s[1], false); });
   const sortRow = h("div",{class:"sort-row"}, h("label",{for:"f-sort",text:"Sort by"}), sortSel);
 
   sec.append(
-    h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Click a column to sort, or a home to see its full record.`}))),
+    h("div",{class:"sec-head"}, h("div",null, h("h2",{text:"All homes"}), h("p",{class:"small",style:"margin:0",text:`Ratings from the ${D.meta.latest_label} CMS release. Staffing hours are the latest CMS reports. Sort with the column headings, or the Sort by menu on a phone, and select a home to see its full record.`}))),
     h("div",{class:"filters"}, city, group, stars, h("label",{for:"f-closed"}, closed, "Include closed homes"), count),
     nearRow, searchBox, sortRow,
     h("details",{class:"list-key small",id:"list-key"}, h("summary",{text:"What the tags and columns mean"}),
@@ -1964,14 +2063,17 @@ function homesTable(){
         h("strong",{text:"Harm citations"}), " are inspection findings at severity G or higher. See ", h("a",{href:"#harms",text:"recent harm citations"}), ". ", h("strong",{text:"Immediate jeopardy"}), " citations are severity J, K, or L, CMS's most serious level: a resident was seriously harmed, or was likely to be. They are also counted in harm citations. ", h("strong",{text:"High contract staffing"}), " and ", h("strong",{text:"Weekend staffing drop"}), " come from one quarter of CMS's daily staffing records. ", h("strong",{text:NEWOWNER_TAG}), ": the home was sold, or a new company took over managing it, in the last 12 months, from ABC-RI's sales records. ", h("strong",{text:"Not Medicare-certified"}), ": licensed by RIDOH but not by CMS, so none of the ratings or figures below apply to it. ", h("a",{href:"#about",text:"More about these terms"})),
       h("p",{style:"margin:8px 0 0"}, h("strong",{text:"Case-mix adjusted nurse hrs/res/day"}), ": total nurse staff hours per resident per day, adjusted by CMS for how much care the home's residents need. Homes with sicker, higher-need residents are expected to staff more, so this puts homes on a level footing. If the adjusted number is lower than the unadjusted one next to it, the residents needed more care than the raw hours suggest. CMS uses this figure for the staffing star rating. ",
         h("strong",{text:"Adjusted nurse hrs, 12-month average"}), ": the same adjusted hours averaged over the last four quarters of payroll data, so one unusual quarter can't make a home look much better or worse than its usual staffing. Shown only when CMS has all four quarters. ",
-        h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed.")),
+        h("strong",{text:"RN hrs"}), ": registered nurse hours per resident per day. ",
+        h("strong",{text:"Turnover"}), ": the share of nursing staff (registered nurses, licensed practical nurses, and nurse aides) who stopped working at the home over 12 months, from CMS. Lower is better. ",
+        h("strong",{text:"Not rated"}), ": CMS doesn't publish a rating for homes that aren't Medicare-certified, homes in the Special Focus program, or homes that have closed."),
+      PBJ_Q ? h("p",{style:"margin:8px 0 0"}, h("span",{text:"The High contract staffing and Weekend staffing drop tags use CMS's daily payroll records for " + PBJ_Q + "."})) : null),
     starKey(),
     h("p",{class:"small cmp-hint",text:"Check up to 3 homes to compare them side by side."}),
-    viewBar, mapPanel, tblWrap
+    viewBar, statusEl, mapPanel, tblWrap
   );
   cmpUpdate();
   const keyEl = sec.querySelector("#list-key");
-  if (window.matchMedia && matchMedia("(min-width:701px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
+  if (window.matchMedia && matchMedia("(min-width:901px) and (min-height:501px)").matches) keyEl.open = true;   // open on wide screens, tap to open on phones
   render(); syncSort();
   LIST_SORT = (k, dir) => { state.sort = k; state.dir = dir; saveState(); setViewMode("list"); render(); syncSort(); sec.scrollIntoView({behavior:"smooth", block:"start"}); };
   if (!SALES) salesReady.then(() => { if (tbody.isConnected && SALES) render(); });
