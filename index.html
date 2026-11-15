@@ -1137,7 +1137,7 @@ function notRatedShort(f){
   if ((f.x||{}).not_in_cms) return "Not certified";
   if ((ser(f.ccn,"sff"))[LI]==="SFF") return "Special Focus";
   if (f.status!=="Open") return "Closed";
-  return "None this month";
+  return "No rating this month";
 }
 function sevClass(c){ if (!c) return "s1"; if ("ABC".includes(c)) return "s1"; if ("DEF".includes(c)) return "s2"; if ("GHI".includes(c)) return "s3"; return "s4"; }
 const SEVTXT = {s1:"Minimal harm potential", s2:"Potential for more than minimal harm", s3:"Actual harm", s4:"Immediate jeopardy"};
@@ -1777,7 +1777,7 @@ function homesTable(){
   }
   // Says in words what the list shows and how it is sorted, with a way back to every home. Screen readers read it out.
   function listStatus(n){
-    const total = FAC.filter(f => f.ccn && (f.status==="Open" || (f.x||{}).not_in_cms)).length;
+    const total = FAC.filter(f => f.ccn && (state.showClosed || f.status==="Open" || (f.x||{}).not_in_cms)).length;
     const s = SORTS.find(x => x[0]===state.sort && (x[0]==="dist" || x[1]===state.dir));
     const sortLbl = state.sort==="dist" && nearLoc ? [h("span",{text:"Distance, nearest first"}), " (", h("span",{text:nearLoc.label}), ")"] : h("span",{text: s && s[0]!=="dist" ? s[2] : "Name, A to Z"});
     const filt = [];
@@ -1786,17 +1786,20 @@ function homesTable(){
     if (state.minStars) filt.push(["Rating:", stars.selectedOptions[0] ? stars.selectedOptions[0].textContent : state.minStars]);
     if (nearLoc && nearRadius) filt.push(["Within " + nearRadius + " miles of", nearLoc.label]);
     if (state.showClosed) filt.push(["Closed homes included", ""]);
-    const narrowed = filt.length || n !== total;
+    const narrowed = filt.filter(x => x[0]!=="Closed homes included").length > 0;
     statusEl.textContent = "";
     statusEl.append(...[h("span",{text: narrowed ? `Showing ${n} of ${total} homes.` : `Showing all ${total} homes.`}), " ",
       ...filt.map(([a,b]) => [h("span",{text:a}), b ? [" ", h("strong",{text:b})] : null, ". "]),
       h("span",{text:"Sorted by:"}), " ", h("strong",null, sortLbl), ".",
-      (narrowed || state.sort!=="name" || state.dir!==1) ? [" ", h("button",{type:"button",class:"btn-link",text: narrowed ? "Show all homes" : "Sort by name", onclick:resetList})] : null].flat(Infinity).filter(x => x!=null));
+      narrowed ? [" ", h("button",{type:"button",class:"btn-link",text:"Show all homes",onclick:clearFilters})] : null,
+      nearLoc && state.sort!=="dist" ? [" ", h("button",{type:"button",class:"btn-link",text:"Sort by distance",onclick:()=>sortBy("dist",1,false)})] : null,
+      !nearLoc && (state.sort!=="name" || state.dir!==1) ? [" ", h("button",{type:"button",class:"btn-link",text:"Sort by name",onclick:()=>sortBy("name",1,false)})] : null].flat(Infinity).filter(x => x!=null));
   }
-  function resetList(){
-    state.city = ""; state.group = ""; state.minStars = ""; state.showClosed = false; state.sort = "name"; state.dir = 1;
-    city.value = ""; group.value = ""; stars.value = ""; closed.checked = false; nearRadius = 0; radiusSel.value = "0";
-    if (nearLoc) clearNear(); else { saveState(); render(); syncSort(); }
+  // Clears the filters only; a ZIP code or location and the sort stay as they are.
+  function clearFilters(){
+    state.city = ""; state.group = ""; state.minStars = ""; state.text = "";
+    city.value = ""; group.value = ""; stars.value = ""; nearRadius = 0; radiusSel.value = "0";
+    saveState(); render(); syncSort();
   }
   function render(){
     thead.textContent = "";
@@ -1910,7 +1913,7 @@ function homesTable(){
   function setViewMode(mode){
     viewMode = mode;
     mapPanel.hidden = (mode!=="map");
-    tblWrap.hidden = (mode==="map"); sortRow.hidden = (mode==="map");
+    tblWrap.hidden = (mode==="map"); sortRow.hidden = (mode==="map"); statusEl.hidden = (mode==="map");
     viewListBtn.setAttribute("aria-pressed", mode==="list" ? "true":"false");
     viewMapBtn.setAttribute("aria-pressed", mode==="map" ? "true":"false");
     if (mode==="map") refreshMap(true);
@@ -2015,8 +2018,10 @@ function homesTable(){
   strip.addEventListener("click", e => { const b = e.target.closest(".th-sort"); if (!b) return;
     const real = thead.querySelector('.th-sort[data-k="'+b.dataset.k+'"]'); if (real) real.click(); });
   const updStrip = () => {
-    if (!tblScroll.isConnected){ window.removeEventListener("scroll", updStrip); return; }
+    if (!tblScroll.isConnected){ window.removeEventListener("scroll", updStrip); document.documentElement.style.scrollPaddingTop = ""; return; }
     const tableMode = getComputedStyle(thead).display !== "none" && !tblScroll.hidden;
+    // so a home brought into view with the keyboard isn't hidden under the bar and the copied headings
+    document.documentElement.style.scrollPaddingTop = tableMode ? (listBar.offsetHeight + thead.offsetHeight + 8) + "px" : "";
     const r = thead.getBoundingClientRect(), barH = hint.hidden ? 0 : hint.offsetHeight, tb = tblScroll.getBoundingClientRect();
     const show = tableMode && r.bottom < barH && tb.bottom > barH + 60;
     strip.hidden = !show;
