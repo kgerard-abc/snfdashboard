@@ -175,6 +175,16 @@ td .nm a:hover{text-decoration:underline}
 td .sub{font-size:12.5px;color:var(--muted)}
 td.desc{min-width:260px}
 td.home{min-width:150px}
+/* Home list wider than the page: it scrolls inside its own box, with the home names and the column
+   headings held in place, and a line above it says so (colleague review, November 2026). */
+.homes-scroll{max-height:min(78vh,900px);overflow:auto}
+.homes-tbl th:first-child,.homes-tbl td.home{position:sticky;left:0;background:var(--bg);z-index:1;box-shadow:1px 0 0 var(--line)}
+.homes-tbl thead th{z-index:2}
+.homes-tbl thead th:first-child{z-index:3}
+.homes-tbl tbody tr:hover td.home{background:var(--panel)}
+.scroll-hint{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;margin:10px 0 8px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.scroll-hint .btns{display:inline-flex;gap:6px;margin-left:auto}
+.scroll-hint button{font-size:14px;padding:3px 10px}
 
 /* charts */
 .chart{position:relative;width:100%}
@@ -344,6 +354,14 @@ body.cmp-on{padding-bottom:84px}
   .homes-tbl .cl{display:block;font-size:12px;line-height:1.25;color:var(--muted);margin-bottom:2px;font-weight:400}
   .homes-tbl td.c-adj,.homes-tbl td.c-adj12,.homes-tbl td.c-rn,.homes-tbl td.c-turn,.homes-tbl td.c-beds{display:none}
   .homes-tbl.sort-adj12 td.c-adj12{display:block}
+  /* the figures row of each card gets its own band, so a figure isn't read as belonging to the rating above it */
+  .homes-tbl td.c-hprd{grid-column:1}
+  .homes-tbl td.c-hprd,.homes-tbl td.c-adj12,.homes-tbl td.c-harm,.homes-tbl td.c-ij,.homes-tbl td.c-fines{border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
+  .homes-scroll{max-height:none}
+  .homes-tbl th:first-child,.homes-tbl td.home{position:static;box-shadow:none}
+  .homes-tbl tr{column-gap:0}
+  .homes-tbl td:not(.home):not(.c-group){padding-right:10px}
+  .homes-tbl td.c-hprd,.homes-tbl td.c-adj12,.homes-tbl td.c-harm,.homes-tbl td.c-ij,.homes-tbl td.c-fines{margin-top:6px;padding-top:10px}
 }
 .ombuds{margin:20px 0 0;max-width:640px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;font-size:14px;line-height:1.5}
 .ombuds strong{display:block;margin-bottom:2px}
@@ -1769,6 +1787,7 @@ function homesTable(){
     });
     if (tbody.parentNode) tbody.parentNode.classList.toggle("sort-adj12", state.sort==="adj12");   // phones show this column only when sorting by it
     count.textContent = `${rows.length} home${rows.length===1?"":"s"}`;
+    requestAnimationFrame(updHint);
     lastFiltered = rows;
     if (viewMode==="map") refreshMap(false); else mapDirty = true;
   }
@@ -1889,7 +1908,27 @@ function homesTable(){
   mapToList.addEventListener("click", () => { setViewMode("list"); viewListBtn.focus(); });
   const mapPanel = h("div",{id:"mapPanel",hidden:true}, mapStatus, mapDiv,
     h("p",{class:"map-note"}, "Pins show where each home is located; their color doesn't indicate quality. Point to a pin, or tap it, to see the home's name and overall star rating, then use ", h("strong",{text:"See full record"}), " for more. Prefer a list? ", mapToList, ", which shows the same homes and distances. Map tiles come from OpenStreetMap, which can see your IP address and the area of the map you are viewing."));
-  const tblWrap = h("div",{class:"tbl-wrap"}, h("table",{class:"homes-tbl"}, thead, tbody));
+  const tblScroll = h("div",{class:"tbl-wrap homes-scroll"}, h("table",{class:"homes-tbl"}, thead, tbody));
+  // When the list is wider than the screen, say so in words and give buttons that scroll it, since many
+  // people don't know a table can scroll sideways or never see a scroll bar at the bottom of a long list.
+  const hintTxt = h("span"), goL = h("button",{type:"button",class:"btn-quiet",text:"← Left"}), goR = h("button",{type:"button",class:"btn-quiet",text:"Right →"});
+  const hint = h("div",{class:"scroll-hint",hidden:true}, hintTxt, h("span",{class:"btns"}, goL, goR));
+  const step = () => Math.max(200, tblScroll.clientWidth * 0.7);
+  goL.addEventListener("click", () => tblScroll.scrollBy({left:-step(), behavior:"smooth"}));
+  goR.addEventListener("click", () => tblScroll.scrollBy({left:step(), behavior:"smooth"}));
+  const updHint = () => {
+    const over = tblScroll.scrollWidth - tblScroll.clientWidth;
+    if (over <= 2 || tblScroll.hidden){ hint.hidden = true; return; }
+    hint.hidden = false;
+    const box = tblScroll.getBoundingClientRect();
+    const hidden = [...thead.querySelectorAll("th")].filter(th => th.getBoundingClientRect().right > box.right + 2).length;
+    hintTxt.textContent = hidden ? `This list is wider than your screen. ${hidden} more ${hidden===1?"column is":"columns are"} to the right. Use the buttons, or scroll sideways in the list.`
+      : "You're at the right end of the list. Use the buttons, or scroll sideways, to go back.";
+    goL.disabled = tblScroll.scrollLeft <= 2; goR.disabled = tblScroll.scrollLeft >= over - 2;
+  };
+  tblScroll.addEventListener("scroll", updHint, {passive:true});
+  new ResizeObserver(updHint).observe(tblScroll);
+  const tblWrap = h("div",null, hint, tblScroll);
   // Phones hide the column headings, so they get a sort menu instead.
   const SORTS = [["name",1,"Name"],["overall",-1,"Overall rating, highest first"],["overall",1,"Overall rating, lowest first"],
     ["harm",-1,"Harm citations, most first"],["ij",-1,"Immediate jeopardy, most first"],["fines",-1,"Fines, highest first"],

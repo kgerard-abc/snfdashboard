@@ -4,6 +4,11 @@ window.RINH_ES = {
   // Colleague review fixes (November 2026): rating summary, U.S. comparisons, star key, quarterly charts
   "Quarterly quality measures from resident assessments and Medicare claims. Lower is better for all of these. A break in a line means CMS didn't report a value for that quarter, usually because too few residents at the home qualified for that measure. At a smaller home, a few residents can move a percentage a lot from one quarter to the next, so look at the pattern over time more than any one quarter.": "Medidas de calidad trimestrales basadas en evaluaciones de residentes y reclamos a Medicare. Un valor más bajo es mejor en todas ellas. Un corte en una línea significa que CMS no informó un valor para ese trimestre, normalmente porque muy pocos residentes del hogar calificaban para esa medida. En un hogar más pequeño, unos pocos residentes pueden cambiar mucho un porcentaje de un trimestre a otro, así que fíjese en la tendencia a lo largo del tiempo más que en un solo trimestre.",
   "Quarter": "Trimestre",
+  "← Left": "← Izquierda",
+  "Right →": "Derecha →",
+  "This list is wider than your screen. {n} more columns are to the right. Use the buttons, or scroll sideways in the list.": "Esta lista es más ancha que su pantalla. Hay {n} columnas más a la derecha. Use los botones o desplácese de lado en la lista.",
+  "This list is wider than your screen. {n} more column is to the right. Use the buttons, or scroll sideways in the list.": "Esta lista es más ancha que su pantalla. Hay {n} columna más a la derecha. Use los botones o desplácese de lado en la lista.",
+  "You're at the right end of the list. Use the buttons, or scroll sideways, to go back.": "Está en el extremo derecho de la lista. Use los botones o desplácese de lado para volver.",
   "Medicare-certified homes open now": "Hogares certificados por Medicare abiertos ahora",
   "Rhode Island average. U.S. average: {n}.": "Promedio de Rhode Island. Promedio de EE. UU.: {n}.",
   "Rhode Island average. U.S. average: {n}%. Lower turnover is better.": "Promedio de Rhode Island. Promedio de EE. UU.: {n}%. Una rotación más baja es mejor.",
