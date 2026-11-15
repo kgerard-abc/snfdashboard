@@ -139,7 +139,7 @@ td.ij{color:var(--bad);font-weight:700}
 .rate-card h2{font-size:18px;margin:0}
 .rate-bar{display:flex;height:14px;border-radius:3px;overflow:hidden;margin:12px 0 10px;gap:2px}
 .rate-bar i{display:block;height:100%}
-.rate-bar .b1,.rate-bar .b2{background:var(--rate-bad)} .rate-bar .b3{background:var(--rate-warn)} .rate-bar .b4,.rate-bar .b5{background:var(--rate-good)} .rate-bar .b0{background:var(--grid)}
+.rate-bar .b1,.rate-bar .b2{background:var(--rate-bad)} .rate-bar .b3{background:var(--rate-warn)} .rate-bar .b4,.rate-bar .b5{background:var(--rate-good)} .rate-bar .b0{background:var(--grid)} .rate-bar .bz{background:var(--bad)}
 .rate-levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
 .rate-levels .lv .n{font-size:24px;font-weight:700;line-height:1.2;margin-top:4px}
 .rate-levels .lv .w{font-size:13px;color:var(--ink-2)}
@@ -1133,6 +1133,11 @@ function notRatedReason(f, i){
   if (f.status!=="Open") return "This home is closed; CMS no longer publishes a rating for it.";
   return "CMS hasn't published a rating for this period.";
 }
+// Overall stars with a Special Focus Facility counted as 0 (CMS gives it no rating; ABC-RI counts it as 0).
+function overallStars(f){
+  const v = at(f.ccn,"overall",LI);
+  return v==null && (ser(f.ccn,"sff"))[LI]==="SFF" ? 0 : v;
+}
 // The same reasons, short enough to show under "Not rated" in the home list (not only on hover).
 function notRatedShort(f){
   if ((f.x||{}).not_in_cms) return "Not certified";
@@ -1555,25 +1560,34 @@ function vsUS(ri, us, higherBetter, dp){
   return h("div",{class:"vs"}, h("span",{class:"delta " + (a===b ? "same" : better ? "up" : "down"), text:txt}));
 }
 // Every overall star level, so the counts add up to all the open Medicare-certified homes.
+// Every overall star level, so the counts add up to all the open Medicare-certified homes. A Special Focus
+// Facility has no CMS star rating, and ABC-RI counts it as 0 stars (kg, November 2026), as the owner group
+// averages and the sales site already do.
 function ratingSummary(open, ovr, low, high, unrated, notCert){
+  const isSff = f => (ser(f.ccn,"sff"))[LI]==="SFF";
+  const sffs = unrated.filter(isSff), other = unrated.filter(f => !isSff(f));
   const n = k => ovr.filter(v=>v===k).length;
   const levels = [1,2,3,4,5].map(k => ({k, c:n(k)}));
-  const total = open.length;
+  if (sffs.length) levels.unshift({k:0, c:sffs.length});
+  const total = open.length, counted = ovr.length + sffs.length, lowAll = low + sffs.length;
   const bar = h("div",{class:"rate-bar","aria-hidden":"true"},
-    levels.filter(l=>l.c).map(l => h("i",{class:"b"+l.k, style:`flex:${l.c}`})), unrated.length ? h("i",{class:"b0", style:`flex:${unrated.length}`}) : null);
+    levels.filter(l=>l.c).map(l => h("i",{class:"b"+(l.k===0?"z":l.k), style:`flex:${l.c}`})), other.length ? h("i",{class:"b0", style:`flex:${other.length}`}) : null);
+  const word = k => k===0 ? "Special Focus Facility" : STAR_WORDS[k];
   const cells = h("div",{class:"rate-levels"},
-    levels.map(l => h("div",{class:"lv"}, pips(l.k), h("div",{class:"n num",text:String(l.c)}), h("div",{class:"w",text:(l.k===1?"1 star":l.k+" stars")}), h("div",{class:"w",text:STAR_WORDS[l.k]}))),
-    h("div",{class:"lv"}, h("span",{class:"pips","aria-hidden":"true"}, [1,2,3,4,5].map(()=>h("i"))), h("div",{class:"n num",text:String(unrated.length)}), h("div",{class:"w",text:"Not rated"})));
-  const why = unrated.map(f => {
-    const sff = (ser(f.ccn,"sff"))[LI]==="SFF";
-    return h("p",null, h("strong",{text:"Not rated: "}), h("a",{href:"#f-"+f.ccn,text:f.name}),
-      h("span",{text: sff ? " is a Special Focus Facility. CMS doesn't give star ratings to homes in that program." : ". " + notRatedReason(f, LI)}));
-  });
+    levels.map(l => h("div",{class:"lv"}, pips(l.k), h("div",{class:"n num",text:String(l.c)}), h("div",{class:"w",text:(l.k===1?"1 star":l.k+" stars")}), h("div",{class:"w",text:word(l.k)}))),
+    other.length ? h("div",{class:"lv"}, h("span",{class:"pips","aria-hidden":"true"}, [1,2,3,4,5].map(()=>h("i"))), h("div",{class:"n num",text:String(other.length)}), h("div",{class:"w",text:"Not rated"})) : null);
+  const why = [
+    ...sffs.map(f => h("p",null, h("strong",{text:"0 stars:"}), " ", h("a",{href:"#f-"+f.ccn,text:f.name}),
+      " ", h("span",{text:"is a Special Focus Facility. CMS doesn't give star ratings to homes in that program, so we count it as 0 stars."}))),
+    ...other.map(f => h("p",null, h("strong",{text:"Not rated:"}), " ", h("a",{href:"#f-"+f.ccn,text:f.name}), ". ", h("span",{text:notRatedReason(f, LI)})))];
+  const pct = x => Math.round(x / counted * 100);
   return h("section",{class:"card rate-card"},
     h("h2",{text:"Overall star ratings"}),
     h("p",{class:"small",style:"margin:2px 0 0",text:`All ${total} Medicare-certified homes open now, from the ${D.meta.latest_label} CMS release. 5 stars is best.`}),
     bar, cells,
-    h("p",{text:`${low} of the ${ovr.length} rated homes (${Math.round(low/ovr.length*100)}%) have 1 or 2 stars, below average. ${high} (${Math.round(high/ovr.length*100)}%) have 4 or 5 stars, above average.`}),
+    h("p",{text: sffs.length
+      ? `${lowAll} of the ${counted} homes (${pct(lowAll)}%) have 0, 1, or 2 stars, below average. ${high} (${pct(high)}%) have 4 or 5 stars, above average.`
+      : `${low} of the ${counted} rated homes (${pct(low)}%) have 1 or 2 stars, below average. ${high} (${pct(high)}%) have 4 or 5 stars, above average.`}),
     why,
     notCert ? h("p",null, h("span",{text:`The list below also includes ${notCert} homes that aren't Medicare-certified. CMS doesn't rate them.`})) : null);
 }
@@ -1745,7 +1759,7 @@ function homesTable(){
   const cols = [
     {k:"name", t:"Home", get:f=>f.name},
     {k:"group", t:"Owner group", get:f=>(f.x||{}).owner_group||""},
-    {k:"overall", t:"Overall", r:1, get:f=>at(f.ccn,"overall",LI)},
+    {k:"overall", t:"Overall", r:1, get:f=>overallStars(f)},
     {k:"health", t:"Inspections", r:1, get:f=>at(f.ccn,"health",LI)},
     {k:"staffing", t:"Staffing", r:1, get:f=>at(f.ccn,"staffing",LI)},
     {k:"qm", t:"Quality", r:1, get:f=>at(f.ccn,"qm",LI)},
@@ -1846,8 +1860,8 @@ function homesTable(){
           h("div",{class:"sub"}, f.place, (nearLoc && f._dist!=null) ? h("span",{class:"row-dist"}," · "+fmtMiles(f._dist)+" away") : null),
           flags.length? h("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"},flags):null),
         h("td",{class:"small",text:(f.x||{}).owner_group||""}),
-        ...["overall","health","staffing","qm"].map(k => h("td",{class:"r"}, ratingEl(at(f.ccn,k,LI), false, notRatedReason(f,LI)),
-          k==="overall" && at(f.ccn,k,LI)==null ? h("div",{class:"nr-why",text:notRatedShort(f)}) : null)),
+        ...["overall","health","staffing","qm"].map(k => { const v = k==="overall" ? overallStars(f) : at(f.ccn,k,LI);
+          return h("td",{class:"r"}, ratingEl(v, false, notRatedReason(f,LI)), k==="overall" && (v==null || v===0) ? h("div",{class:"nr-why",text:notRatedShort(f)}) : null); }),
         h("td",{class:"r num",text:fmt(colByKey.hprd.get(f))}),
         h("td",{class:"r num",title:adjTitle(f),text:fmt(colByKey.adj.get(f))}),
         h("td",{class:"r num",text:fmt(colByKey.adj12.get(f))}),
